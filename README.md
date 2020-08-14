@@ -37,5 +37,13 @@ The instrument modules are portable and designed to be run like any pysat instru
 import pysat
 from pysatSpaceWeather.instruments import sw_dst
 
-ivm = pysat.Instrument(inst_module=sw_dst)
+dst = pysat.Instrument(inst_module=sw_dst)
+```
+Another way to use the instruments in an external repository is to register the instruments.  This only needs to be done the first time you load an instrument.  Afterward, pysat will identify them using the `platform` and `name` keywords.
+
+```
+import pysat
+
+pysat.utils.registry.register(pysatSpaceWeather.instruments.champ_star)
+dst = pysat.Instrument('sw', 'dst')
 ```

@@ -6,6 +6,7 @@
 import pandas as pds
 import numpy as np
 import pysat
+import pysatSpaceWeather
 
 
 def acknowledgements(name, tag):
@@ -144,8 +145,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
 
     # Initialize the output instrument
     kp_inst = pysat.Instrument()
-    kp_inst.platform = all_inst[0].platform
-    kp_inst.name = all_inst[0].name
+    kp_inst.inst_module = pysatSpaceWeather.instruments.sw_kp
     kp_inst.tag = tag
     kp_inst.date = start
     kp_inst.doy = int(start.strftime("%j"))
@@ -350,8 +350,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     # Initialize the output instrument
     f107_inst = pysat.Instrument()
-    f107_inst.platform = standard_inst.platform
-    f107_inst.name = standard_inst.name
+    f107_inst.inst_module = pysatSpaceWeather.instruments.sw_f107
     f107_inst.tag = tag
     f107_inst.date = start
     f107_inst.doy = int(start.strftime("%j"))

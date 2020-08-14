@@ -150,8 +150,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     kp_inst.date = start
     kp_inst.doy = int(start.strftime("%j"))
     kp_inst.meta = pysat.Meta()
-    pysat.instruments.sw_kp.initialize_kp_metadata(kp_inst.meta, 'Kp',
-                                                   fill_val=fill_val)
+    pysatSpaceWeather.instruments.sw_kp.initialize_kp_metadata(
+        kp_inst.meta, 'Kp', fill_val=fill_val)
 
     kp_times = list()
     kp_values = list()

@@ -1,6 +1,7 @@
 # pysatSpaceWeather: pysat support for Space Weather Indices
 [![Build Status](https://travis-ci.org/pysat/pysatSpaceWeather.svg?branch=main)](https://travis-ci.org/pysat/pysatSpaceWeather)
 [![Coverage Status](https://coveralls.io/repos/github/pysat/pysatSpaceWeather/badge.svg?branch=main)](https://coveralls.io/github/pysat/pysatSpaceWeather?branch=main)
+[![DOI](https://zenodo.org/badge/287377838.svg)](https://zenodo.org/badge/latestdoi/287377838)
 
 # Installation
 

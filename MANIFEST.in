@@ -1,0 +1,13 @@
+include *.py
+include *.f
+include *.c
+recursive-include pysatSpaceWeather *.py
+include *.md
+include description.txt
+include LICENSE
+include pysatSpaceWeather/version.txt
+prune pysatSpaceWeather/tests
+prune docs
+prune demo
+exclude *.pdf
+exclude *.png

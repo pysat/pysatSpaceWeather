@@ -220,10 +220,13 @@ class TestSwKpCombine():
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 18)
-        self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
-                        "recent_inst": pysat.Instrument("sw", "kp", "recent"),
+        self.combine = {"standard_inst": pysat.Instrument(inst_module=sw_kp,
+                                                          tag=""),
+                        "recent_inst": pysat.Instrument(inst_module=sw_kp,
+                                                        tag="recent"),
                         "forecast_inst":
-                        pysat.Instrument("sw", "kp", "forecast"),
+                        pysat.Instrument(inst_module=sw_kp,
+                                         tag="forecast"),
                         "start": self.test_day - dt.timedelta(days=30),
                         "stop": self.test_day + dt.timedelta(days=3),
                         "fill_val": -1}
@@ -470,7 +473,7 @@ class TestSWF107Combine():
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 16)
-        self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
+        self.combineInst = {tag: pysat.Instrument(inst_module=sw_f107, tag=tag)
                             for tag in sw_f107.tags.keys()}
         self.combineTimes = {"start": self.test_day - dt.timedelta(days=30),
                              "stop": self.test_day + dt.timedelta(days=3)}

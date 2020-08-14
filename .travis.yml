@@ -49,7 +49,7 @@ install:
 
 # command to run tests
 script:
- - pytest -vs --flake8 --cov=pysatCDAAC/
+ - pytest -vs --flake8 --cov=pysatSpaceWeather/
 
 after_success:
  - coveralls --rcfile=setup.cfg

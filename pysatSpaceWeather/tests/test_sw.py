@@ -5,6 +5,7 @@ import pandas as pds
 import pytest
 
 import pysat
+import pysatSpaceWeather
 from pysatSpaceWeather.instruments import sw_kp, sw_f107
 from pysatSpaceWeather.instruments.methods import sw as sw_meth
 
@@ -214,7 +215,8 @@ class TestSwKpCombine():
         """Runs before every method to create a clean testing setup"""
         # Switch to test_data directory
         self.saved_path = pysat.data_dir
-        pysat.utils.set_data_dir(pysat.test_data_path, store=False)
+        pysat.utils.set_data_dir(pysatSpaceWeather.test_data_path,
+                                 store=False)
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 18)
@@ -464,7 +466,7 @@ class TestSWF107Combine():
         """Runs before every method to create a clean testing setup"""
         # Switch to test_data directory
         self.saved_path = pysat.data_dir
-        pysat.utils.set_data_dir(pysat.test_data_path, store=False)
+        pysat.utils.set_data_dir(pysatSpaceWeather.test_data_path, store=False)
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 16)

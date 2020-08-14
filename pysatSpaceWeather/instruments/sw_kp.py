@@ -69,7 +69,7 @@ import sys
 import pandas as pds
 
 import pysat
-from pysat.instruments.methods import sw as mm_sw
+from pysatSpaceWeather.instruments.methods import sw as mm_sw
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +86,8 @@ now = dt.datetime.now()
 today = dt.datetime(now.year, now.month, now.day)
 # set test dates
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
-                    'forecast': today + pds.DateOffset(days=1)}}
+                    'forecast': today + pds.DateOffset(days=1),
+                    'recent': today}}
 # Other tags assumed to be True
 _test_download_travis = {'': {'': False}}
 

@@ -5,8 +5,9 @@ import pandas as pds
 import pytest
 
 import pysat
-from pysat.instruments import sw_kp, sw_f107
-from pysat.instruments.methods import sw as sw_meth
+import pysatSpaceWeather
+from pysatSpaceWeather.instruments import sw_kp, sw_f107
+from pysatSpaceWeather.instruments.methods import sw as sw_meth
 
 
 class TestSWKp():
@@ -214,14 +215,18 @@ class TestSwKpCombine():
         """Runs before every method to create a clean testing setup"""
         # Switch to test_data directory
         self.saved_path = pysat.data_dir
-        pysat.utils.set_data_dir(pysat.test_data_path, store=False)
+        pysat.utils.set_data_dir(pysatSpaceWeather.test_data_path,
+                                 store=False)
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 18)
-        self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
-                        "recent_inst": pysat.Instrument("sw", "kp", "recent"),
+        self.combine = {"standard_inst": pysat.Instrument(inst_module=sw_kp,
+                                                          tag=""),
+                        "recent_inst": pysat.Instrument(inst_module=sw_kp,
+                                                        tag="recent"),
                         "forecast_inst":
-                        pysat.Instrument("sw", "kp", "forecast"),
+                        pysat.Instrument(inst_module=sw_kp,
+                                         tag="forecast"),
                         "start": self.test_day - dt.timedelta(days=30),
                         "stop": self.test_day + dt.timedelta(days=3),
                         "fill_val": -1}
@@ -464,11 +469,11 @@ class TestSWF107Combine():
         """Runs before every method to create a clean testing setup"""
         # Switch to test_data directory
         self.saved_path = pysat.data_dir
-        pysat.utils.set_data_dir(pysat.test_data_path, store=False)
+        pysat.utils.set_data_dir(pysatSpaceWeather.test_data_path, store=False)
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 16)
-        self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
+        self.combineInst = {tag: pysat.Instrument(inst_module=sw_f107, tag=tag)
                             for tag in sw_f107.tags.keys()}
         self.combineTimes = {"start": self.test_day - dt.timedelta(days=30),
                              "stop": self.test_day + dt.timedelta(days=3)}

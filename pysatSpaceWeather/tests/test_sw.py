@@ -5,8 +5,8 @@ import pandas as pds
 import pytest
 
 import pysat
-from pysat.instruments import sw_kp, sw_f107
-from pysat.instruments.methods import sw as sw_meth
+from pysatSpaceWeather.instruments import sw_kp, sw_f107
+from pysatSpaceWeather.instruments.methods import sw as sw_meth
 
 
 class TestSWKp():

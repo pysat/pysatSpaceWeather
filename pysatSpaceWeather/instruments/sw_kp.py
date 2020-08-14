@@ -69,7 +69,7 @@ import sys
 import pandas as pds
 
 import pysat
-from pysat.instruments.methods import sw as mm_sw
+from pysatSpaceWeather.instruments.methods import sw as mm_sw
 
 logger = logging.getLogger(__name__)
 

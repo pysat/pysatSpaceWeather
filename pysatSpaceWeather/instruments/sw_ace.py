@@ -19,13 +19,14 @@ sat_id
 Note
 ----
 The real-time data is stored by generation date, where each file contains the
-data for the current day.  Because of this, no download or load date is
-required.
+data for the current day.  If you leave download dates empty, though, it will
+grab today's file three times and assign dates from yesterday, today, and
+tomorrow.
 ::
 
     mag = pysat.Instrument('sw', 'ace', sat_id='mag', tag='rt')
-    mag.download()
-    mag.load()
+    mag.download(start=dt.datetime.now(), stop=dt.datetime.now())
+    mag.load(date=dt.datetime.now())
 
 
 

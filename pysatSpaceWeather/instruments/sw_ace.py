@@ -8,8 +8,8 @@ platform
 name
     'ace'
 tag
-    - 'rt' Real-time data from the Space Weather Prediction Center (SWPC)
-    - 'hist' Historical data from the SWPC
+    - 'realtime' Real-time data from the Space Weather Prediction Center (SWPC)
+    - 'historic' Historic data from the SWPC
 sat_id
     - 'mag' Magnetometer
     - 'swepam' Solar Wind Electron Proton Alpha Monitor
@@ -24,7 +24,7 @@ grab today's file three times and assign dates from yesterday, today, and
 tomorrow.
 ::
 
-    mag = pysat.Instrument('sw', 'ace', sat_id='mag', tag='rt')
+    mag = pysat.Instrument('sw', 'ace', sat_id='mag', tag='realtime')
     mag.download(start=dt.datetime.now(), stop=dt.datetime.now())
     mag.load(date=dt.datetime.now())
 
@@ -53,8 +53,8 @@ logger = logging.getLogger(__name__)
 # Define the Instrument platform, name, tags, and sat_ids
 platform = 'sw'
 name = 'ace'
-tags = {'rt': 'Real-time data from the SWPC',
-        'hist': ' Historical data from the SWPC'}
+tags = {'realtime': 'Real-time data from the SWPC',
+        'historic': ' Historic data from the SWPC'}
 sat_ids = {sat_id: [tag for tag in tags.keys()]
            for sat_id in ['mag', 'swepam', 'epam', 'sis']}
 
@@ -62,8 +62,8 @@ sat_ids = {sat_id: [tag for tag in tags.keys()]
 now = dt.datetime.now()
 
 # set test dates (first level: sat_id, second level: tag)
-_test_dates = {sat_id: {'rt': dt.datetime(now.year, now.month, now.day),
-                        'hist': dt.datetime(2009, 1, 1)}
+_test_dates = {sat_id: {'realtime': dt.datetime(now.year, now.month, now.day),
+                        'historic': dt.datetime(2009, 1, 1)}
                for sat_id in sat_ids.keys()}
 
 
@@ -310,13 +310,13 @@ def download(date_array, tag, sat_id, data_path):
     date_array : array-like
         Array of datetime values
     tag : string or NoneType
-        Denotes type of file to load.  Accepted types are 'rt' and 'hist'.
-        (default=None)
+        Denotes type of file to load. Accepted types are 'realtime' and
+        'historic' (default=None)
     sat_id : string or NoneType
-        Specifies the ACE instrument.  Accepts 'mag', 'sis', 'epam', 'swepam'
+        Specifies the ACE instrument. Accepts 'mag', 'sis', 'epam', 'swepam'
     data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
+        Path to data directory. If None is specified, the value previously
+        set in Instrument.files.data_path is used (default=None)
 
     Note
     ----
@@ -330,7 +330,7 @@ def download(date_array, tag, sat_id, data_path):
 
     # Define the file information for each data type and check the
     # date range
-    if tag == 'rt':
+    if tag == 'realtime':
         file_fmt = "{:s}-{:s}.txt".format("ace", "magnetometer"
                                           if sat_id == "mag" else sat_id)
 
@@ -342,8 +342,8 @@ def download(date_array, tag, sat_id, data_path):
         file_fmt = '_'.join(["%Y%m%d", "ace", sat_id,
                              '{:d}m.txt'.format(data_rate)])
 
-    url = {'rt': 'https://services.swpc.noaa.gov/text/',
-           'hist': 'https://sohoftp.nascom.nasa.gov/sdb/ace/daily/'}
+    url = {'realtime': 'https://services.swpc.noaa.gov/text/',
+           'historic': 'https://sohoftp.nascom.nasa.gov/sdb/ace/daily/'}
 
     data_cols = {'mag': ['jd', 'sec', 'status', 'bx_gsm', 'by_gsm',
                          'bz_gsm', 'bt_gsm', 'lat_gsm', 'lon_gsm'],

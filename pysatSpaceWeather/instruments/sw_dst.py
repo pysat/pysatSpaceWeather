@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 platform = 'sw'
 name = 'dst'
 tags = {'': ''}
-sat_ids = {'': ['']}
+inst_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2007, 1, 1)}}
 # Other tags assumed to be True
 _test_download_travis = {'': {'': False}}
@@ -63,7 +63,7 @@ def init(self):
     return
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, inst_id=None):
     """Load Kp index files
 
     Parameters
@@ -72,7 +72,7 @@ def load(fnames, tag=None, sat_id=None):
         Series of filenames
     tag : str or NoneType
         tag or None (default=None)
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         satellite id or None (default=None)
 
     Returns
@@ -144,7 +144,7 @@ def load(fnames, tag=None, sat_id=None):
     return data, pysat.Meta()
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
     Parameters
@@ -152,7 +152,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are '1min' and '5min'.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -196,7 +196,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                   'routine for Dst')))
 
 
-def download(date_array, tag, sat_id, data_path, user=None, password=None):
+def download(date_array, tag, inst_id, data_path, user=None, password=None):
     """Routine to download Dst index data
 
     Parameters
@@ -204,7 +204,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType

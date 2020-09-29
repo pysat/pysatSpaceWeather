@@ -94,9 +94,9 @@ def load(fnames, tag=None, sat_id=None):
     for filename in fnames:
         # need to remove date appended to dst filename
         fname = filename[0:-11]
-        # f = open(fname)
-        with open(fname) as f:
-            lines = f.readlines()
+        all_data = []
+        with open(fname) as open_f:
+            lines = open_f.readlines()
             idx = 0
             # check if all lines are good
             max_lines = 0
@@ -125,8 +125,6 @@ def load(fnames, tag=None, sat_id=None):
                     dst[idx:idx + 24] = temp2
                     idx += 24
 
-            # f.close()
-
             start = dt.datetime(yr[0], mo[0], day[0], ut[0])
             stop = dt.datetime(yr[-1], mo[-1], day[-1], ut[-1])
             dates = pds.date_range(start, stop, freq='H')
@@ -139,7 +137,9 @@ def load(fnames, tag=None, sat_id=None):
                                + pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx, :]
             # add specific day to all data loaded for filenames
-            data = pds.concat([data, new_data], sort=True, axis=0)
+            all_data.append(new_data)
+        # combine data together
+        data = pds.concat(all_data, sort=True, axis=0)
 
     return data, pysat.Meta()
 

@@ -338,7 +338,8 @@ class TestSwKpCombine():
         assert kp_inst.data.columns[0] == 'Kp'
         assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label]
                == self.combine['fill_val'])
-        assert (kp_inst['Kp'] == self.combine['fill_val']).any()
+        # assert (kp_inst['Kp'] == self.combine['fill_val']).any()
+        assert kp_inst['Kp'].isnull().values.any()
 
         del kp_inst, combo_in
 
@@ -355,7 +356,7 @@ class TestSwKpCombine():
         assert kp_inst.data.columns[0] == 'Kp'
         assert (kp_inst.meta['Kp'][kp_inst.meta.fill_label]
                 == self.combine['fill_val'])
-        assert (kp_inst['Kp'] == self.combine['fill_val']).any()
+        assert kp_inst['Kp'].isnull().values.any()
 
         del kp_inst, combo_in
 
@@ -372,8 +373,7 @@ class TestSwKpCombine():
         assert kp_inst.data.columns[0] == 'Kp'
         assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label]
                == self.combine['fill_val'])
-        assert len(kp_inst['Kp'][kp_inst['Kp']]
-                   == self.combine['fill_val']) > 0
+        assert kp_inst['Kp'].isnull().values.any()
 
         del kp_inst, combo_in
 

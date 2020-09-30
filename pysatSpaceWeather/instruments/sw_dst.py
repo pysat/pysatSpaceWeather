@@ -216,27 +216,29 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     Called by pysat. Not intended for direct use by user.
 
     """
-
-    ftp = ftplib.FTP('ftp.ngdc.noaa.gov')  # connect to host, default port
-    ftp.login()  # user anonymous, passwd anonymous@
+    # connect to host, default port
+    ftp = ftplib.FTP('ftp.ngdc.noaa.gov')
+    # user anonymous, passwd anonymous@
+    ftp.login()
     ftp.cwd('/STP/GEOMAGNETIC_DATA/INDICES/DST')
-
-    for date in date_array:
-        fname = 'dst{year:02d}.txt'
-        fname = fname.format(year=date.year)
-        local_fname = fname
-        saved_fname = os.path.join(data_path, local_fname)
+    # data stored by year. Only download for unique set of input years.
+    years = np.array([date.year for date in date_array])
+    years = np.unique(years)
+    for year in years:
+        fname_root = 'dst{year:04d}.txt'
+        fname = fname_root.format(year=year)
+        saved_fname = os.path.join(data_path, fname)
         try:
-            logger.info(''.join(['Downloading file for ', date.strftime('%D')]))
-            sys.stdout.flush()
-            ftp.retrbinary('RETR ' + fname, open(saved_fname, 'wb').write)
+            logger.info('Downloading file for {year:04d}'.format(year=year))
+            with open(saved_fname, 'wb') as fp:
+                ftp.retrbinary('RETR ' + fname, fp.write)
         except ftplib.error_perm as exception:
-            # if exception[0][0:3] != '550':
             if str(exception.args[0]).split(" ", 1)[0] != '550':
                 raise
             else:
+                # file not present
                 os.remove(saved_fname)
-                logger.info('File not available for ' + date.strftime('%D'))
+                logger.info('File not available for {:04d}'.format(year))
 
     ftp.close()
     return

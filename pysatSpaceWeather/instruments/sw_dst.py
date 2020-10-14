@@ -31,7 +31,6 @@ import logging
 import ftplib
 import os
 import numpy as np
-import sys
 
 import pandas as pds
 

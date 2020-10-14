@@ -79,7 +79,7 @@ name = 'kp'
 tags = {'': '',
         'forecast': 'SWPC Forecast data next (3 days)',
         'recent': 'SWPC provided Kp for past 30 days'}
-sat_ids = {'': ['', 'forecast', 'recent']}
+inst_ids = {'': ['', 'forecast', 'recent']}
 
 # generate todays date to support loading forecast data
 now = dt.datetime.now()
@@ -106,7 +106,7 @@ def init(self):
     return
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, inst_id=None):
     """Load Kp index files
 
     Parameters
@@ -115,7 +115,7 @@ def load(fnames, tag=None, sat_id=None):
         Series of filenames
     tag : str or NoneType
         tag or None (default=None)
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         satellite id or None (default=None)
 
     Returns
@@ -212,7 +212,7 @@ def load(fnames, tag=None, sat_id=None):
     return result, meta
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
     Parameters
@@ -220,7 +220,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -288,7 +288,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                    'routine for Kp')))
 
 
-def download(date_array, tag, sat_id, data_path, user=None, password=None):
+def download(date_array, tag, inst_id, data_path, user=None, password=None):
     """Routine to download Kp index data
 
     Parameters
@@ -296,7 +296,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are '' and 'forecast'.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType

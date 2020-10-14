@@ -68,9 +68,9 @@ tags = {'': 'Daily LASP value of F10.7',
         'daily': 'Daily SWPC solar indices (contains last 30 days)',
         'forecast': 'SWPC Forecast F107 data next (3 days)',
         '45day': 'Air Force 45-day Forecast'}
-# dict keyed by sat_id that lists supported tags for each sat_id
-sat_ids = {'': ['', 'all', 'prelim', 'daily', 'forecast', '45day']}
-# dict keyed by sat_id that lists supported tags and a good day of test data
+# dict keyed by inst_id that lists supported tags for each inst_id
+inst_ids = {'': ['', 'all', 'prelim', 'daily', 'forecast', '45day']}
+# dict keyed by inst_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
 now = dt.datetime.now()
 today = dt.datetime(now.year, now.month, now.day)
@@ -100,7 +100,7 @@ def init(self):
     return
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, inst_id=None):
     """Load F10.7 index files
 
     Parameters
@@ -109,7 +109,7 @@ def load(fnames, tag=None, sat_id=None):
         Series of filenames
     tag : str or NoneType
         tag or None (default=None)
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         satellite id or None (default=None)
 
     Returns
@@ -198,7 +198,7 @@ def load(fnames, tag=None, sat_id=None):
     return result, meta
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for F10.7 data
 
     Parameters
@@ -206,7 +206,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -353,7 +353,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                    'routine for F107')))
 
 
-def download(date_array, tag, sat_id, data_path, user=None, password=None):
+def download(date_array, tag, inst_id, data_path, user=None, password=None):
     """Routine to download F107 index data
 
     Parameters
@@ -361,7 +361,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are '' and 'forecast'.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -454,7 +454,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
         # Get the local files, to ensure that the version 1 files are
         # downloaded again if more data has been added
-        local_files = list_files(tag, sat_id, data_path)
+        local_files = list_files(tag, inst_id, data_path)
 
         # To avoid downloading multiple files, cycle dates based on file length
         date = date_array[0]

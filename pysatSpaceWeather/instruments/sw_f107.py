@@ -136,15 +136,7 @@ def load(fnames, tag=None, inst_id=None):
             idx, = np.where((data.index >= date)
                             & (data.index < date + pds.DateOffset(days=1)))
             result = data.iloc[idx, :]
-        elif tag == 'all':
-            result = pds.read_csv(fname, index_col=0, parse_dates=True)
-        elif tag == 'daily' or tag == 'prelim':
-            result = pds.read_csv(fname, index_col=0, parse_dates=True)
-        elif tag == 'forecast':
-            # load forecast data
-            result = pds.read_csv(fname, index_col=0, parse_dates=True)
-        elif tag == '45day':
-            # load forecast data
+        elif tag in ['all', 'daily', 'prelim', 'forecast', '45day']:
             result = pds.read_csv(fname, index_col=0, parse_dates=True)
         all_file_results.append(result)
     # combine loaded data together

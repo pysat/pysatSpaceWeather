@@ -143,6 +143,7 @@ def load(fnames, tag=None, inst_id=None):
         # set up fixed width format for these files
         colspec = [(0, 2), (2, 4), (4, 6), (7, 10), (10, 13), (13, 16),
                    (16, 19), (19, 23), (23, 26), (26, 29), (29, 32), (32, 50)]
+        all_data = []
         for filename in fnames:
             # the daily date is attached to filename
             # parse off the last date, load month of data, downselect to the
@@ -156,7 +157,9 @@ def load(fnames, tag=None, inst_id=None):
             idx, = np.where((temp.index >= date)
                             & (temp.index < date + pds.DateOffset(days=1)))
             temp = temp.iloc[idx, :]
-            data = pds.concat([data, temp], axis=0)
+            all_data.append(temp)
+        # combine data together
+        data = pds.concat(all_data, axis=0, sort=True)
 
         # drop last column as it has data I don't care about
         data = data.iloc[:, 0:-1]
@@ -187,11 +190,19 @@ def load(fnames, tag=None, inst_id=None):
         fill_val = np.nan
     elif tag == 'forecast':
         # load forecast data
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
+        all_data = []
+        for fname in fnames:
+            result = pds.read_csv(fname, index_col=0, parse_dates=True)
+            all_data.append(result)
+        result = pds.concat(all_data)
         fill_val = -1
     elif tag == 'recent':
         # load recent Kp data
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
+        all_data = []
+        for fname in fnames:
+            result = pds.read_csv(fname, index_col=0, parse_dates=True)
+            all_data.append(result)
+        result = pds.concat(all_data)
         fill_val = -1
 
     # Initalize the meta data

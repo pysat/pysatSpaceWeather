@@ -31,7 +31,6 @@ import logging
 import ftplib
 import os
 import numpy as np
-import sys
 
 import pandas as pds
 
@@ -94,9 +93,9 @@ def load(fnames, tag=None, inst_id=None):
     for filename in fnames:
         # need to remove date appended to dst filename
         fname = filename[0:-11]
-        # f = open(fname)
-        with open(fname) as f:
-            lines = f.readlines()
+        all_data = []
+        with open(fname) as open_f:
+            lines = open_f.readlines()
             idx = 0
             # check if all lines are good
             max_lines = 0
@@ -125,8 +124,6 @@ def load(fnames, tag=None, inst_id=None):
                     dst[idx:idx + 24] = temp2
                     idx += 24
 
-            # f.close()
-
             start = dt.datetime(yr[0], mo[0], day[0], ut[0])
             stop = dt.datetime(yr[-1], mo[-1], day[-1], ut[-1])
             dates = pds.date_range(start, stop, freq='H')
@@ -139,7 +136,9 @@ def load(fnames, tag=None, inst_id=None):
                                + pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx, :]
             # add specific day to all data loaded for filenames
-            data = pds.concat([data, new_data], sort=True, axis=0)
+            all_data.append(new_data)
+        # combine data together
+        data = pds.concat(all_data, sort=True, axis=0)
 
     return data, pysat.Meta()
 
@@ -216,27 +215,29 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
     Called by pysat. Not intended for direct use by user.
 
     """
-
-    ftp = ftplib.FTP('ftp.ngdc.noaa.gov')  # connect to host, default port
-    ftp.login()  # user anonymous, passwd anonymous@
+    # connect to host, default port
+    ftp = ftplib.FTP('ftp.ngdc.noaa.gov')
+    # user anonymous, passwd anonymous@
+    ftp.login()
     ftp.cwd('/STP/GEOMAGNETIC_DATA/INDICES/DST')
-
-    for date in date_array:
-        fname = 'dst{year:02d}.txt'
-        fname = fname.format(year=date.year)
-        local_fname = fname
-        saved_fname = os.path.join(data_path, local_fname)
+    # data stored by year. Only download for unique set of input years.
+    years = np.array([date.year for date in date_array])
+    years = np.unique(years)
+    for year in years:
+        fname_root = 'dst{year:04d}.txt'
+        fname = fname_root.format(year=year)
+        saved_fname = os.path.join(data_path, fname)
         try:
-            logger.info(''.join(['Downloading file for ', date.strftime('%D')]))
-            sys.stdout.flush()
-            ftp.retrbinary('RETR ' + fname, open(saved_fname, 'wb').write)
+            logger.info('Downloading file for {year:04d}'.format(year=year))
+            with open(saved_fname, 'wb') as fp:
+                ftp.retrbinary('RETR ' + fname, fp.write)
         except ftplib.error_perm as exception:
-            # if exception[0][0:3] != '550':
             if str(exception.args[0]).split(" ", 1)[0] != '550':
                 raise
             else:
+                # file not present
                 os.remove(saved_fname)
-                logger.info('File not available for ' + date.strftime('%D'))
+                logger.info('File not available for {:04d}'.format(year))
 
     ftp.close()
     return

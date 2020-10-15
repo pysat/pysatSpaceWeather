@@ -124,27 +124,23 @@ def load(fnames, tag=None, inst_id=None):
     Called by pysat. Not intended for direct use by user.
 
     """
-
-    if tag == '':
-        # f107 data stored monthly, need to return data daily
-        # the daily date is attached to filename
-        # parse off the last date, load month of data, downselect to desired
-        # day
-        date = dt.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
-        data = pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True)
-        idx, = np.where((data.index >= date)
-                        & (data.index < date + pds.DateOffset(days=1)))
-        result = data.iloc[idx, :]
-    elif tag == 'all':
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-    elif tag == 'daily' or tag == 'prelim':
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-    elif tag == 'forecast':
-        # load forecast data
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-    elif tag == '45day':
-        # load forecast data
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
+    all_file_results = []
+    for fname in fnames:
+        if tag == '':
+            # f107 data stored monthly, need to return data daily
+            # the daily date is attached to filename
+            # parse off the last date, load month of data, downselect to desired
+            # day
+            date = dt.datetime.strptime(fname[-10:], '%Y-%m-%d')
+            data = pds.read_csv(fname[0:-11], index_col=0, parse_dates=True)
+            idx, = np.where((data.index >= date)
+                            & (data.index < date + pds.DateOffset(days=1)))
+            result = data.iloc[idx, :]
+        elif tag in ['all', 'daily', 'prelim', 'forecast', '45day']:
+            result = pds.read_csv(fname, index_col=0, parse_dates=True)
+        all_file_results.append(result)
+    # combine loaded data together
+    result = pds.concat(all_file_results, axis=0, sort=True)
 
     meta = pysat.Meta()
     meta['f107'] = {meta.units_label: 'SFU',

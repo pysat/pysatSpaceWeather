@@ -74,7 +74,7 @@ def init(self):
 
 
 def clean(self):
-    """ Cleaning function for OMNI data
+    """ Cleaning function for Dst
 
     Note
     ----

@@ -116,6 +116,16 @@ def init(self):
     return
 
 
+def clean(self):
+    """ Cleaning function for Space Weather indices
+
+    Note
+    ----
+    Kp doesn't require cleaning
+    """
+    return
+
+
 # ----------------------------------------------------------------------------
 # Instrument functions
 

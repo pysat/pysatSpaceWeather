@@ -1,3 +1,5 @@
+from pysatSpaceWeather.instruments import methods
+
 __all__ = ['sw_dst', 'sw_f107', 'sw_kp', 'sw_ace']
 
 for inst in __all__:

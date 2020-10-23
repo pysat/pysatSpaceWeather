@@ -1,4 +1,4 @@
-from pysatSpaceWeather.instruments import methods
+from pysatSpaceWeather.instruments import methods  # noqa F401
 
 __all__ = ['sw_dst', 'sw_f107', 'sw_kp', 'sw_ace']
 

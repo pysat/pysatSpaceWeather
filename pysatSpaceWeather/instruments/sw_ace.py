@@ -412,8 +412,8 @@ def download(date_array, tag, inst_id, data_path):
         file_fmt = "{:s}-{:s}.txt".format("ace", "magnetometer"
                                           if inst_id == "mag" else inst_id)
 
-        if(len(date_array) > 1 or date_array[0].year != now.year or
-           date_array[0].month != now.month or date_array[0] != now.day):
+        if(len(date_array) > 1 or date_array[0].year != now.year
+           or date_array[0].month != now.month or date_array[0] != now.day):
             logging.warning('real-time data only available for current day')
     else:
         data_rate = 1 if inst_id in ['mag', 'swepam'] else 5
@@ -458,7 +458,7 @@ def download(date_array, tag, inst_id, data_path):
                     #
                     # Output is saved as a float, so don't bother to
                     # differentiate between int and float
-                    data_dict[col].append(float(split_line[4+i]))
+                    data_dict[col].append(float(split_line[4 + i]))
             else:
                 if len(split_line) > 0:
                     raise IOError(''.join(['unexpected line encoutered in ',

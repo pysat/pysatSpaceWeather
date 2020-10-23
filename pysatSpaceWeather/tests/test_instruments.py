@@ -2,23 +2,23 @@ import tempfile
 
 import pytest
 
-import pysat
-# Make sure to import your instrument library here
-import pysatSpaceWeather
 # Import the test classes from pysat
+import pysat
 from pysat.utils import generate_instrument_list
 from pysat.tests.instrument_test_class import InstTestClass
 
+# Make sure to import your instrument library here
+import pysatSpaceWeather
 
 # Developers for instrument libraries should update the following line to
 # point to their own library package
-# e.g.,
-# instruments = generate_instrument_list(inst_loc=mypackage.instruments)
+# e.g., instruments = generate_instrument_list(inst_loc=mypackage.instruments)
 instruments = generate_instrument_list(inst_loc=pysatSpaceWeather.instruments)
 
 # The following lines apply the custom instrument lists to each type of test
 method_list = [func for func in dir(InstTestClass)
                if callable(getattr(InstTestClass, func))]
+
 # Search tests for iteration via pytestmark, update instrument list
 for method in method_list:
     if hasattr(getattr(InstTestClass, method), 'pytestmark'):
@@ -40,14 +40,14 @@ for method in method_list:
 
 
 class TestInstruments(InstTestClass):
-
     def setup_class(self):
         """Runs once before the tests to initialize the testing setup."""
-        # Make sure to use a temporary directory so that the user's setup is not
-        # altered
+        # Make sure to use a temporary directory so that the user's setup is
+        # not altered
         self.tempdir = tempfile.TemporaryDirectory()
         self.saved_path = pysat.data_dir
         pysat.utils.set_data_dir(self.tempdir.name, store=False)
+
         # Developers for instrument libraries should update the following line
         # to point to their own subpackage location, e.g.,
         # self.inst_loc = mypackage.instruments

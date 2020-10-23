@@ -41,12 +41,12 @@ import datetime as dt
 import logging
 import numpy as np
 import os
+import pandas as pds
 import requests
 
-import pandas as pds
-
 import pysat
-import pysatSpaceWeather.instruments.methods.ace as mm_ace
+
+from pysatSpaceWeather.instruments.methods import ace as mm_ace
 
 logger = logging.getLogger(__name__)
 

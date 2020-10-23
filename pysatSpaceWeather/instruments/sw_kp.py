@@ -63,16 +63,19 @@ import ftplib
 import logging
 import numpy as np
 import os
+import pandas as pds
 import requests
 import sys
 
-import pandas as pds
-
 import pysat
+from pysat.utils.time import parse_date
+
 from pysatSpaceWeather.instruments.methods import sw as mm_sw
 
 logger = logging.getLogger(__name__)
 
+# ----------------------------------------------------------------------------
+# Instrument attributes
 
 platform = 'sw'
 name = 'kp'
@@ -84,19 +87,26 @@ inst_ids = {'': ['', 'forecast', 'recent']}
 # generate todays date to support loading forecast data
 now = dt.datetime.now()
 today = dt.datetime(now.year, now.month, now.day)
-# set test dates
+
+# ----------------------------------------------------------------------------
+# Instrument test attributes
+
+# Set test dates
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'forecast': today + pds.DateOffset(days=1),
                     'recent': today}}
+
 # Other tags assumed to be True
 _test_download_travis = {'': {'': False}}
+
+# ----------------------------------------------------------------------------
+# Instrument methods
 
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
-
 
     """
 
@@ -106,11 +116,25 @@ def init(self):
     return
 
 
+def clean(self):
+    """ Cleaning function for Space Weather indices
+
+    Note
+    ----
+    Kp doesn't require cleaning
+    """
+    return
+
+
+# ----------------------------------------------------------------------------
+# Instrument functions
+
+
 def load(fnames, tag=None, inst_id=None):
     """Load Kp index files
 
     Parameters
-    ------------
+    ----------
     fnames : pandas.Series
         Series of filenames
     tag : str or NoneType
@@ -119,7 +143,7 @@ def load(fnames, tag=None, inst_id=None):
         satellite id or None (default=None)
 
     Returns
-    ---------
+    -------
     data : pandas.DataFrame
         Object containing satellite data
     meta : pysat.Meta
@@ -129,9 +153,7 @@ def load(fnames, tag=None, inst_id=None):
     ----
     Called by pysat. Not intended for direct use by user.
 
-
     """
-    from pysat.utils.time import parse_date
 
     meta = pysat.Meta()
     if tag == '':
@@ -429,6 +451,10 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     return
+
+
+# ----------------------------------------------------------------------------
+# Local functions
 
 
 def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,

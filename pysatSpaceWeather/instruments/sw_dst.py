@@ -39,13 +39,24 @@ from pysatSpaceWeather.instruments.methods import sw as mm_sw
 
 logger = logging.getLogger(__name__)
 
+# ----------------------------------------------------------------------------
+# Instrument attributes
+
 platform = 'sw'
 name = 'dst'
 tags = {'': ''}
 inst_ids = {'': ['']}
+
+# ----------------------------------------------------------------------------
+# Instrument test attributes
+
 _test_dates = {'': {'': dt.datetime(2007, 1, 1)}}
+
 # Other tags assumed to be True
 _test_download_travis = {'': {'': False}}
+
+# ----------------------------------------------------------------------------
+# Instrument methods
 
 
 def init(self):
@@ -60,6 +71,21 @@ def init(self):
     self.references = mm_sw.references(self.name, self.tag)
     logger.info(self.acknowledgements)
     return
+
+
+def clean(self):
+    """ Cleaning function for Dst
+
+    Note
+    ----
+    No necessary for the Dst index
+
+    """
+    return
+
+
+# ----------------------------------------------------------------------------
+# Instrument functions
 
 
 def load(fnames, tag=None, inst_id=None):

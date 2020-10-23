@@ -60,6 +60,9 @@ from pysatSpaceWeather.instruments.methods import sw as mm_sw
 
 logger = logging.getLogger(__name__)
 
+# ----------------------------------------------------------------------------
+# Instrument attributes
+
 platform = 'sw'
 name = 'f107'
 tags = {'': 'Daily LASP value of F10.7',
@@ -68,29 +71,37 @@ tags = {'': 'Daily LASP value of F10.7',
         'daily': 'Daily SWPC solar indices (contains last 30 days)',
         'forecast': 'SWPC Forecast F107 data next (3 days)',
         '45day': 'Air Force 45-day Forecast'}
+
 # dict keyed by inst_id that lists supported tags for each inst_id
 inst_ids = {'': ['', 'all', 'prelim', 'daily', 'forecast', '45day']}
+
 # dict keyed by inst_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
 now = dt.datetime.now()
 today = dt.datetime(now.year, now.month, now.day)
 tomorrow = today + pds.DateOffset(days=1)
-# set test dates
+
+# ----------------------------------------------------------------------------
+# Instrument test attributes
+
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'all': dt.datetime(2009, 1, 1),
                     'prelim': dt.datetime(2009, 1, 1),
                     'daily': tomorrow,
                     'forecast': tomorrow,
                     '45day': tomorrow}}
+
 # Other tags assumed to be True
 _test_download_travis = {'': {'prelim': False}}
+
+# ----------------------------------------------------------------------------
+# Instrument methods
 
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
-
 
     """
 
@@ -100,11 +111,25 @@ def init(self):
     return
 
 
+def clean(self):
+    """ Cleaning function for Space Weather indices
+
+    Note
+    ----
+    F10.7 doesn't require cleaning
+    """
+    return
+
+
+# ----------------------------------------------------------------------------
+# Instrument functions
+
+
 def load(fnames, tag=None, inst_id=None):
     """Load F10.7 index files
 
     Parameters
-    ------------
+    ----------
     fnames : pandas.Series
         Series of filenames
     tag : str or NoneType
@@ -113,14 +138,14 @@ def load(fnames, tag=None, inst_id=None):
         satellite id or None (default=None)
 
     Returns
-    ---------
+    -------
     data : pandas.DataFrame
         Object containing satellite data
     meta : pysat.Meta
         Object containing metadata such as column names and units
 
     Note
-    -----
+    ----
     Called by pysat. Not intended for direct use by user.
 
     """
@@ -194,7 +219,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for F10.7 data
 
     Parameters
-    -----------
+    ----------
     tag : string or NoneType
         Denotes type of file to load.
         (default=None)
@@ -209,12 +234,12 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
         formats associated with the supplied tags are used. (default=None)
 
     Returns
-    --------
+    -------
     pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     Note
-    -----
+    ----
     Called by pysat. Not intended for direct use by user.
 
     """
@@ -345,7 +370,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
                                    'routine for F107')))
 
 
-def download(date_array, tag, inst_id, data_path, user=None, password=None):
+def download(date_array, tag, inst_id, data_path):
     """Routine to download F107 index data
 
     Parameters
@@ -618,6 +643,10 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     return
+
+
+# ----------------------------------------------------------------------------
+# Local functions
 
 
 def parse_45day_block(block_lines):

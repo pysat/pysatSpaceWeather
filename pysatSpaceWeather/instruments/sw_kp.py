@@ -60,7 +60,6 @@ filter_geoquiet
 
 import datetime as dt
 import ftplib
-import logging
 import numpy as np
 import os
 import pandas as pds
@@ -72,7 +71,7 @@ from pysat.utils.time import parse_date
 
 from pysatSpaceWeather.instruments.methods import sw as mm_sw
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
 
 # ----------------------------------------------------------------------------
 # Instrument attributes
@@ -274,7 +273,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
                 format_str = 'kp{year:2d}{month:02d}.tab'
             out = pysat.Files.from_os(data_path=data_path,
                                       format_str=format_str,
-                                      two_digit_year_break=94)
+                                      two_digit_year_break=99)
             if not out.empty:
                 out.loc[out.index[-1] + pds.DateOffset(months=1)
                         - pds.DateOffset(days=1)] = out.iloc[-1]

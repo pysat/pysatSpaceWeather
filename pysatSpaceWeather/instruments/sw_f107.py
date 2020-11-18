@@ -46,7 +46,6 @@ is not appropriate for 'forecast' data.
 import datetime as dt
 import ftplib
 import json
-import logging
 import numpy as np
 import os
 import requests
@@ -58,7 +57,7 @@ import pandas as pds
 import pysat
 from pysatSpaceWeather.instruments.methods import sw as mm_sw
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
 
 # ----------------------------------------------------------------------------
 # Instrument attributes

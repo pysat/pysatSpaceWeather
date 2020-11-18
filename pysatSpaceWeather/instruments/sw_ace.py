@@ -38,7 +38,6 @@ from pysat.Instrument objects.
 """
 
 import datetime as dt
-import logging
 import numpy as np
 import os
 import pandas as pds
@@ -48,7 +47,7 @@ import pysat
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
 
 # ----------------------------------------------------------------------------
 # Instrument attributes
@@ -414,7 +413,7 @@ def download(date_array, tag, inst_id, data_path):
 
         if(len(date_array) > 1 or date_array[0].year != now.year
            or date_array[0].month != now.month or date_array[0] != now.day):
-            logging.warning('real-time data only available for current day')
+            logger.warning('real-time data only available for current day')
     else:
         data_rate = 1 if inst_id in ['mag', 'swepam'] else 5
         file_fmt = '_'.join(["%Y%m%d", "ace", inst_id,

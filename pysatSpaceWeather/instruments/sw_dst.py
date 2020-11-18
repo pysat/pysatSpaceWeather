@@ -27,7 +27,6 @@ of the National Science Foundation.
 """
 
 import datetime as dt
-import logging
 import ftplib
 import os
 import numpy as np
@@ -37,7 +36,7 @@ import pandas as pds
 import pysat
 from pysatSpaceWeather.instruments.methods import sw as mm_sw
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
 
 # ----------------------------------------------------------------------------
 # Instrument attributes

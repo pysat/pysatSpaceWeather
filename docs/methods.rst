@@ -11,7 +11,7 @@ Supports the ACE instrument by providing reference and acknowledgement
 information.
 
 
-.. automodule:: pysatSpaceWeather.methods.ace
+.. automodule:: pysatSpaceWeather.instruments.methods.ace
    :members:
 
 SW
@@ -21,5 +21,5 @@ Supports the remaining instruments and will soon be broken up into different
 submodules by instrument.
 
 
-.. automodule:: pysatSpaceWeather.methods.sw
+.. automodule:: pysatSpaceWeather.instruments.methods.sw
    :members:

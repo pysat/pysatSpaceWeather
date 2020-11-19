@@ -1,7 +1,7 @@
 Installation
 ============
 
-The following instructions will allow you to install pysatModels.
+The following instructions will allow you to install pysatSpaceWeather.
 
 Prerequisites
 -------------
@@ -12,8 +12,9 @@ Prerequisites
     :alt: powered by pysat Logo, blue planet with orbiting python
 
 
-pysatModels uses common Python modules, as well as modules developed by and for
-the Space Physics community.  This module officially supports Python 3.6+.
+pysatSpaceWeather uses common Python modules, as well as modules developed by
+and for the Space Physics community.  This module officially supports
+Python 3.6+.
 
  ============== =================
  Common modules Community modules

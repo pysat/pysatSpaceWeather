@@ -1,11 +1,11 @@
-Loading F\ :sub:`10.7``\
+Loading F\ :sub:`10.7`\
 ========================
 
 pysatSpaceWeather uses `pysat <https://github.com/pysat/pysat>`_ to load
 different historical, real-time, and forecasted solar, geomagnetic, and other
 space weather indices.  As specified in the
 `pysat tutorial <https://pysat.readthedocs.io/en/latest/tutorial.html>`_,
-data may be loaded using the following commands.  Historic F\ :sub:`10.7``\ is
+data may be loaded using the following commands.  Historic F\ :sub:`10.7`\ is
 used as an example.
 
 ::

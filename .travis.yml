@@ -1,10 +1,16 @@
 language: python
 dist: xenial
-matrix:
+jobs:
   include:
-    - python: 3.6
-    - python: 3.7
-    - python: 3.8
+    - name: '3.6'
+      python: '3.6'
+      script: pytest --cov=pysatSpaceWeather/
+    - name: '3.7 with flake8'
+      python: '3.7'
+      script: pytest --flake8 --cov=pysatSpaceWeather/
+    - name: '3.8'
+      python: '3.8'
+      script: pytest --cov=pysatSpaceWeather/
 
 services: xvfb
 cache: pip
@@ -28,12 +34,14 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
   # Create conda test environment
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas xarray requests dask toolz netCDF4 portalocker pytest-cov pytest-ordering
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - conda activate test-environment
+  # Once pysat 3.0 is released, remove the custom pysat install and change
+  # this to:
+  # - while read requirement; do conda install --yes $requirement; done < requirements.txt1
+  - conda install --yes numpy scipy pandas xarray requests netCDF4
   # Get latest coveralls from pip, not conda
-  - pip install coveralls pytest-flake8
-  # Dependencies not available through conda, install through pip
-  - pip install pysatCDF >/dev/null
+  - pip install -rtest_requirements.txt
   # Custom pysat install
   - cd ..
   - git clone --single-branch --branch develop-3 https://github.com/pysat/pysat.git
@@ -45,10 +53,6 @@ install:
   - cd ../pysatSpaceWeather
   # install pysatSpaceWeather
   - python setup.py install
-
-# command to run tests
-script:
- - pytest -vs --flake8 --cov=pysatSpaceWeather/
 
 after_success:
  - coveralls --rcfile=setup.cfg

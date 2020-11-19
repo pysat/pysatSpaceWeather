@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added real-time ACE instrument
 - Fixed bugs introduced by changes in pysat-3.0
 - Added user documentation
-
+- Simplified setup and testing environments
 
 ## [0.0.1] - 2020-08-13
 - Initial port of existing routines from pysat

@@ -4,15 +4,10 @@ Supported Instruments
 ACE
 ---
 
-Supports the SAMI2 (Sami2 is Another Model of the Ionosphere) model through the
-sami2py interface. Sami2py is a python module that runs the SAMI2 model, as well
-as archives, loads and plots the resulting modeled values. SAMI2 is a model
-developed by the Naval Research Laboratory to simulate the motions of plasma
-in a 2D ionospheric environment along a dipole magnetic field [Huba et al, 2000].
-Information about this model can be found at the
-`sami2py github page <https://github.com/sami2py/sami2py>`_,
-along with a list of
-`references <https://sami2py.readthedocs.io/en/latest/introduction.html#references>`_.
+Supports ACE Magnetometer data provided by the Space Weather Prediction Center
+(SWPC) for use as real-time and historic measures of the solar wind.
+Information about this data set can be found at the
+`SWPC ACE Solar-Wind page <https://www.swpc.noaa.gov/products/ace-real-time-solar-wind>`_.
 
 .. automodule:: pysatSpaceWeather.instruments.sw_ace
    :members:
@@ -20,12 +15,12 @@ along with a list of
 Dst
 ---
 
-Supports the UCAR (University Corporation for Atmospheric Research) model,
-Thermosphere-Ionosphere-Electrodynamics General Circulation Model (TIE-GCM).
-Information about this model can be found at the
-`UCAR TIE-GCM website <https://www.hao.ucar.edu/modeling/tgcm/tie.php>`_,
-along with a list of the
-`principle papers <https://www.hao.ucar.edu/modeling/tgcm/TgcmPrincipalPapers.pdf>`_.
+The Disturbance Storm Time (Dst) Index is aa measure of magnetic activity
+associated with the ring current.  The National Geophysical Data Center (NGDC)
+maintains the
+`current database <https://www.ngdc.noaa.gov/stp/geomag/dst.html>`_ from which
+the Dst is downloaded.  You can learn more about the Dst Index at the
+`WDC Kyoto Observatory page <http://wdc.kugi.kyoto-u.ac.jp/dstdir/index.html>`_.
 
 .. automodule:: pysatSpaceWeather.instruments.sw_dst
    :members:
@@ -33,12 +28,11 @@ along with a list of the
 F \ :sub:`10.7`\
 ----------------
 
-Supports the UCAR (University Corporation for Atmospheric Research) model,
-Thermosphere-Ionosphere-Electrodynamics General Circulation Model (TIE-GCM).
-Information about this model can be found at the
-`UCAR TIE-GCM website <https://www.hao.ucar.edu/modeling/tgcm/tie.php>`_,
-along with a list of the
-`principle papers <https://www.hao.ucar.edu/modeling/tgcm/TgcmPrincipalPapers.pdf>`_.
+F \ :sub:`10.7`\ is the 10.7 cm radio solar flux (measured in solar flux units,
+sfu) `[Cortie 1912] <http://adsabs.harvard.edu/full/1912MNRAS..73...52C>`_.
+Historic indices, real-time indices, and forecasted indices are available from
+`LASP <http://lasp.colorado.edu/lisird/data/noaa_radio_flux/>`_ and
+`SWPC <https://www.swpc.noaa.gov/phenomena/f107-cm-radio-emissions>`_.
 
 .. automodule:: pysatSpaceWeather.instruments.sw_f107
    :members:
@@ -46,12 +40,9 @@ along with a list of the
 Kp
 ---
 
-Supports the UCAR (University Corporation for Atmospheric Research) model,
-Thermosphere-Ionosphere-Electrodynamics General Circulation Model (TIE-GCM).
-Information about this model can be found at the
-`UCAR TIE-GCM website <https://www.hao.ucar.edu/modeling/tgcm/tie.php>`_,
-along with a list of the
-`principle papers <https://www.hao.ucar.edu/modeling/tgcm/TgcmPrincipalPapers.pdf>`_.
+Kp is a geomagnetic index thaat reflects the magnitude of geomagnetic disturbances at Earth.  Historic, recent (last 30 days), and forecasted values are available from the German Research Centrefor Geosciences at Potsdam,
+`GFZ <https://www.gfz-potsdam.de/en/kp-index/>`_, and
+`SWPC <https://www.swpc.noaa.gov/products/planetary-k-index>`_.
 
 .. automodule:: pysatSpaceWeather.instruments.sw_kp
    :members:

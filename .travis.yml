@@ -41,7 +41,7 @@ install:
   # - while read requirement; do conda install --yes $requirement; done < requirements.txt1
   - conda install --yes numpy scipy pandas xarray requests netCDF4
   # Get latest coveralls from pip, not conda
-  - pip install -rtest_requirements.txt
+  - pip install -r test_requirements.txt
   # Custom pysat install
   - cd ..
   - git clone --single-branch --branch develop-3 https://github.com/pysat/pysat.git

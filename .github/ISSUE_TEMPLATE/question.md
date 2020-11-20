@@ -6,11 +6,11 @@ labels: question
 
 ---
 
-# Decription
+# Description
 A clear and concise summary of your query
 
 ## Example code (optional)
-If relevent, include sample code, images, or files so that others can understand
+If relevant, include sample code, images, or files so that others can understand
 the full context of your question.
 
 ## Configuration

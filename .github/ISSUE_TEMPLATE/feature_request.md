@@ -6,7 +6,7 @@ labels: enhancement
 
 ---
 
-# Decription
+# Description
 A clear and concise description of the new feature or behaviour you would like.
 
 ## Potential impact

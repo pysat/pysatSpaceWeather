@@ -28,9 +28,8 @@ of the National Science Foundation.
 
 import datetime as dt
 import ftplib
-import os
 import numpy as np
-
+import os
 import pandas as pds
 
 import pysat
@@ -103,7 +102,7 @@ def load(fnames, tag=None, inst_id=None):
     ---------
     data : pandas.DataFrame
         Object containing satellite data
-    meta : pysat.Meta
+    pysat.Meta
         Object containing metadata such as column names and units
 
     Note

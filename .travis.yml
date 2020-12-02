@@ -5,6 +5,11 @@ jobs:
     - name: '3.6'
       python: '3.6'
       script: pytest --cov=pysatSpaceWeather/
+    - name: 'docs'
+      python: '3.7'
+      script:
+        - sphinx-build -E -b html docs dist/docs
+        - sphinx-build -b linkcheck docs dist/docs
     - name: '3.7 with flake8'
       python: '3.7'
       script: pytest --flake8 --cov=pysatSpaceWeather/

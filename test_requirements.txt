@@ -1,6 +1,6 @@
 coveralls
 m2r2
-numpydocs
+numpydoc
 pytest-cov
 pytest-ordering
 pytest-flake8

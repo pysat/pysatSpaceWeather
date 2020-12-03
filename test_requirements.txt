@@ -1,4 +1,6 @@
 coveralls
+m2r2
+numpydocs
 pytest-cov
 pytest-ordering
 pytest-flake8

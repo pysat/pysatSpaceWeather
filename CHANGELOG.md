@@ -4,9 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.0.2] - 2020-XX-XX
 - Added real-time ACE instrument
-- Fixed bugs introduced by changes in pysat-3.0
+- Fixed bugs and restructured code to comply with changes in pysat-3.0
 - Added user documentation
 - Simplified setup and testing environments
+- Separated space seather methods into sub-modules by instrument
 
 ## [0.0.1] - 2020-08-13
 - Initial port of existing routines from pysat

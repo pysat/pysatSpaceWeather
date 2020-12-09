@@ -55,7 +55,7 @@ import warnings
 import pandas as pds
 import pysat
 
-from pysatSpaceWeather.instruments.methods import sw as mm_sw
+from pysatSpaceWeather.instruments.methods import f107 as mm_f107
 
 logger = pysat.logger
 
@@ -104,8 +104,8 @@ def init(self):
 
     """
 
-    self.acknowledgements = mm_sw.acknowledgements(self.name, self.tag)
-    self.references = mm_sw.references(self.name, self.tag)
+    self.acknowledgements = mm_f107.acknowledgements(self.name, self.tag)
+    self.references = mm_f107.references(self.name, self.tag)
     logger.info(self.acknowledgements)
     return
 

@@ -125,7 +125,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     # Initialize the output instrument
     f107_inst = pysat.Instrument()
-    f107_inst.inst_module = pysatSpaceWeather.instruments.sw_f107
+    f107_inst.inst_module = pysat_sw.instruments.sw_f107
     f107_inst.tag = tag
     f107_inst.date = start
     f107_inst.doy = int(start.strftime("%j"))
@@ -258,6 +258,6 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     # Update the metadata notes for this custom procedure
     notes += ", in that order"
-    f107_inst.meta.__setitem__('f107', {f107_inst.meta.notes_label: notes})
+    f107_inst.meta.__setitem__('f107', {f107_inst.meta.labels.notes: notes})
 
     return f107_inst

@@ -193,8 +193,8 @@ def load(fnames, tag=None, inst_id=None):
 
         # Kp comes in non-user friendly values like 2-, 2o, and 2+. Relate
         # these to 1.667, 2.0, 2.333 for processing and user friendliness
-        first = np.array([float(x[0]) for x in s])
-        flag = np.array([x[1] for x in s])
+        first = np.array([float(x[0]) for x in data_series])
+        flag = np.array([x[1] for x in data_series])
 
         ind, = np.where(flag == '+')
         first[ind] += 1.0 / 3.0

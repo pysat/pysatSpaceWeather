@@ -163,14 +163,14 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
                         round_ap(aa, fill_val=fill_val) for aa in ap_data])
 
     # Set the metadata
-    meta = pysat.Meta(labels=ap_data.meta.labels)
+    meta = pysat.Meta()
     meta['Kp'] = {meta.labels.name: 'Kp',
                   meta.labels.desc: 'Kp converted from {:}'.format(ap_name),
                   meta.labels.plot: 'Kp',
                   meta.labels.axis: 'Kp',
                   meta.labels.scale: 'linear',
                   meta.labels.min_val: 0,
-                  meta.labels.labels.max_val: 9,
+                  meta.labels.max_val: 9,
                   meta.labels.fill_val: fill_val,
                   meta.labels.notes: ''.join(
                       ['Kp converted from ', ap_name, 'as described at: ',
@@ -212,7 +212,7 @@ def convert_3hr_kp_to_ap(kp_inst):
         raise ValueError('unable to locate Kp data')
 
     # Convert from Kp to ap
-    fill_val = kp_inst.meta['Kp'][kp_inst.meta.fill_label]
+    fill_val = kp_inst.meta['Kp'][kp_inst.meta.labels.fill_val]
     ap_data = np.array([ap(kp) if kp != fill_val else fill_val
                         for kp in kp_inst['Kp']])
 
@@ -220,15 +220,15 @@ def convert_3hr_kp_to_ap(kp_inst):
     kp_inst['3hr_ap'] = pds.Series(ap_data, index=kp_inst.index)
 
     # Add metadata
-    meta_dict = {kp_inst.labels.meta.name: 'ap',
-                 kp_inst.labels.meta.desc: "3-hour ap (equivalent range) index",
-                 kp_inst.labels.meta.plot: "ap",
-                 kp_inst.labels.meta.axis: "ap",
-                 kp_inst.labels.meta.scale: 'linear',
-                 kp_inst.labels.meta.min_val: 0,
-                 kp_inst.labels.meta.max_val: 400,
-                 kp_inst.labels.meta.fill_val: fill_val,
-                 kp_inst.labels.meta.notes: ''.join(
+    meta_dict = {kp_inst.meta.labels.name: 'ap',
+                 kp_inst.meta.labels.desc: "3-hour ap (equivalent range) index",
+                 kp_inst.meta.labels.plot: "ap",
+                 kp_inst.meta.labels.axis: "ap",
+                 kp_inst.meta.labels.scale: 'linear',
+                 kp_inst.meta.labels.min_val: 0,
+                 kp_inst.meta.labels.max_val: 400,
+                 kp_inst.meta.labels.fill_val: fill_val,
+                 kp_inst.meta.labels.notes: ''.join(
                      ['ap converted from Kp as described at: ',
                       'at: https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html'])}
 
@@ -315,9 +315,9 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
                  ap_inst.meta.labels.max_val: 400,
                  ap_inst.meta.labels.fill_val:
                  ap_inst.meta[ap_name][ap_inst.meta.labels.fill_val],
-                 ap_inst.meta.notes_label: ''.join(['Ap daily mean calculated',
-                                                    ' from 3-hourly ap ',
-                                                    'indices'])}
+                 ap_inst.meta.labels.notes: ''.join(['Ap daily mean calculated',
+                                                     ' from 3-hourly ap ',
+                                                     'indices'])}
 
     ap_inst.meta[daily_name] = meta_dict
 
@@ -467,14 +467,13 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                                    "provide starting and ending times")))
 
     # Initialize the output instrument
-    kp_inst = pysat.Instrument(labels=all_inst[0].meta.labels)
+    kp_inst = pysat.Instrument(labels=all_inst[0].meta_labels)
     kp_inst.inst_module = pysat_sw.instruments.sw_kp
     kp_inst.tag = tag
     kp_inst.date = start
     kp_inst.doy = int(start.strftime("%j"))
-    kp_inst.meta = pysat.Meta(labels=kp_inst.meta.labels)
-    pysat_sw.instruments.sw_kp.initialize_kp_metadata(
-        kp_inst.meta, 'Kp', fill_val=fill_val)
+    kp_inst.meta = pysat.Meta(labels=kp_inst.meta_labels)
+    initialize_kp_metadata(kp_inst.meta, 'Kp', fill_val=fill_val)
 
     kp_times = list()
     kp_values = list()

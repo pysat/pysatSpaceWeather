@@ -313,7 +313,7 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
                  ap_inst.meta.labels.scale: 'linear',
                  ap_inst.meta.labels.min_val: 0,
                  ap_inst.meta.labels.max_val: 400,
-                 ap_inst.meta.labels.fill_vall:
+                 ap_inst.meta.labels.fill_val:
                  ap_inst.meta[ap_name][ap_inst.meta.labels.fill_val],
                  ap_inst.meta.notes_label: ''.join(['Ap daily mean calculated',
                                                     ' from 3-hourly ap ',

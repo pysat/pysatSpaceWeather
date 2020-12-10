@@ -34,7 +34,7 @@ def references(name, tag):
     """
 
     refs = {'dst': {'': ''.join([
-        'see referenece list and publication at: Sugiura M. and T. Kamei, '
+        'See referenece list and publication at: Sugiura M. and T. Kamei, '
         'http://wdc.kugi.kyoto-u.ac.jp/dstdir/dst2/onDstindex.html, ',
         'last updated June 1991, accessed Dec 2020'])}}
 

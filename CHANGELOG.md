@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed bugs and restructured code to comply with changes in pysat-3.0
 - Added user documentation
 - Simplified setup and testing environments
-- Separated space seather methods into sub-modules by instrument
+- Separated space weather methods into sub-modules by instrument
 
 ## [0.0.1] - 2020-08-13
 - Initial port of existing routines from pysat

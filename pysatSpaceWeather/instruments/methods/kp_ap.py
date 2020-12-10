@@ -374,7 +374,7 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None):
     for lind in ind:
         sind = sel_data.index[lind]
         eind = sind + pds.DateOffset(hours=filter_time)
-        inst.data[sind:eind] = np.nan
+        inst[sind:eind] = np.nan
         inst.data = inst.data.dropna(axis=0, how='all')
 
     return

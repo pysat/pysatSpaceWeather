@@ -33,7 +33,7 @@ import os
 import pandas as pds
 
 import pysat
-from pysatSpaceWeather.instruments.methods import sw as mm_sw
+from pysatSpaceWeather.instruments.methods import dst as mm_dst
 
 logger = pysat.logger
 
@@ -65,8 +65,8 @@ def init(self):
 
     """
 
-    self.acknowledgements = mm_sw.acknowledgements(self.name, self.tag)
-    self.references = mm_sw.references(self.name, self.tag)
+    self.acknowledgements = mm_dst.acknowledgements(self.name, self.tag)
+    self.references = mm_dst.references(self.name, self.tag)
     logger.info(self.acknowledgements)
     return
 
@@ -90,7 +90,7 @@ def load(fnames, tag=None, inst_id=None):
     """Load Kp index files
 
     Parameters
-    ------------
+    ----------
     fnames : pandas.Series
         Series of filenames
     tag : str or NoneType
@@ -99,7 +99,7 @@ def load(fnames, tag=None, inst_id=None):
         satellite id or None (default=None)
 
     Returns
-    ---------
+    -------
     data : pandas.DataFrame
         Object containing satellite data
     pysat.Meta
@@ -171,7 +171,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
     Parameters
-    -----------
+    ----------
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are '1min' and '5min'.
         (default=None)
@@ -186,12 +186,12 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
         formats associated with the supplied tags are used. (default=None)
 
     Returns
-    --------
+    -------
     pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
-    Notes
-    -----
+    Note
+    ----
     Called by pysat. Not intended for direct use by user.
 
     """
@@ -223,7 +223,7 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
     """Routine to download Dst index data
 
     Parameters
-    -----------
+    ----------
     tag : string or NoneType
         Denotes type of file to load.
         (default=None)
@@ -235,16 +235,18 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
         set in Instrument.files.data_path is used.  (default=None)
 
     Note
-    -----
+    ----
     Called by pysat. Not intended for direct use by user.
 
     """
-    # connect to host, default port
+    # Connect to host, default port
     ftp = ftplib.FTP('ftp.ngdc.noaa.gov')
-    # user anonymous, passwd anonymous@
+
+    # User anonymous, passwd anonymous@
     ftp.login()
     ftp.cwd('/STP/GEOMAGNETIC_DATA/INDICES/DST')
-    # data stored by year. Only download for unique set of input years.
+
+    # Data stored by year. Only download for unique set of input years.
     years = np.array([date.year for date in date_array])
     years = np.unique(years)
     for year in years:

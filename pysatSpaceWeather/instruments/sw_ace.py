@@ -114,7 +114,7 @@ def clean(self):
 
     # Replace all fill values with NaN
     for col in self.data.columns:
-        fill_val = self.meta[col][self.meta.fill_label]
+        fill_val = self.meta[col][self.meta.labels.fill_val]
         if ~np.isnan(fill_val):
             self.data[col] = self.data[col].replace(fill_val, np.nan)
 
@@ -198,141 +198,143 @@ def load(fnames, tag=None, inst_id=None):
 
     # Assign the meta data
     meta = pysat.Meta()
-    meta['jd'] = {meta.units_label: 'days',
-                  meta.name_label: 'MJD',
-                  meta.desc_label: 'Modified Julian Day'}
-    meta['sec'] = {meta.units_label: 's',
-                   meta.name_label: 'Sec of Day',
-                   meta.desc_label: 'Seconds of Julian Day'}
+    meta['jd'] = {meta.labels.units: 'days',
+                  meta.labels.name: 'MJD',
+                  meta.labels.desc: 'Modified Julian Day'}
+    meta['sec'] = {meta.labels.units: 's',
+                   meta.labels.name: 'Sec of Day',
+                   meta.labels.desc: 'Seconds of Julian Day'}
     status_desc = '0 = nominal data, 1 to 8 = bad data record, 9 = no data'
 
     if inst_id == 'mag':
-        meta['status'] = {meta.name_label: 'Status',
-                          meta.desc_label: status_desc}
-        meta['bx_gsm'] = {meta.units_label: 'nT',
-                          meta.name_label: 'Bx GSM',
-                          meta.desc_label: '1-min averaged IMF Bx',
-                          meta.fill_label: -999.9}
-        meta['by_gsm'] = {meta.units_label: 'nT',
-                          meta.name_label: 'By GSM',
-                          meta.desc_label: '1-min averaged IMF By',
-                          meta.fill_label: -999.9}
-        meta['bz_gsm'] = {meta.units_label: 'nT',
-                          meta.name_label: 'Bz GSM',
-                          meta.desc_label: '1-min averaged IMF Bz',
-                          meta.fill_label: -999.9}
-        meta['bt_gsm'] = {meta.units_label: 'nT',
-                          meta.name_label: 'Bt GSM',
-                          meta.desc_label: '1-min averaged IMF Bt',
-                          meta.fill_label: -999.9}
-        meta['lat_gsm'] = {meta.units_label: 'degrees',
-                           meta.name_label: 'GSM Lat',
-                           meta.desc_label: 'GSM Latitude',
-                           meta.fill_label: -999.9,
-                           meta.min_label: -90.0, meta.max_label: 90.0}
-        meta['lon_gsm'] = {meta.units_label: 'degrees',
-                           meta.name_label: 'GSM Lon',
-                           meta.desc_label: 'GSM Longitude',
-                           meta.fill_label: -999.9,
-                           meta.min_label: 0.0, meta.max_label: 360.0}
+        meta['status'] = {meta.labels.name: 'Status',
+                          meta.labels.desc: status_desc}
+        meta['bx_gsm'] = {meta.labels.units: 'nT',
+                          meta.labels.name: 'Bx GSM',
+                          meta.labels.desc: '1-min averaged IMF Bx',
+                          meta.labels.fill_val: -999.9}
+        meta['by_gsm'] = {meta.labels.units: 'nT',
+                          meta.labels.name: 'By GSM',
+                          meta.labels.desc: '1-min averaged IMF By',
+                          meta.labels.fill_val: -999.9}
+        meta['bz_gsm'] = {meta.labels.units: 'nT',
+                          meta.labels.name: 'Bz GSM',
+                          meta.labels.desc: '1-min averaged IMF Bz',
+                          meta.labels.fill_val: -999.9}
+        meta['bt_gsm'] = {meta.labels.units: 'nT',
+                          meta.labels.name: 'Bt GSM',
+                          meta.labels.desc: '1-min averaged IMF Bt',
+                          meta.labels.fill_val: -999.9}
+        meta['lat_gsm'] = {meta.labels.units: 'degrees',
+                           meta.labels.name: 'GSM Lat',
+                           meta.labels.desc: 'GSM Latitude',
+                           meta.labels.fill_val: -999.9,
+                           meta.labels.min_val: -90.0,
+                           meta.labels.max_val: 90.0}
+        meta['lon_gsm'] = {meta.labels.units: 'degrees',
+                           meta.labels.name: 'GSM Lon',
+                           meta.labels.desc: 'GSM Longitude',
+                           meta.labels.fill_val: -999.9,
+                           meta.labels.min_val: 0.0, meta.labels.max_val: 360.0}
     elif inst_id == 'epam':
         flux_desc = '5-min averaged Differential '
-        meta['status_e'] = {meta.name_label: 'Diff e- Flux Status',
-                            meta.desc_label: status_desc}
-        meta['status_p'] = {meta.name_label: 'Diff Proton Flux Status',
-                            meta.desc_label: status_desc}
-        meta['anis_ind'] = {meta.name_label: 'Anisotropy Index',
-                            meta.desc_label: 'Range: 0.0 - 2.0',
-                            meta.fill_label: -1.0}
-        meta['eflux_38-53'] = {meta.units_label: 'particles/cm2-s-ster-MeV',
-                               meta.name_label: 'Diff e- Flux 38-53 eV',
-                               meta.desc_label:
+        meta['status_e'] = {meta.labels.name: 'Diff e- Flux Status',
+                            meta.labels.desc: status_desc}
+        meta['status_p'] = {meta.labels.name: 'Diff Proton Flux Status',
+                            meta.labels.desc: status_desc}
+        meta['anis_ind'] = {meta.labels.name: 'Anisotropy Index',
+                            meta.labels.desc: 'Range: 0.0 - 2.0',
+                            meta.labels.fill_val: -1.0}
+        meta['eflux_38-53'] = {meta.labels.units: 'particles/cm2-s-ster-MeV',
+                               meta.labels.name: 'Diff e- Flux 38-53 eV',
+                               meta.labels.desc:
                                ''.join([flux_desc,
                                         'Electron Flux between 35-53 eV']),
-                               meta.fill_label: -1.0e5}
-        meta['eflux_175-315'] = {meta.units_label: 'particles/cm2-s-ster-MeV',
-                                 meta.name_label: 'Diff e- Flux 175-315 eV',
-                                 meta.desc_label:
+                               meta.labels.fill_val: -1.0e5}
+        meta['eflux_175-315'] = {meta.labels.units: 'particles/cm2-s-ster-MeV',
+                                 meta.labels.name: 'Diff e- Flux 175-315 eV',
+                                 meta.labels.desc:
                                  ''.join([flux_desc,
                                           'Electron Flux between 175-315 eV']),
-                                 meta.fill_label: -1.0e5}
-        meta['pflux_47-68'] = {meta.units_label: 'particles/cm2-s-ster-MeV',
-                               meta.name_label: 'Diff Proton Flux 47-68 keV',
-                               meta.desc_label:
+                                 meta.labels.fill_val: -1.0e5}
+        meta['pflux_47-68'] = {meta.labels.units: 'particles/cm2-s-ster-MeV',
+                               meta.labels.name: 'Diff Proton Flux 47-68 keV',
+                               meta.labels.desc:
                                ''.join([flux_desc,
                                         'Proton Flux between 47-68 keV']),
-                               meta.fill_label: -1.0e5}
-        meta['pflux_115-195'] = {meta.units_label: 'particles/cm2-s-ster-MeV',
-                                 meta.name_label:
+                               meta.labels.fill_val: -1.0e5}
+        meta['pflux_115-195'] = {meta.labels.units: 'particles/cm2-s-ster-MeV',
+                                 meta.labels.name:
                                  'Diff Proton Flux 115-195 keV',
-                                 meta.desc_label:
+                                 meta.labels.desc:
                                  ''.join([flux_desc,
                                           'Proton Flux between 115-195 keV']),
-                                 meta.fill_label: -1.0e5}
-        meta['pflux_310-580'] = {meta.units_label: 'particles/cm2-s-ster-MeV',
-                                 meta.name_label:
+                                 meta.labels.fill_val: -1.0e5}
+        meta['pflux_310-580'] = {meta.labels.units: 'particles/cm2-s-ster-MeV',
+                                 meta.labels.name:
                                  'Diff Proton Flux 310-580 keV',
-                                 meta.desc_label:
+                                 meta.labels.desc:
                                  ''.join([flux_desc,
                                           'Proton Flux between 310-580 keV']),
-                                 meta.fill_label: -1.0e5}
-        meta['pflux_795-1193'] = {meta.units_label: 'particles/cm2-s-ster-MeV',
-                                  meta.name_label:
+                                 meta.labels.fill_val: -1.0e5}
+        meta['pflux_795-1193'] = {meta.labels.units: 'particles/cm2-s-ster-MeV',
+                                  meta.labels.name:
                                   'Diff Proton Flux 795-1193 keV',
-                                  meta.desc_label:
+                                  meta.labels.desc:
                                   ''.join([flux_desc,
                                            'Proton Flux between 795-1193 ',
                                            'keV']),
-                                  meta.fill_label: -1.0e5}
-        meta['pflux_1060-1900'] = {meta.units_label: 'particles/cm2-s-ster-MeV',
-                                   meta.name_label:
+                                  meta.labels.fill_val: -1.0e5}
+        meta['pflux_1060-1900'] = {meta.labels.units:
+                                   'particles/cm2-s-ster-MeV',
+                                   meta.labels.name:
                                    'Diff Proton Flux 1060-1900 keV',
-                                   meta.desc_label:
+                                   meta.labels.desc:
                                    ''.join([flux_desc,
                                             'Proton Flux between 1060-1900',
                                             ' keV']),
-                                   meta.fill_label: -1.0e5}
+                                   meta.labels.fill_val: -1.0e5}
     elif inst_id == "swepam":
         sw_desc = '1-min averaged Solar Wind '
-        meta['status'] = {meta.name_label: 'Status',
-                          meta.desc_label: status_desc}
-        meta['sw_proton_dens'] = {meta.units_label: 'p/cc',
-                                  meta.name_label: 'Solar Wind Proton Density',
-                                  meta.desc_label: ''.join([sw_desc,
+        meta['status'] = {meta.labels.name: 'Status',
+                          meta.labels.desc: status_desc}
+        meta['sw_proton_dens'] = {meta.labels.units: 'p/cc',
+                                  meta.labels.name: 'Solar Wind Proton Density',
+                                  meta.labels.desc: ''.join([sw_desc,
                                                             'Proton Density']),
-                                  meta.fill_label: -9999.9}
-        meta['sw_bulk_speed'] = {meta.units_label: 'km/s',
-                                 meta.name_label: 'Solar Wind Bulk Speed',
-                                 meta.desc_label: ''.join([sw_desc,
+                                  meta.labels.fill_val: -9999.9}
+        meta['sw_bulk_speed'] = {meta.labels.units: 'km/s',
+                                 meta.labels.name: 'Solar Wind Bulk Speed',
+                                 meta.labels.desc: ''.join([sw_desc,
                                                            'Bulk Speed']),
-                                 meta.fill_label: -9999.9}
-        meta['sw_ion_temp'] = {meta.units_label: 'K',
-                               meta.name_label: 'Solar Wind Ti',
-                               meta.desc_label: ''.join([sw_desc,
+                                 meta.labels.fill_val: -9999.9}
+        meta['sw_ion_temp'] = {meta.labels.units: 'K',
+                               meta.labels.name: 'Solar Wind Ti',
+                               meta.labels.desc: ''.join([sw_desc,
                                                          'Ion Temperature']),
-                               meta.fill_label: -1.0e5}
+                               meta.labels.fill_val: -1.0e5}
     elif inst_id == 'sis':
         flux_name = 'Integral Proton Flux'
-        meta['status_10'] = {meta.name_label: ''.join([flux_name,
+        meta['status_10'] = {meta.labels.name: ''.join([flux_name,
                                                        ' > 10 MeV Status']),
-                             meta.desc_label: status_desc}
-        meta['status_30'] = {meta.name_label: ''.join([flux_name,
+                             meta.labels.desc: status_desc}
+        meta['status_30'] = {meta.labels.name: ''.join([flux_name,
                                                        ' > 30 MeV Status']),
-                             meta.desc_label: status_desc}
-        meta['int_pflux_10MeV'] = {meta.units_label: 'p/cs2-sec-ster',
-                                   meta.name_label: ''.join([flux_name,
+                             meta.labels.desc: status_desc}
+        meta['int_pflux_10MeV'] = {meta.labels.units: 'p/cs2-sec-ster',
+                                   meta.labels.name: ''.join([flux_name,
                                                              ' > 10 MeV']),
-                                   meta.desc_label: ''.join(['5-min averaged ',
+                                   meta.labels.desc: ''.join(['5-min averaged ',
                                                              flux_name,
                                                              ' > 10 MeV']),
-                                   meta.fill_label: -1.0e5}
-        meta['int_pflux_30MeV'] = {meta.units_label: 'p/cs2-sec-ster',
-                                   meta.name_label: ''.join([flux_name,
+                                   meta.labels.fill_val: -1.0e5}
+        meta['int_pflux_30MeV'] = {meta.labels.units: 'p/cs2-sec-ster',
+                                   meta.labels.name: ''.join([flux_name,
                                                              ' > 30 MeV']),
-                                   meta.desc_label: ''.join(['5-min averaged ',
+                                   meta.labels.desc: ''.join(['5-min averaged ',
                                                              flux_name,
                                                              ' > 30 MeV']),
-                                   meta.fill_label: -1.0e5}
+                                   meta.labels.fill_val: -1.0e5}
     else:
         raise ValueError('unknown inst_id {:}'.format(inst_id))
 

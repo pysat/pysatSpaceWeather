@@ -43,7 +43,9 @@ Historic indices, real-time indices, and forecasted indices are available from
 Kp
 ---
 
-Kp is a geomagnetic index thaat reflects the magnitude of geomagnetic disturbances at Earth.  Historic, recent (last 30 days), and forecasted values are available from the German Research Centrefor Geosciences at Potsdam,
+Kp is a geomagnetic index thaat reflects the magnitude of geomagnetic
+disturbances at Earth.  Historic, recent (last 30 days), and forecasted values
+are available from the German Research Centrefor Geosciences at Potsdam,
 `GFZ <https://www.gfz-potsdam.de/en/kp-index/>`_, and the
 `SWPC Kp page <https://www.swpc.noaa.gov/products/planetary-k-index>`_.
 

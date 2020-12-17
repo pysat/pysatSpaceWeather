@@ -114,7 +114,7 @@ def clean(self):
 
     # Replace all fill values with NaN
     for col in self.data.columns:
-        fill_val = self.meta[col][self.meta.fill_val]
+        fill_val = self.meta[col][self.meta.labels.fill_val]
         if ~np.isnan(fill_val):
             self.data[col] = self.data[col].replace(fill_val, np.nan)
 

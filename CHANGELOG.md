@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.2] - 2020-XX-XX
+## [0.0.2] - 2021-01-11
 - Added real-time ACE instrument
 - Fixed bugs and restructured code to comply with changes in pysat-3.0
 - Added user documentation

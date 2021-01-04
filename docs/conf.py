@@ -55,8 +55,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pysatSpaceWeather'
-copyright = u'2020, Angeline G Burrell, Jeffery Klenzing, Russell Stoneback'
-author = u'Angeline G Burrell, Jeffery Klenzing, Russell Stoneback, Asher Pembroke, Carey Spance'
+copyright = u'2020, Angeline G Burrell, Jeffrey Klenzing, Russell Stoneback'
+author = u'Angeline G Burrell, Jeffrey Klenzing, Russell Stoneback, Asher Pembroke, Carey Spance'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -136,7 +136,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'pysatSpaceWeather.tex', u'pysatSpaceWeather Documentation',
-     u'Angeline G Burrell, Russel Stoneback, and Jeffery Klenzing', 'manual'),
+     u'Angeline G Burrell, Russel Stoneback, and Jeffrey Klenzing', 'manual'),
 ]
 
 

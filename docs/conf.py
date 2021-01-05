@@ -136,7 +136,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'pysatSpaceWeather.tex', u'pysatSpaceWeather Documentation',
-     u'Angeline G Burrell, Russel Stoneback, and Jeffrey Klenzing', 'manual'),
+     u'Angeline G Burrell, Jeffrey Klenzing, and Russell Stoneback', 'manual'),
 ]
 
 

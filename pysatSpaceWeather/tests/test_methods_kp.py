@@ -92,10 +92,6 @@ class TestSWKp():
         assert self.testInst.meta['Kp'][self.testInst.meta.labels.name] == 'Kp'
         assert self.testInst.meta['Kp'][
             self.testInst.meta.labels.desc] == 'Planetary K-index'
-        assert self.testInst.meta['Kp'][self.testInst.meta.labels.plot] == 'Kp'
-        assert self.testInst.meta['Kp'][self.testInst.meta.labels.axis] == 'Kp'
-        assert self.testInst.meta['Kp'][
-            self.testInst.meta.labels.scale] == 'linear'
         assert self.testInst.meta['Kp'][self.testInst.meta.labels.min_val] == 0
         assert self.testInst.meta['Kp'][self.testInst.meta.labels.max_val] == 9
         assert self.testInst.meta['Kp'][
@@ -109,9 +105,6 @@ class TestSWKp():
         assert self.testMeta['Kp'][self.testMeta.labels.name] == 'Kp'
         assert(self.testMeta['Kp'][self.testMeta.labels.desc]
                == 'Planetary K-index')
-        assert self.testMeta['Kp'][self.testMeta.labels.plot] == 'Kp'
-        assert self.testMeta['Kp'][self.testMeta.labels.axis] == 'Kp'
-        assert self.testMeta['Kp'][self.testMeta.labels.scale] == 'linear'
         assert self.testMeta['Kp'][self.testMeta.labels.min_val] == 0
         assert self.testMeta['Kp'][self.testMeta.labels.max_val] == 9
         assert self.testMeta['Kp'][self.testMeta.labels.fill_val] == -1
@@ -131,10 +124,6 @@ class TestSWKp():
         assert self.testInst.meta[dkey][self.testInst.meta.labels.name] == dkey
         assert(self.testInst.meta[dkey][self.testInst.meta.labels.desc]
                == 'Planetary K-index')
-        assert(self.testInst.meta[dkey][self.testInst.meta.labels.plot]
-               == 'High lat Kp')
-        assert(self.testInst.meta[dkey][self.testInst.meta.labels.axis]
-               == 'High lat Kp')
         del dkey
 
     def test_convert_ap_to_kp(self):
@@ -405,9 +394,6 @@ class TestSWAp():
                           self.testInst.meta.labels.name: 'ap',
                           self.testInst.meta.labels.desc:
                           "3-hour ap (equivalent range) index",
-                          self.testInst.meta.labels.plot: "ap",
-                          self.testInst.meta.labels.axis: "ap",
-                          self.testInst.meta.labels.scale: 'linear',
                           self.testInst.meta.labels.min_val: 0,
                           self.testInst.meta.labels.max_val: 400,
                           self.testInst.meta.labels.fill_val: np.nan,

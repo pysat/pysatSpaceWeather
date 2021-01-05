@@ -86,9 +86,6 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
 
     """
 
-    data_label = data_key.replace("_", " ")
-    format_label = data_label[0].upper() + data_label[1:]
-
     meta[data_key] = {meta.labels.name: data_key,
                       meta.labels.desc: "Planetary K-index",
                       meta.labels.min_val: 0,

@@ -158,7 +158,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
             if np.any(good_times):
                 if fill_val is None:
                     f107_inst.meta = standard_inst.meta
-                    fill_val = f107_inst.meta['f107'].fill
+                    fill_val = f107_inst.meta['f107'][
+                        f107_inst.meta.labels.fill_val]
 
                 good_vals = standard_inst['f107'][good_times] != fill_val
                 new_times = list(standard_inst.index[good_times][good_vals])
@@ -191,7 +192,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                 # Check in case there was a problem with the standard data
                 if fill_val is None:
                     f107_inst.meta = forecast_inst.meta
-                    fill_val = f107_inst.meta['f107'].fill
+                    fill_val = f107_inst.meta['f107'][
+                        f107_inst.meta.labels.fill_val]
 
                 # Determine which times to save
                 good_times = ((forecast_inst.index >= itime)
@@ -258,6 +260,6 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     # Update the metadata notes for this custom procedure
     notes += ", in that order"
-    f107_inst.meta.__setitem__('f107', {f107_inst.meta.labels.notes: notes})
+    f107_inst.meta['f107'] = {f107_inst.meta.labels.notes: notes}
 
     return f107_inst

@@ -260,6 +260,6 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     # Update the metadata notes for this custom procedure
     notes += ", in that order"
-    f107_inst['f107'] = {f107_inst.meta.labels.notes: notes}
+    f107_inst.meta['f107'] = {f107_inst.meta.labels.notes: notes}
 
     return f107_inst

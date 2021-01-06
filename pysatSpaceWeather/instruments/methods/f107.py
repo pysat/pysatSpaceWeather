@@ -159,7 +159,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                 if fill_val is None:
                     f107_inst.meta = standard_inst.meta
                     fill_val = f107_inst.meta['f107'][
-                        f107_inst.meta.labels.fill_value]
+                        f107_inst.meta.labels.fill_val]
 
                 good_vals = standard_inst['f107'][good_times] != fill_val
                 new_times = list(standard_inst.index[good_times][good_vals])
@@ -193,7 +193,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                 if fill_val is None:
                     f107_inst.meta = forecast_inst.meta
                     fill_val = f107_inst.meta['f107'][
-                        f107_inst.meta.labels.fill_value]
+                        f107_inst.meta.labels.fill_val]
 
                 # Determine which times to save
                 good_times = ((forecast_inst.index >= itime)

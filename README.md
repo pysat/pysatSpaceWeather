@@ -69,6 +69,7 @@ instrument.
 
 ```
 import pysat
+import pysatSpaceWeather
 from pysatSpaceWeather.instruments import sw_dst
 
 dst = pysat.Instrument(inst_module=sw_dst)
@@ -79,7 +80,6 @@ instruments.  This only needs to be done the first time you load an instrument.
 Afterward, pysat will identify them using the `platform` and `name` keywords.
 
 ```
-import pysat
 
 pysat.utils.registry.register('pysatSpaceWeather.instruments.sw_dst')
 dst = pysat.Instrument('sw', 'dst')

@@ -12,7 +12,7 @@ def acknowledgements(name, tag):
     name : string
         Name of space weather index, eg, dst, f107, kp
     tag : string
-        Tag of the space waether index
+        Tag of the space weather index
 
     """
 
@@ -29,7 +29,7 @@ def references(name, tag):
     name : string
         Name of space weather index, eg, dst, f107, kp
     tag : string
-        Tag of the space waether index
+        Tag of the space weather index
 
     """
 

@@ -16,7 +16,7 @@ Information about this data set can be found at the
 Dst
 ---
 
-The Disturbance Storm Time (Dst) Index is aa measure of magnetic activity
+The Disturbance Storm Time (Dst) Index is a measure of magnetic activity
 associated with the ring current.  The National Geophysical Data Center (NGDC)
 maintains the
 `current database <https://www.ngdc.noaa.gov/stp/geomag/dst.html>`_ from which
@@ -43,9 +43,9 @@ Historic indices, real-time indices, and forecasted indices are available from
 Kp
 ---
 
-Kp is a geomagnetic index thaat reflects the magnitude of geomagnetic
+Kp is a geomagnetic index that reflects the magnitude of geomagnetic
 disturbances at Earth.  Historic, recent (last 30 days), and forecasted values
-are available from the German Research Centrefor Geosciences at Potsdam,
+are available from the German Research Centre for Geosciences at Potsdam,
 `GFZ <https://www.gfz-potsdam.de/en/kp-index/>`_, and the
 `SWPC Kp page <https://www.swpc.noaa.gov/products/planetary-k-index>`_.
 

@@ -14,7 +14,7 @@ operational projects.
 
 # Installation
 
-The following instructions will allow you to install pysatSpaceWeather and give
+The following instructions provide a guide for installing pysatSpaceWeather and give
 some examples on how to use the routines
 
 ### Prerequisites

@@ -27,26 +27,34 @@ of the National Science Foundation.
 """
 
 import datetime as dt
-import logging
 import ftplib
-import os
 import numpy as np
-import sys
-
+import os
 import pandas as pds
 
 import pysat
-from pysatSpaceWeather.instruments.methods import sw as mm_sw
+from pysatSpaceWeather.instruments.methods import dst as mm_dst
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
+
+# ----------------------------------------------------------------------------
+# Instrument attributes
 
 platform = 'sw'
 name = 'dst'
 tags = {'': ''}
-sat_ids = {'': ['']}
+inst_ids = {'': ['']}
+
+# ----------------------------------------------------------------------------
+# Instrument test attributes
+
 _test_dates = {'': {'': dt.datetime(2007, 1, 1)}}
+
 # Other tags assumed to be True
 _test_download_travis = {'': {'': False}}
+
+# ----------------------------------------------------------------------------
+# Instrument methods
 
 
 def init(self):
@@ -57,29 +65,44 @@ def init(self):
 
     """
 
-    self.acknowledgements = mm_sw.acknowledgements(self.name, self.tag)
-    self.references = mm_sw.references(self.name, self.tag)
+    self.acknowledgements = mm_dst.acknowledgements(self.name, self.tag)
+    self.references = mm_dst.references(self.name, self.tag)
     logger.info(self.acknowledgements)
     return
 
 
-def load(fnames, tag=None, sat_id=None):
+def clean(self):
+    """ Cleaning function for Dst
+
+    Note
+    ----
+    No necessary for the Dst index
+
+    """
+    return
+
+
+# ----------------------------------------------------------------------------
+# Instrument functions
+
+
+def load(fnames, tag=None, inst_id=None):
     """Load Kp index files
 
     Parameters
-    ------------
+    ----------
     fnames : pandas.Series
         Series of filenames
     tag : str or NoneType
         tag or None (default=None)
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         satellite id or None (default=None)
 
     Returns
-    ---------
+    -------
     data : pandas.DataFrame
         Object containing satellite data
-    meta : pysat.Meta
+    pysat.Meta
         Object containing metadata such as column names and units
 
     Note
@@ -94,9 +117,9 @@ def load(fnames, tag=None, sat_id=None):
     for filename in fnames:
         # need to remove date appended to dst filename
         fname = filename[0:-11]
-        # f = open(fname)
-        with open(fname) as f:
-            lines = f.readlines()
+        all_data = []
+        with open(fname) as open_f:
+            lines = open_f.readlines()
             idx = 0
             # check if all lines are good
             max_lines = 0
@@ -125,8 +148,6 @@ def load(fnames, tag=None, sat_id=None):
                     dst[idx:idx + 24] = temp2
                     idx += 24
 
-            # f.close()
-
             start = dt.datetime(yr[0], mo[0], day[0], ut[0])
             stop = dt.datetime(yr[-1], mo[-1], day[-1], ut[-1])
             dates = pds.date_range(start, stop, freq='H')
@@ -139,20 +160,22 @@ def load(fnames, tag=None, sat_id=None):
                                + pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx, :]
             # add specific day to all data loaded for filenames
-            data = pds.concat([data, new_data], sort=True, axis=0)
+            all_data.append(new_data)
+        # combine data together
+        data = pds.concat(all_data, sort=True, axis=0)
 
     return data, pysat.Meta()
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
     Parameters
-    -----------
+    ----------
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are '1min' and '5min'.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -163,12 +186,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         formats associated with the supplied tags are used. (default=None)
 
     Returns
-    --------
+    -------
     pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
-    Notes
-    -----
+    Note
+    ----
     Called by pysat. Not intended for direct use by user.
 
     """
@@ -196,15 +219,15 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                   'routine for Dst')))
 
 
-def download(date_array, tag, sat_id, data_path, user=None, password=None):
+def download(date_array, tag, inst_id, data_path, user=None, password=None):
     """Routine to download Dst index data
 
     Parameters
-    -----------
+    ----------
     tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -212,31 +235,35 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         set in Instrument.files.data_path is used.  (default=None)
 
     Note
-    -----
+    ----
     Called by pysat. Not intended for direct use by user.
 
     """
+    # Connect to host, default port
+    ftp = ftplib.FTP('ftp.ngdc.noaa.gov')
 
-    ftp = ftplib.FTP('ftp.ngdc.noaa.gov')  # connect to host, default port
-    ftp.login()  # user anonymous, passwd anonymous@
+    # User anonymous, passwd anonymous@
+    ftp.login()
     ftp.cwd('/STP/GEOMAGNETIC_DATA/INDICES/DST')
 
-    for date in date_array:
-        fname = 'dst{year:02d}.txt'
-        fname = fname.format(year=date.year)
-        local_fname = fname
-        saved_fname = os.path.join(data_path, local_fname)
+    # Data stored by year. Only download for unique set of input years.
+    years = np.array([date.year for date in date_array])
+    years = np.unique(years)
+    for year in years:
+        fname_root = 'dst{year:04d}.txt'
+        fname = fname_root.format(year=year)
+        saved_fname = os.path.join(data_path, fname)
         try:
-            logger.info(''.join(['Downloading file for ', date.strftime('%D')]))
-            sys.stdout.flush()
-            ftp.retrbinary('RETR ' + fname, open(saved_fname, 'wb').write)
+            logger.info('Downloading file for {year:04d}'.format(year=year))
+            with open(saved_fname, 'wb') as fp:
+                ftp.retrbinary('RETR ' + fname, fp.write)
         except ftplib.error_perm as exception:
-            # if exception[0][0:3] != '550':
             if str(exception.args[0]).split(" ", 1)[0] != '550':
                 raise
             else:
+                # file not present
                 os.remove(saved_fname)
-                logger.info('File not available for ' + date.strftime('%D'))
+                logger.info('File not available for {:04d}'.format(year))
 
     ftp.close()
     return

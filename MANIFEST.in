@@ -3,6 +3,7 @@ include *.f
 include *.c
 recursive-include pysatSpaceWeather *.py
 include *.md
+include *.txt
 include description.txt
 include LICENSE
 include pysatSpaceWeather/version.txt

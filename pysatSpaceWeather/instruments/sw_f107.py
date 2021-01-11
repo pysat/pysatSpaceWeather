@@ -46,7 +46,6 @@ is not appropriate for 'forecast' data.
 import datetime as dt
 import ftplib
 import json
-import logging
 import numpy as np
 import os
 import requests
@@ -54,11 +53,14 @@ import sys
 import warnings
 
 import pandas as pds
-
 import pysat
-from pysatSpaceWeather.instruments.methods import sw as mm_sw
 
-logger = logging.getLogger(__name__)
+from pysatSpaceWeather.instruments.methods import f107 as mm_f107
+
+logger = pysat.logger
+
+# ----------------------------------------------------------------------------
+# Instrument attributes
 
 platform = 'sw'
 name = 'f107'
@@ -68,22 +70,31 @@ tags = {'': 'Daily LASP value of F10.7',
         'daily': 'Daily SWPC solar indices (contains last 30 days)',
         'forecast': 'SWPC Forecast F107 data next (3 days)',
         '45day': 'Air Force 45-day Forecast'}
-# dict keyed by sat_id that lists supported tags for each sat_id
-sat_ids = {'': ['', 'all', 'prelim', 'daily', 'forecast', '45day']}
-# dict keyed by sat_id that lists supported tags and a good day of test data
+
+# dict keyed by inst_id that lists supported tags for each inst_id
+inst_ids = {'': ['', 'all', 'prelim', 'daily', 'forecast', '45day']}
+
+# dict keyed by inst_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
 now = dt.datetime.now()
 today = dt.datetime(now.year, now.month, now.day)
 tomorrow = today + pds.DateOffset(days=1)
-# set test dates
+
+# ----------------------------------------------------------------------------
+# Instrument test attributes
+
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'all': dt.datetime(2009, 1, 1),
                     'prelim': dt.datetime(2009, 1, 1),
                     'daily': tomorrow,
                     'forecast': tomorrow,
                     '45day': tomorrow}}
+
 # Other tags assumed to be True
 _test_download_travis = {'': {'prelim': False}}
+
+# ----------------------------------------------------------------------------
+# Instrument methods
 
 
 def init(self):
@@ -91,118 +102,126 @@ def init(self):
 
     Runs once upon instantiation.
 
-
     """
 
-    self.acknowledgements = mm_sw.acknowledgements(self.name, self.tag)
-    self.references = mm_sw.references(self.name, self.tag)
+    self.acknowledgements = mm_f107.acknowledgements(self.name, self.tag)
+    self.references = mm_f107.references(self.name, self.tag)
     logger.info(self.acknowledgements)
     return
 
 
-def load(fnames, tag=None, sat_id=None):
+def clean(self):
+    """ Cleaning function for Space Weather indices
+
+    Note
+    ----
+    F10.7 doesn't require cleaning
+    """
+    return
+
+
+# ----------------------------------------------------------------------------
+# Instrument functions
+
+
+def load(fnames, tag=None, inst_id=None):
     """Load F10.7 index files
 
     Parameters
-    ------------
+    ----------
     fnames : pandas.Series
         Series of filenames
     tag : str or NoneType
         tag or None (default=None)
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         satellite id or None (default=None)
 
     Returns
-    ---------
+    -------
     data : pandas.DataFrame
         Object containing satellite data
     meta : pysat.Meta
         Object containing metadata such as column names and units
 
     Note
-    -----
+    ----
     Called by pysat. Not intended for direct use by user.
 
     """
-
-    if tag == '':
-        # f107 data stored monthly, need to return data daily
-        # the daily date is attached to filename
-        # parse off the last date, load month of data, downselect to desired
-        # day
-        date = dt.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
-        data = pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True)
-        idx, = np.where((data.index >= date)
-                        & (data.index < date + pds.DateOffset(days=1)))
-        result = data.iloc[idx, :]
-    elif tag == 'all':
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-    elif tag == 'daily' or tag == 'prelim':
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-    elif tag == 'forecast':
-        # load forecast data
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-    elif tag == '45day':
-        # load forecast data
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
+    all_file_results = []
+    for fname in fnames:
+        if tag == '':
+            # F10.7 data is stored monthly an pysat needs daily data.  The
+            # daily date is attached to filename.  Parse off the last date,
+            # load month of data, downselect to desired day
+            date = dt.datetime.strptime(fname[-10:], '%Y-%m-%d')
+            data = pds.read_csv(fname[0:-11], index_col=0, parse_dates=True)
+            idx, = np.where((data.index >= date)
+                            & (data.index < date + pds.DateOffset(days=1)))
+            result = data.iloc[idx, :]
+        elif tag in ['all', 'daily', 'prelim', 'forecast', '45day']:
+            result = pds.read_csv(fname, index_col=0, parse_dates=True)
+        all_file_results.append(result)
+    # combine loaded data together
+    result = pds.concat(all_file_results, axis=0, sort=True)
 
     meta = pysat.Meta()
-    meta['f107'] = {meta.units_label: 'SFU',
-                    meta.name_label: 'F10.7 cm solar index',
-                    meta.desc_label:
+    meta['f107'] = {meta.labels.units: 'SFU',
+                    meta.labels.name: 'F10.7 cm solar index',
+                    meta.labels.desc:
                     'F10.7 cm radio flux in Solar Flux Units (SFU)'}
 
     if tag == '45day':
-        meta['ap'] = {meta.name_label: 'Daily Ap index',
-                      meta.desc_label: 'Daily average of 3-h ap indices'}
+        meta['ap'] = {meta.labels.name: 'Daily Ap index',
+                      meta.labels.desc: 'Daily average of 3-h ap indices'}
     elif tag == 'daily' or tag == 'prelim':
-        meta['ssn'] = {meta.name_label: 'Sunspot Number',
-                       meta.desc_label: 'SESC Sunspot Number',
-                       meta.fill_label: -999}
-        meta['ss_area'] = {meta.name_label: 'Sunspot Area',
-                           meta.desc_label: 'Sunspot Area 10$^6$ Hemisphere',
-                           meta.fill_label: -999}
-        meta['new_reg'] = {meta.name_label: 'New Regions',
-                           meta.desc_label: 'New active solar regions',
-                           meta.fill_label: -999}
-        meta['smf'] = {meta.name_label: 'Solar Mean Field',
-                       meta.desc_label: 'Standford Solar Mean Field',
-                       meta.fill_label: -999}
-        meta['goes_bgd_flux'] = {meta.name_label: 'X-ray Background Flux',
-                                 meta.desc_label:
+        meta['ssn'] = {meta.labels.name: 'Sunspot Number',
+                       meta.labels.desc: 'SESC Sunspot Number',
+                       meta.labels.fill_val: -999}
+        meta['ss_area'] = {meta.labels.name: 'Sunspot Area',
+                           meta.labels.desc: 'Sunspot Area 10$^6$ Hemisphere',
+                           meta.labels.fill_val: -999}
+        meta['new_reg'] = {meta.labels.name: 'New Regions',
+                           meta.labels.desc: 'New active solar regions',
+                           meta.labels.fill_val: -999}
+        meta['smf'] = {meta.labels.name: 'Solar Mean Field',
+                       meta.labels.desc: 'Standford Solar Mean Field',
+                       meta.labels.fill_val: -999}
+        meta['goes_bgd_flux'] = {meta.labels.name: 'X-ray Background Flux',
+                                 meta.labels.desc:
                                  'GOES15 X-ray Background Flux',
-                                 meta.fill_label: '*'}
-        meta['c_flare'] = {meta.name_label: 'C X-Ray Flares',
-                           meta.desc_label: 'C-class X-Ray Flares',
-                           meta.fill_label: -1}
-        meta['m_flare'] = {meta.name_label: 'M X-Ray Flares',
-                           meta.desc_label: 'M-class X-Ray Flares',
-                           meta.fill_label: -1}
-        meta['x_flare'] = {meta.name_label: 'X X-Ray Flares',
-                           meta.desc_label: 'X-class X-Ray Flares',
-                           meta.fill_label: -1}
-        meta['o1_flare'] = {meta.name_label: '1 Optical Flares',
-                            meta.desc_label: '1-class Optical Flares',
-                            meta.fill_label: -1}
-        meta['o2_flare'] = {meta.name_label: '2 Optical Flares',
-                            meta.desc_label: '2-class Optical Flares',
-                            meta.fill_label: -1}
-        meta['o3_flare'] = {meta.name_label: '3 Optical Flares',
-                            meta.desc_label: '3-class Optical Flares',
-                            meta.fill_label: -1}
+                                 meta.labels.fill_val: '*'}
+        meta['c_flare'] = {meta.labels.name: 'C X-Ray Flares',
+                           meta.labels.desc: 'C-class X-Ray Flares',
+                           meta.labels.fill_val: -1}
+        meta['m_flare'] = {meta.labels.name: 'M X-Ray Flares',
+                           meta.labels.desc: 'M-class X-Ray Flares',
+                           meta.labels.fill_val: -1}
+        meta['x_flare'] = {meta.labels.name: 'X X-Ray Flares',
+                           meta.labels.desc: 'X-class X-Ray Flares',
+                           meta.labels.fill_val: -1}
+        meta['o1_flare'] = {meta.labels.name: '1 Optical Flares',
+                            meta.labels.desc: '1-class Optical Flares',
+                            meta.labels.fill_val: -1}
+        meta['o2_flare'] = {meta.labels.name: '2 Optical Flares',
+                            meta.labels.desc: '2-class Optical Flares',
+                            meta.labels.fill_val: -1}
+        meta['o3_flare'] = {meta.labels.name: '3 Optical Flares',
+                            meta.labels.desc: '3-class Optical Flares',
+                            meta.labels.fill_val: -1}
 
     return result, meta
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for F10.7 data
 
     Parameters
-    -----------
+    ----------
     tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -213,12 +232,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         formats associated with the supplied tags are used. (default=None)
 
     Returns
-    --------
+    -------
     pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     Note
-    -----
+    ----
     Called by pysat. Not intended for direct use by user.
 
     """
@@ -349,7 +368,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                    'routine for F107')))
 
 
-def download(date_array, tag, sat_id, data_path, user=None, password=None):
+def download(date_array, tag, inst_id, data_path):
     """Routine to download F107 index data
 
     Parameters
@@ -357,7 +376,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are '' and 'forecast'.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -450,7 +469,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
         # Get the local files, to ensure that the version 1 files are
         # downloaded again if more data has been added
-        local_files = list_files(tag, sat_id, data_path)
+        local_files = list_files(tag, inst_id, data_path)
 
         # To avoid downloading multiple files, cycle dates based on file length
         date = date_array[0]
@@ -622,6 +641,10 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     return
+
+
+# ----------------------------------------------------------------------------
+# Local functions
 
 
 def parse_45day_block(block_lines):
@@ -797,7 +820,7 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
         raise ValueError("output data column already exists: " + f107a_name)
 
     if f107_name in f107_inst.meta:
-        fill_val = f107_inst.meta[f107_name][f107_inst.fill_label]
+        fill_val = f107_inst.meta[f107_name][f107_inst.meta.labels.fill_val]
     else:
         fill_val = np.nan
 
@@ -853,16 +876,13 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     f107_inst[f107a_name] = f107_fill[f107a_name]
 
     # Update the metadata
-    meta_dict = {f107_inst.units_label: 'SFU',
-                 f107_inst.name_label: 'F10.7a',
-                 f107_inst.desc_label: "81-day centered average of F10.7",
-                 f107_inst.plot_label: "F$_{10.7a}$",
-                 f107_inst.axis_label: "F$_{10.7a}$",
-                 f107_inst.scale_label: 'linear',
-                 f107_inst.min_label: 0.0,
-                 f107_inst.max_label: np.nan,
-                 f107_inst.fill_label: fill_val,
-                 f107_inst.notes_label:
+    meta_dict = {f107_inst.meta.labels.units: 'SFU',
+                 f107_inst.meta.labels.name: 'F10.7a',
+                 f107_inst.meta.labels.desc: "81-day centered average of F10.7",
+                 f107_inst.meta.labels.min_val: 0.0,
+                 f107_inst.meta.labels.max_val: np.nan,
+                 f107_inst.meta.labels.fill_val: fill_val,
+                 f107_inst.meta.labels.notes:
                  ' '.join(('Calculated using data between',
                            '{:} and {:}'.format(f107_inst.index[0],
                                                 f107_inst.index[-1])))}

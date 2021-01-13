@@ -820,7 +820,7 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
         raise ValueError("output data column already exists: " + f107a_name)
 
     if f107_name in f107_inst.meta:
-        fill_val = f107_inst.meta[f107_name][f107_inst.labels.fill_val]
+        fill_val = f107_inst.meta[f107_name][f107_inst.meta.labels.fill_val]
     else:
         fill_val = np.nan
 
@@ -876,16 +876,13 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     f107_inst[f107a_name] = f107_fill[f107a_name]
 
     # Update the metadata
-    meta_dict = {f107_inst.labels.units: 'SFU',
-                 f107_inst.labels.name: 'F10.7a',
-                 f107_inst.labels.desc: "81-day centered average of F10.7",
-                 f107_inst.labels.plot: "F$_{10.7a}$",
-                 f107_inst.labels.axis: "F$_{10.7a}$",
-                 f107_inst.labels.scale: 'linear',
-                 f107_inst.labels.min_val: 0.0,
-                 f107_inst.labels.max_val: np.nan,
-                 f107_inst.labels.fill_val: fill_val,
-                 f107_inst.labels.notes:
+    meta_dict = {f107_inst.meta.labels.units: 'SFU',
+                 f107_inst.meta.labels.name: 'F10.7a',
+                 f107_inst.meta.labels.desc: "81-day centered average of F10.7",
+                 f107_inst.meta.labels.min_val: 0.0,
+                 f107_inst.meta.labels.max_val: np.nan,
+                 f107_inst.meta.labels.fill_val: fill_val,
+                 f107_inst.meta.labels.notes:
                  ' '.join(('Calculated using data between',
                            '{:} and {:}'.format(f107_inst.index[0],
                                                 f107_inst.index[-1])))}

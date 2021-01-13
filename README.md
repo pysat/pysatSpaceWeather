@@ -1,10 +1,10 @@
 <div align="left">
         <img height="0" width="0px">
-        <img width="20%" src="docs/figures/pysatSpaceWeather.png" alt="pysatSpaceWeather" title="pysatSpaceWeather"</img>
+        <img width="20%" src="https://raw.githubusercontent.com/pysat/pysatSpaceWeather/main/docs/figures/pysatSpaceWeather.png" alt="pysatSpaceWeather" title="pysatSpaceWeather"</img>
 </div>
 
 # pysatSpaceWeather: pysat support for Space Weather Indices
-[![Build Status](https://travis-ci.org/pysat/pysatSpaceWeather.svg?branch=main)](https://travis-ci.org/pysat/pysatSpaceWeather)
+[![Build Status](https://travis-ci.com/pysat/pysatSpaceWeather.svg?branch=main)](https://travis-ci.com/pysat/pysatSpaceWeather)
 [![Coverage Status](https://coveralls.io/repos/github/pysat/pysatSpaceWeather/badge.svg?branch=main)](https://coveralls.io/github/pysat/pysatSpaceWeather?branch=main)
 [![DOI](https://zenodo.org/badge/287377838.svg)](https://zenodo.org/badge/latestdoi/287377838) [![Documentation](https://readthedocs.org/projects/pysatspaceweather/badge/?version=latest)](https://pysatspaceweather.readthedocs.io/en/latest/?badge=latest)
 
@@ -14,7 +14,7 @@ operational projects.
 
 # Installation
 
-The following instructions will allow you to install pysatSpaceWeather and give
+The following instructions provide a guide for installing pysatSpaceWeather and give
 some examples on how to use the routines
 
 ### Prerequisites
@@ -69,6 +69,7 @@ instrument.
 
 ```
 import pysat
+import pysatSpaceWeather
 from pysatSpaceWeather.instruments import sw_dst
 
 dst = pysat.Instrument(inst_module=sw_dst)
@@ -79,7 +80,6 @@ instruments.  This only needs to be done the first time you load an instrument.
 Afterward, pysat will identify them using the `platform` and `name` keywords.
 
 ```
-import pysat
 
 pysat.utils.registry.register('pysatSpaceWeather.instruments.sw_dst')
 dst = pysat.Instrument('sw', 'dst')

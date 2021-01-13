@@ -25,11 +25,11 @@ information.
    :members:
 
 F \ :sub:`10.7`\
----
+----------------
 
-Supports the F \ :sub:`10.7`\ radio flux by providing reference and
-acknowledgement information as well as a routine to combine F \ :sub:`10.7`\
-data obtained from multiple sources.
+Supports the F \ :sub:`10.7`\  radio flux by providing reference and
+acknowledgement information as well as a routine to combine
+F \ :sub:`10.7`\  data obtained from multiple sources.
 
 
 .. automodule:: pysatSpaceWeather.instruments.methods.f107

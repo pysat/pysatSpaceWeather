@@ -86,14 +86,8 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
 
     """
 
-    data_label = data_key.replace("_", " ")
-    format_label = data_label[0].upper() + data_label[1:]
-
     meta[data_key] = {meta.labels.name: data_key,
                       meta.labels.desc: "Planetary K-index",
-                      meta.labels.plot: format_label,
-                      meta.labels.axis: format_label,
-                      meta.labels.scale: 'linear',
                       meta.labels.min_val: 0,
                       meta.labels.max_val: 9,
                       meta.labels.fill_val: fill_val}
@@ -166,9 +160,6 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
     meta = pysat.Meta()
     meta['Kp'] = {meta.labels.name: 'Kp',
                   meta.labels.desc: 'Kp converted from {:}'.format(ap_name),
-                  meta.labels.plot: 'Kp',
-                  meta.labels.axis: 'Kp',
-                  meta.labels.scale: 'linear',
                   meta.labels.min_val: 0,
                   meta.labels.max_val: 9,
                   meta.labels.fill_val: fill_val,
@@ -222,9 +213,6 @@ def convert_3hr_kp_to_ap(kp_inst):
     # Add metadata
     meta_dict = {kp_inst.meta.labels.name: 'ap',
                  kp_inst.meta.labels.desc: "3-hour ap (equivalent range) index",
-                 kp_inst.meta.labels.plot: "ap",
-                 kp_inst.meta.labels.axis: "ap",
-                 kp_inst.meta.labels.scale: 'linear',
                  kp_inst.meta.labels.min_val: 0,
                  kp_inst.meta.labels.max_val: 400,
                  kp_inst.meta.labels.fill_val: fill_val,
@@ -276,9 +264,6 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
 
         meta_dict = {ap_inst.meta.labels.name: running_name,
                      ap_inst.meta.labels.desc: "running daily Ap index",
-                     ap_inst.meta.labels.plot: "24-h average ap",
-                     ap_inst.meta.labels.axis: "24-h average ap",
-                     ap_inst.meta.labels.scale: 'linear',
                      ap_inst.meta.labels.min_val: 0,
                      ap_inst.meta.labels.max_val: 400,
                      ap_inst.meta.labels.fill_val:
@@ -308,9 +293,6 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
     meta_dict = {ap_inst.meta.labels.units: '',
                  ap_inst.meta.labels.name: 'Ap',
                  ap_inst.meta.labels.desc: "daily Ap index",
-                 ap_inst.meta.labels.plot: "Ap",
-                 ap_inst.meta.labels.axis: "Ap",
-                 ap_inst.meta.labels.scale: 'linear',
                  ap_inst.meta.labels.min_val: 0,
                  ap_inst.meta.labels.max_val: 400,
                  ap_inst.meta.labels.fill_val:

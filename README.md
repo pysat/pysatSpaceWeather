@@ -1,6 +1,6 @@
 <div align="left">
         <img height="0" width="0px">
-        <img width="20%" src="https://raw.githubusercontent.com/pysat/pysatSpaceWeather/main/docs/figures/pysatSpaceWeather.png" alt="pysatSpaceWeather" title="pysatSpaceWeather"</img>
+        <img width="20%" src="https://raw.githubusercontent.com/pysat/pysatSpaceWeather/main/docs/figures/pysatSpaceWeather.png" alt="pysatSpaceWeather" title="pysatSpaceWeather" </img>
 </div>
 
 # pysatSpaceWeather: pysat support for Space Weather Indices
@@ -31,7 +31,7 @@ Python 3.6+.
 | requests       |                   |
 | xarray         |                   |
 
-## GitHub Installatioon
+## GitHub Installation
 
 Currently, the main way to get pysatSpaceWeather is through github.
 
@@ -70,9 +70,7 @@ instrument.
 ```
 import pysat
 import pysatSpaceWeather
-from pysatSpaceWeather.instruments import sw_dst
-
-dst = pysat.Instrument(inst_module=sw_dst)
+dst = pysat.Instrument(inst_module=pysatSpaceWeather.instruments.sw_dist)
 ```
 
 Another way to use the instruments in an external repository is to register the
@@ -80,7 +78,6 @@ instruments.  This only needs to be done the first time you load an instrument.
 Afterward, pysat will identify them using the `platform` and `name` keywords.
 
 ```
-
 pysat.utils.registry.register('pysatSpaceWeather.instruments.sw_dst')
 dst = pysat.Instrument('sw', 'dst')
 ```

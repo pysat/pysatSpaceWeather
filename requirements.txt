@@ -1,6 +1,6 @@
 netCDF4
 numpy
 pandas
-pysat
+pysat >= 3.0.0
 requests
 xarray

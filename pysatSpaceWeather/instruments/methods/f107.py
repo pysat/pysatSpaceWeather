@@ -258,7 +258,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         if np.isfinite(fill_val):
             f107_inst.data[np.isnan(f107_inst.data)] = fill_val
 
-    # Update the metadata notes for this custom procedure
+    # Update the metadata notes for this procedure
     notes += ", in that order"
     f107_inst.meta['f107'] = {f107_inst.meta.labels.notes: notes}
 

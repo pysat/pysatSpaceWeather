@@ -46,8 +46,7 @@ class TestInstruments(InstTestClass):
         # not altered
         self.tempdir = tempfile.TemporaryDirectory()
         self.saved_path = pysat.params['data_dirs']
-        pysat.params.data['data_dirs'] = self.tempdir.name
-
+        pysat.params.data['data_dirs'] = [self.tempdir.name]
         # Developers for instrument libraries should update the following line
         # to point to their own subpackage location, e.g.,
         # self.inst_loc = mypackage.instruments

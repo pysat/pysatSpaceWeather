@@ -215,7 +215,7 @@ class TestSwKpCombine():
         """Runs before every method to create a clean testing setup"""
         # Switch to test_data directory
         self.saved_path = pysat.params['data_dirs']
-        pysat.params.data['data_dirs'] = pysat_sw.test_data_path
+        pysat.params.data['data_dirs'] = [pysat_sw.test_data_path]
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 18)

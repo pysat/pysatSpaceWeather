@@ -214,8 +214,8 @@ class TestSwKpCombine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         # Switch to test_data directory
-        self.saved_path = pysat.data_dir
-        pysat.utils.set_data_dir(pysat_sw.test_data_path, store=False)
+        self.saved_path = pysat.params['data_dirs']
+        pysat.params.data['data_dirs'] = [pysat_sw.test_data_path]
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 18)
@@ -234,7 +234,7 @@ class TestSwKpCombine():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        pysat.utils.set_data_dir(self.saved_path)
+        pysat.params.data['data_dirs'] = self.saved_path
         del self.combine, self.test_day, self.saved_path
 
     def test_combine_kp_none(self):

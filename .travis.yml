@@ -46,7 +46,7 @@ install:
   - pip install -r test_requirements.txt
   # Custom pysat install, remove after 3.0.0 conda release
   - cd ..
-  - git clone --single-branch --branch develop-3 https://github.com/pysat/pysat.git
+  - git clone --single-branch --branch v3-0-rc1 https://github.com/pysat/pysat.git
   - cd pysat
   # Install the pysat requirements
   - while read requirement; do conda install --yes $requirement; done < requirements.txt

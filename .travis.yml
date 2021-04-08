@@ -26,7 +26,7 @@ addons:
     - gfortran
     - libncurses5-dev
 
-install:
+before_install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
@@ -44,18 +44,11 @@ install:
   - while read requirement; do conda install --yes $requirement; done < requirements.txt
   # Get latest coveralls from pip, not conda
   - pip install -r test_requirements.txt
-  # Custom pysat install, remove after 3.0.0 conda release
-  - cd ..
-  - git clone --single-branch --branch v3-0-rc1 https://github.com/pysat/pysat.git
-  - cd pysat
-  # Install the pysat requirements
-  - while read requirement; do conda install --yes $requirement; done < requirements.txt
-  - python setup.py install
-  - export PYTHONPATH=$PYTHONPATH:$(pwd)
   # set up data directory
   - mkdir /home/travis/build/pysatData
-  - cd ../pysatSpaceWeather
-  # install pysatSpaceWeather
+  - python -c "import pysat; pysat.params['data_dirs'] = '/home/travis/build/pysatData'"
+
+install:
   - python setup.py install
 
 after_success:

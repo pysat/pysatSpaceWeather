@@ -45,8 +45,6 @@ jobs:
 
     - name: Test PEP8 compliance
       run: flake8 . --count --select=E,F,W --show-source --statistics
-        # `exit-zero` treats all errors as warnings. Returns a complexity report
-        flake8 . --count --exit-zero --max-complexity=10 --statistics
 
     - name: Evaluate complexity
       run: flake8 . --count --exit-zero --max-complexity=10 --statistics

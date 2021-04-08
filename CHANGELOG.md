@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.0.4] - 2021-XX-XX
+- Implements GitHub Actions for primary CI testing
+- Updated tested python versions
+- Removed non-document testing from Travis-CI and updated installation method
+
 ## [0.0.3] - 2021-01-15
 - Fixes bugs in configuration and zenodo files
 - Added pysat version restriction to requirements.txt

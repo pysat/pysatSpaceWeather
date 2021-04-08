@@ -8,7 +8,6 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -52,9 +51,20 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --statistics
 
     - name: Test with pytest
-      run: |
-        pytest --cov=pysatNASA/
-    - name: Publish results to coveralls
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: coveralls --rcfile=setup.cfg --service=github
+      run: pytest --cov=pysatNASA/
+    - name: Coveralls parallel
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        flag-name: run-${{ matrix.test_number }}
+        parallel: true
+
+  finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls finished
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+	parallel-finished: true

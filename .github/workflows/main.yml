@@ -43,29 +43,18 @@ jobs:
         mkdir pysatData
         python -c "import pysat; pysat.params['data_dirs'] = './pysatData'"
 
-    - name: Lint with flake8
-      run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E,F,W --show-source --statistics
+    - name: Test PEP8 compliance
+      run: flake8 . --count --select=E,F,W --show-source --statistics
         # `exit-zero` treats all errors as warnings. Returns a complexity report
         flake8 . --count --exit-zero --max-complexity=10 --statistics
 
-    - name: Test with pytest
-      run: pytest --cov=pysatNASA/
-    - name: Coveralls parallel
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.github_token }}
-        flag-name: run-${{ matrix.test_number }}
-        parallel: true
+    - name: Evaluate complexity
+      run: flake8 . --count --exit-zero --max-complexity=10 --statistics
 
+    - name: Run unit and integration tests
+      run: pytest --cov=pysatSpaceWeather/
 
-  finish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls finished
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.github_token }}
-        parallel-finished: true
+    - name: Run Coveralls
+      env:
+        GITHUB_TOKEN: ${{ secrets.github_token }}
+      run: coveralls --rcfile=setup.cfg --service=github

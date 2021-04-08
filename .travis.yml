@@ -28,6 +28,3 @@ before_install:
 
 install:
   - python setup.py install
-
-after_success:
- - coveralls --rcfile=setup.cfg

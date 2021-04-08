@@ -1,11 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
-This project adheres to [Semantic Versioning](http://semver.org/).
+This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [0.0.4] - 2021-XX-XX
 - Implements GitHub Actions for primary CI testing
 - Updated tested python versions
 - Removed non-document testing from Travis-CI and updated installation method
+- Updated redirected links
+- Improved PEP8 compliance
 
 ## [0.0.3] - 2021-01-15
 - Fixes bugs in configuration and zenodo files

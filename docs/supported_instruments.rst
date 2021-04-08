@@ -33,7 +33,7 @@ F \ :sub:`10.7`\
 F \ :sub:`10.7`\  is the 10.7 cm radio solar flux (measured in solar flux units,
 sfu) `[Cortie 1912] <http://adsabs.harvard.edu/full/1912MNRAS..73...52C>`_.
 Historic indices, real-time indices, and forecasted indices are available from
-`LASP <http://lasp.colorado.edu/lisird/data/noaa_radio_flux/>`_ and the
+`LASP <https://lasp.colorado.edu/lisird/data/noaa_radio_flux/>`_ and the
 `SWPC F107 page <https://www.swpc.noaa.gov/phenomena/f107-cm-radio-emissions>`_.
 
 

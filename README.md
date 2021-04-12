@@ -21,11 +21,11 @@ some examples on how to use the routines
 
 pysatSpaceWeather uses common Python modules, as well as modules developed by
 and for the Space Physics community.  This module officially supports
-Python 3.6+.
+Python 3.7+.
 
 | Common modules | Community modules |
 | -------------- | ----------------- |
-| netCDFF4       | pysat             |
+| netCDF4        | pysat             |
 | numpy          |                   |
 | pandas         |                   |
 | requests       |                   |

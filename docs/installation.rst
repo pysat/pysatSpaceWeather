@@ -14,12 +14,12 @@ Prerequisites
 
 pysatSpaceWeather uses common Python modules, as well as modules developed by
 and for the Space Physics community.  This module officially supports
-Python 3.6+.
+Python 3.7+.
 
  ============== =================
  Common modules Community modules
  ============== =================
-  netCDF4        pysat             
+  netCDF4        pysat
   numpy
   pandas
   requests
@@ -33,7 +33,7 @@ Installation Options
 1. Clone the git repository
 ::
 
-   
+
    git clone https://github.com/pysat/pysatSpaceWeather.git
 
 
@@ -43,13 +43,13 @@ Installation Options
 
    A. Install on the system (root privileges required)::
 
-	
+
         sudo python3 setup.py install
    B. Install at the user level::
 
-	
-        python3 setup.py install --user  
+
+        python3 setup.py install --user
    C. Install with the intent to develop locally::
 
-	
+
         python3 setup.py develop --user

@@ -4,7 +4,7 @@
 </div>
 
 # pysatSpaceWeather: pysat support for Space Weather Indices
-[![Build Status](https://travis-ci.com/pysat/pysatSpaceWeather.svg?branch=main)](https://travis-ci.com/pysat/pysatSpaceWeather)
+[![Pytest with Flake8](https://github.com/pysat/pysatSpaceWeather/actions/workflows/main.yml/badge.svg)](https://github.com/pysat/pysatSpaceWeather/actions/workflows/main.yml)
 [![Coverage Status](https://coveralls.io/repos/github/pysat/pysatSpaceWeather/badge.svg?branch=main)](https://coveralls.io/github/pysat/pysatSpaceWeather?branch=main)
 [![DOI](https://zenodo.org/badge/287377838.svg)](https://zenodo.org/badge/latestdoi/287377838) [![Documentation](https://readthedocs.org/projects/pysatspaceweather/badge/?version=latest)](https://pysatspaceweather.readthedocs.io/en/latest/?badge=latest)
 

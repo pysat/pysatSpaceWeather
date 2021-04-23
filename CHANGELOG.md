@@ -8,6 +8,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - Removed non-document testing from Travis-CI and updated installation method
 - Updated redirected links
 - Improved PEP8 compliance
+- Separated ACE instrument into four, following standard pysat practice of
+  grouping satellite instruments using the satellite mission as the platform.
 
 ## [0.0.3] - 2021-01-15
 - Fixes bugs in configuration and zenodo files

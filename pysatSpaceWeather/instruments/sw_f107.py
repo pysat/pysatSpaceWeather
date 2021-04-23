@@ -76,7 +76,7 @@ inst_ids = {'': ['', 'all', 'prelim', 'daily', 'forecast', '45day']}
 
 # dict keyed by inst_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
-now = dt.datetime.now()
+now = dt.datetime.utcnow()
 today = dt.datetime(now.year, now.month, now.day)
 tomorrow = today + pds.DateOffset(days=1)
 

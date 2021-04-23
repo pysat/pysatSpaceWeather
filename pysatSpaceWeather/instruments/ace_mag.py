@@ -110,7 +110,7 @@ def clean(self):
 # ----------------------------------------------------------------------------
 # Instrument functions
 
-download = funtools.partial(mm_ace.download, now=now)
+download = functools.partial(mm_ace.download, now=now)
 list_files = mm_ace.list_files
 
 

@@ -120,20 +120,19 @@ def clean(inst):
     return max_status
 
 
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
+def list_files(name='', tag='', inst_id='', data_path='', format_str=None):
     """Return a Pandas Series of every file for ACE data
 
     Parameters
     ----------
-    tag : string or NoneType
-        Denotes type of file to load.
-        (default=None)
-    inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
+    name : str
+        ACE Instrument name. (default='')
+    tag : str
+        Denotes type of file to load. (default='')
+    inst_id : str
+        Specifies the ACE instrument ID. (default='')
+    data_path : str
+        Path to data directory. (default='')
     format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
@@ -148,32 +147,32 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     Called by pysat. Not intended for direct use by user.
 
     """
+    if format_str is None:
+        format_str = '_'.join(["ace", name, tag,
+                               '{year:04d}-{month:02d}-{day:02d}.txt'])
 
-    format_str = '_'.join(["ace", inst_id, tag,
-                           '{year:04d}-{month:02d}-{day:02d}.txt'])
-    if data_path is not None:
-        files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
-    else:
-        raise ValueError(''.join(('A data_path must be passed to the loading',
-                                  ' routine for ACE Space Weather data')))
+    files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
     return files
 
 
-def download(date_array, tag, inst_id, data_path, now=dt.datetime.utcnow()):
+def download(date_array, name='', tag='', inst_id='', data_path='',
+             now=dt.datetime.utcnow()):
     """Routine to download ACE Space Weather data
 
     Parameters
     ----------
     date_array : array-like
         Array of datetime values
+    name : str
+        ACE Instrument name. (default='')
     tag : str
         Denotes type of file to load. Accepted types are 'realtime' and
-        'historic'
+        'historic'. (default='')
     inst_id : str
-        Specifies the ACE instrument. Accepts 'mag', 'sis', 'epam', 'swepam'
+        Specifies the ACE instrument ID. (default='')
     data_path : str
-        Path to data directory.
+        Path to data directory. (default='')
     now : dt.datetime
         Current universal time (default=dt.datetime.utcnow())
 
@@ -190,14 +189,14 @@ def download(date_array, tag, inst_id, data_path, now=dt.datetime.utcnow()):
     # date range
     if tag == 'realtime':
         file_fmt = "{:s}-{:s}.txt".format("ace", "magnetometer"
-                                          if inst_id == "mag" else inst_id)
+                                          if name == "mag" else name)
 
         if(len(date_array) > 1 or date_array[0].year != now.year
-           or date_array[0].month != now.month or date_array[0] != now.day):
+           or date_array[0].month != now.month or date_array[0].day != now.day):
             logger.warning('real-time data only available for current day')
     else:
-        data_rate = 1 if inst_id in ['mag', 'swepam'] else 5
-        file_fmt = '_'.join(["%Y%m%d", "ace", inst_id,
+        data_rate = 1 if name in ['mag', 'swepam'] else 5
+        file_fmt = '_'.join(["%Y%m%d", "ace", name,
                              '{:d}m.txt'.format(data_rate)])
 
     url = {'realtime': 'https://services.swpc.noaa.gov/text/',
@@ -225,15 +224,15 @@ def download(date_array, tag, inst_id, data_path, now=dt.datetime.utcnow()):
         raw_data = raw_data.split('\n')[1:]  # Remove the last header line
 
         # Parse the file, treating the 4 time columns separately
-        data_dict = {col: list() for col in data_cols[inst_id]}
+        data_dict = {col: list() for col in data_cols[name]}
         times = list()
-        nsplit = len(data_cols[inst_id]) + 4
+        nsplit = len(data_cols[name]) + 4
         for raw_line in raw_data:
             split_line = raw_line.split()
             if len(split_line) == nsplit:
                 times.append(dt.datetime.strptime(' '.join(split_line[:4]),
                                                   '%Y %m %d %H%M'))
-                for i, col in enumerate(data_cols[inst_id]):
+                for i, col in enumerate(data_cols[name]):
                     # Convert to a number and save
                     #
                     # Output is saved as a float, so don't bother to
@@ -248,7 +247,7 @@ def download(date_array, tag, inst_id, data_path, now=dt.datetime.utcnow()):
         data = pds.DataFrame(data_dict, index=times)
 
         # Write out as a file
-        data_file = '{:s}.txt'.format('_'.join(["ace", inst_id, tag,
+        data_file = '{:s}.txt'.format('_'.join(["ace", name, tag,
                                                 dl_date.strftime('%Y-%m-%d')]))
         data.to_csv(os.path.join(data_path, data_file), header=True)
 

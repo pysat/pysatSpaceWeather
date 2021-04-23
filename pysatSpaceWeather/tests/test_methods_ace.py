@@ -1,11 +1,5 @@
-import datetime as dt
-import numpy as np
-
-import pandas as pds
 import pytest
-import pysat
 
-import pysatSpaceWeather as pysat_sw
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
 
 

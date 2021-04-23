@@ -62,7 +62,6 @@ import requests
 import sys
 
 import pysat
-from pysat.utils.time import parse_date
 
 from pysatSpaceWeather.instruments.methods import kp_ap
 
@@ -156,29 +155,61 @@ def load(fnames, tag=None, inst_id=None):
         # and downselect to the desired day
         data = pds.DataFrame()
 
-        # Set up fixed width format for these files
-        colspec = [(0, 2), (2, 4), (4, 6), (7, 10), (10, 13), (13, 16),
-                   (16, 19), (19, 23), (23, 26), (26, 29), (29, 32), (32, 50)]
-        all_data = []
+        # Set up fixed width format for these files, only selecting the date
+        # and daily 3-hour Kp values
+        date_slice = slice(0, 6)
+        kp_slice = [slice(7, 10), slice(10, 13), slice(13, 16), slice(16, 19),
+                    slice(19, 23), slice(23, 26), slice(26, 29), slice(29, 32)]
+
+        # These are montly files, if a date range is desired, test here.
+        # Does not assume an ordered list, but the date range must be continous
+        # within a given month.
+        unique_fnames = dict()
         for filename in fnames:
+            fname = filename[0:-11]
+            fdate = dt.datetime.strptime(filename[-10:], '%Y-%m-%d')
+            if fname not in unique_fnames.keys():
+                unique_fnames[fname] = [fdate]
+            else:
+                unique_fnames[fname].append(fdate)
+
+        # Load all of the desired filenames
+        all_data = []
+        for fname in unique_fnames.keys():
             # The daily date is attached to the filename.  Parse off the last
             # date, load month of data, downselect to the desired day
-            fname = filename[0:-11]
-            date = dt.datetime.strptime(filename[-10:], '%Y-%m-%d')
+            fdate = min(unique_fnames[fname])
 
-            temp = pds.read_fwf(fname, colspecs=colspec, skipfooter=4,
-                                header=None, parse_dates=[[0, 1, 2]],
-                                date_parser=parse_date, index_col='0_1_2')
-            idx, = np.where((temp.index >= date)
-                            & (temp.index < date + pds.DateOffset(days=1)))
-            temp = temp.iloc[idx, :]
-            all_data.append(temp)
+            with open(fname, 'r') as fin:
+                temp = fin.readlines()
+
+            if len(temp) == 0:
+                logger.warn('Empty file: {:}'.format(fname))
+                continue
+
+            ilast = -1 if temp[-1].find('Mean') > 0 else -4
+            temp = np.array(temp[:ilast])
+
+            # Re-format the time data
+            temp_index = np.array([dt.datetime.strptime(tline[date_slice],
+                                                        '%y%m%d')
+                                   for tline in temp])
+
+            idx, = np.where((temp_index >= fdate)
+                            & (temp_index < max(unique_fnames[fname])
+                               + dt.timedelta(days=1)))
+
+            temp_data = list()
+            for tline in temp[idx]:
+                temp_data.append(list())
+                for col in kp_slice:
+                    temp_data[-1].append(tline[col].strip())
+
+            # Select the desired times and add to data list
+            all_data.append(pds.DataFrame(temp_data, index=temp_index[idx]))
 
         # Combine data together
         data = pds.concat(all_data, axis=0, sort=True)
-
-        # Drop last column as it has data that belongs to a different inst
-        data = data.iloc[:, 0:-1]
 
         # Each column increments UT by three hours. Produce a single data
         # series that has Kp value monotonically increasing in time with
@@ -193,8 +224,8 @@ def load(fnames, tag=None, inst_id=None):
 
         # Kp comes in non-user friendly values like 2-, 2o, and 2+. Relate
         # these to 1.667, 2.0, 2.333 for processing and user friendliness
-        first = np.array([float(x[0]) for x in data_series])
-        flag = np.array([x[1] for x in data_series])
+        first = np.array([float(str_val[0]) for str_val in data_series])
+        flag = np.array([str_val[1] for str_val in data_series])
 
         ind, = np.where(flag == '+')
         first[ind] += 1.0 / 3.0
@@ -302,7 +333,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
                                    'routine for Kp')))
 
 
-def download(date_array, tag, inst_id, data_path, user=None, password=None):
+def download(date_array, tag, inst_id, data_path):
     """Routine to download Kp index data
 
     Parameters
@@ -334,16 +365,17 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
         ftp.cwd('/pub/home/obs/kp-ap/tab')
         dnames = list()
 
-        for date in date_array:
+        for dl_date in date_array:
             fname = 'kp{year:02d}{month:02d}.tab'
-            fname = fname.format(year=(date.year - (date.year // 100) * 100),
-                                 month=date.month)
+            fname = fname.format(year=(dl_date.year
+                                       - (dl_date.year // 100) * 100),
+                                 month=dl_date.month)
             local_fname = fname
             saved_fname = os.path.join(data_path, local_fname)
             if fname not in dnames:
                 try:
                     logger.info(' '.join(('Downloading file for',
-                                          date.strftime('%b %Y'))))
+                                          dl_date.strftime('%b %Y'))))
                     sys.stdout.flush()
                     ftp.retrbinary('RETR ' + fname,
                                    open(saved_fname, 'wb').write)
@@ -363,7 +395,7 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
                         # then continue on
                         os.remove(saved_fname)
                         logger.info(' '.join(('File not available for',
-                                              date.strftime('%x'))))
+                                              dl_date.strftime('%x'))))
 
         ftp.close()
 
@@ -376,13 +408,13 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
 
         # Parse text to get the date the prediction was generated
         date_str = r.text.split(':Issued: ')[-1].split(' UTC')[0]
-        date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
+        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
 
         # Data is the forecast value for the next three days
         raw_data = r.text.split('NOAA Kp index forecast ')[-1]
 
         # Get date of the forecasts
-        date_str = raw_data[0:6] + ' ' + str(date.year)
+        date_str = raw_data[0:6] + ' ' + str(dl_date.year)
         forecast_date = dt.datetime.strptime(date_str, '%d %b %Y')
 
         # Strings we will use to parse the downloaded text
@@ -408,7 +440,7 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
         data = pds.DataFrame(day, index=times, columns=['Kp'])
 
         # Write out as a file
-        data_file = 'kp_forecast_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data_file = 'kp_forecast_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'recent':
@@ -422,7 +454,7 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
 
         # Parse text to get the date the prediction was generated
         date_str = r.text.split(':Issued: ')[-1].split('\n')[0]
-        date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
+        dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
 
         # Data is the forecast value for the next three days
         raw_data = r.text.split('#  Date ')[-1]
@@ -455,7 +487,7 @@ def download(date_array, tag, inst_id, data_path, user=None, password=None):
                               'Kp': sub_kps[2]}, index=times)
 
         # Write out as a file
-        data_file = 'kp_recent_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data_file = 'kp_recent_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     return

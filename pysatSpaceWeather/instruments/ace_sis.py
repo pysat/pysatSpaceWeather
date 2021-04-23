@@ -15,6 +15,8 @@ inst_id
 
 Note
 ----
+This is not the ACE scientific data set, which will be available at pysatNASA
+
 The real-time data is stored by generation date, where each file contains the
 data for the current day.  If you leave download dates empty, though, it will
 grab today's file three times and assign dates from yesterday, today, and
@@ -117,8 +119,8 @@ def clean(self):
 # ----------------------------------------------------------------------------
 # Instrument functions
 
-download = functools.partial(mm_ace.download, now=now)
-list_files = mm_ace.list_files
+download = functools.partial(mm_ace.download, name=name, now=now)
+list_files = functools.partial(mm_ace.list_files, name=name)
 
 
 def load(fnames, tag=None, inst_id=None):
@@ -158,7 +160,7 @@ def load(fnames, tag=None, inst_id=None):
         data = pds.concat([data, result], axis=0)
 
     # Assign the meta data
-    meta, status_desc = mm_ace.common_meta()
+    meta, status_desc = mm_ace.common_metadata()
     flux_name = 'Integral Proton Flux'
 
     meta['status_10'] = {meta.labels.units: '',

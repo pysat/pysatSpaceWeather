@@ -23,7 +23,7 @@ grab today's file three times and assign dates from yesterday, today, and
 tomorrow.
 ::
 
-    mag = pysat.Instrument('sw', 'ace', inst_id='mag', tag='realtime')
+    mag = pysat.Instrument('ace', 'mag', tag='realtime')
     now = dt.datetime.utcnow()
     mag.download(start=now)
     mag.load(date=now
@@ -110,8 +110,8 @@ def clean(self):
 # ----------------------------------------------------------------------------
 # Instrument functions
 
-download = functools.partial(mm_ace.download, now=now)
-list_files = mm_ace.list_files
+download = functools.partial(mm_ace.download, name=name, now=now)
+list_files = functools.partial(mm_ace.list_files, name=name)
 
 
 def load(fnames, tag=None, inst_id=None):
@@ -151,7 +151,7 @@ def load(fnames, tag=None, inst_id=None):
         data = pds.concat([data, result], axis=0)
 
     # Assign the meta data
-    meta, status_desc = mm_ace.common_meta()
+    meta, status_desc = mm_ace.common_metadata()
 
     meta['status'] = {meta.labels.units: '',
                       meta.labels.name: 'Status',

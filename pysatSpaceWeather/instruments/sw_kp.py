@@ -161,7 +161,7 @@ def load(fnames, tag=None, inst_id=None):
         kp_slice = [slice(7, 10), slice(10, 13), slice(13, 16), slice(16, 19),
                     slice(19, 23), slice(23, 26), slice(26, 29), slice(29, 32)]
 
-        # These are montly files, if a date range is desired, test here.
+        # These are monthly files, if a date range is desired, test here.
         # Does not assume an ordered list, but the date range must be continous
         # within a given month.
         unique_fnames = dict()

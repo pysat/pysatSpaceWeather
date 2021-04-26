@@ -187,6 +187,9 @@ def load(fnames, tag=None, inst_id=None):
                 logger.warn('Empty file: {:}'.format(fname))
                 continue
 
+            # This file has a different format if it is historic or a file that
+            # is being actively updated.  In either case, this line will
+            # remove the appropriate number of summmary lines.
             ilast = -1 if temp[-1].find('Mean') > 0 else -4
             temp = np.array(temp[:ilast])
 

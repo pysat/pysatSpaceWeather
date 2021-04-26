@@ -77,6 +77,25 @@ def references(name):
     return refs[name]
 
 
+def preprocess(inst):
+    """Preprocess the ACE data by replacing the file fill values with NaN
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        ACE pysat.Instrument object
+
+    """
+    # Replace all fill values with NaN
+    for col in inst.data.columns:
+        fill_val = inst.meta[col][inst.meta.labels.fill_val]
+        if ~np.isnan(fill_val):
+            inst.data[col] = inst.data[col].replace(fill_val, np.nan)
+            inst.meta[col][inst.meta.labels.fill_val] = np.nan
+
+    return
+
+
 def clean(inst):
     """Common aspects of the ACE space weather data cleaning
 
@@ -110,12 +129,6 @@ def clean(inst):
         max_status = 0
     elif inst.clean_level == "dirty":
         max_status = 8
-
-    # Replace all fill values with NaN
-    for col in inst.data.columns:
-        fill_val = inst.meta[col][inst.meta.labels.fill_val]
-        if ~np.isnan(fill_val):
-            inst.data[col] = inst.data[col].replace(fill_val, np.nan)
 
     return max_status
 
@@ -156,8 +169,7 @@ def list_files(name='', tag='', inst_id='', data_path='', format_str=None):
     return files
 
 
-def download(date_array, name='', tag='', inst_id='', data_path='',
-             now=dt.datetime.utcnow()):
+def download(date_array, name='', tag='', inst_id='', data_path='', now=None):
     """Routine to download ACE Space Weather data
 
     Parameters
@@ -173,8 +185,9 @@ def download(date_array, name='', tag='', inst_id='', data_path='',
         Specifies the ACE instrument ID. (default='')
     data_path : str
         Path to data directory. (default='')
-    now : dt.datetime
-        Current universal time (default=dt.datetime.utcnow())
+    now : dt.datetime or NoneType
+        Current universal time, if None this is determined for each
+        download. (default=None)
 
     Note
     ----
@@ -185,6 +198,10 @@ def download(date_array, name='', tag='', inst_id='', data_path='',
     Only able to download current real-time data
 
     """
+    # Ensure now is up-to-date, if desired
+    if now is None:
+        now = dt.datetime.utcnow()
+
     # Define the file information for each data type and check the
     # date range
     if tag == 'realtime':
@@ -290,3 +307,39 @@ def common_metadata():
     status_desc = '0 = nominal data, 1 to 8 = bad data record, 9 = no data'
 
     return meta, status_desc
+
+
+def load_csv_data(fnames, read_csv_kwargs=None):
+    """Load CSV data from a list of files into a single DataFrame
+
+    Parameters
+    ----------
+    fnames : array-like
+        Series, list, or array of filenames
+    read_csv_kwargs : dict or NoneType
+        Dict of kwargs to apply to `pds.read_csv`. (default=None)
+
+    Returns
+    -------
+    data : pds.DataFrame
+        Data frame with data from all files in the fnames list
+
+    See Also
+    --------
+    pds.read_csv
+
+    """
+    # Ensure the filename input is array-like
+    fnames = np.asarray(fnames)
+
+    # Initialize the optional kwargs
+    if read_csv_kwargs is None:
+        read_csv_kwargs = {}
+
+    # Create a list of data frames from each file
+    fdata = []
+    for fname in fnames:
+        fdata.append(pds.read_csv(fname, **read_csv_kwargs))
+
+    data = pds.DataFrame() if len(fdata) == 0 else pds.concat(fdata, axis=0)
+    return data

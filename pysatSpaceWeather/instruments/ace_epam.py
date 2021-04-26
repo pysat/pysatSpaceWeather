@@ -25,7 +25,7 @@ tomorrow.
 
     epam = pysat.Instrument('ace', 'epam', tag='realtime')
     now = dt.datetime.utcnow()
-    epam.download(start=now)
+    epam.download(start=epam.today())
     epam.load(date=now)
 
 
@@ -118,7 +118,7 @@ def clean(self):
     eval_cols.append('anis_ind')
 
     # Remove lines without any good data
-    good_cols = (~np.isnan(self.data.loc[:, eval_cols])).sum(axis=1)
+    good_cols = (np.isfinite(self.data.loc[:, eval_cols])).sum(axis=1)
     bad_index = good_cols[good_cols == 0].index
     self.data = self.data.drop(index=bad_index)
 
@@ -164,9 +164,10 @@ def load(fnames, tag=None, inst_id=None):
 
     # Save each file to the output DataFrame
     data = pds.DataFrame()
+    results = []
     for fname in fnames:
-        result = pds.read_csv(fname, index_col=0, parse_dates=True)
-        data = pds.concat([data, result], axis=0)
+        results.append(pds.read_csv(fname, index_col=0, parse_dates=True))
+    data = pds.concat(results, axis=0)
 
     # Assign the meta data
     meta, status_desc = mm_ace.common_metadata()

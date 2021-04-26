@@ -331,6 +331,8 @@ def load_csv_data(fnames, read_csv_kwargs=None):
     """
     # Ensure the filename input is array-like
     fnames = np.asarray(fnames)
+    if fnames.shape == ():
+        fnames = np.asarray([fnames])
 
     # Initialize the optional kwargs
     if read_csv_kwargs is None:

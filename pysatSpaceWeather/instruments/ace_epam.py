@@ -24,9 +24,8 @@ tomorrow.
 ::
 
     epam = pysat.Instrument('ace', 'epam', tag='realtime')
-    now = dt.datetime.utcnow()
     epam.download(start=epam.today())
-    epam.load(date=now)
+    epam.load(date=epam.today())
 
 
 
@@ -40,13 +39,10 @@ from pysat.Instrument objects.
 import datetime as dt
 import functools
 import numpy as np
-import pandas as pds
 
-import pysat
+from pysat import logger
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
-
-logger = pysat.logger
 
 # ----------------------------------------------------------------------------
 # Instrument attributes
@@ -70,6 +66,8 @@ _test_dates = {inst_id: {'realtime': dt.datetime(now.year, now.month, now.day),
 
 # ----------------------------------------------------------------------------
 # Instrument methods
+
+preprocess = mm_ace.preprocess
 
 
 def init(self):
@@ -103,6 +101,7 @@ def clean(self):
 
     # Replace bad values with NaN and remove times with no valid data
     ecols = ['eflux_38-53', 'eflux_175-315']
+
     # Evaluate the electron flux data
     for col in ecols:
         self.data[col][self.data['status_e'] > max_status] = np.nan
@@ -163,11 +162,8 @@ def load(fnames, tag=None, inst_id=None):
     """
 
     # Save each file to the output DataFrame
-    data = pds.DataFrame()
-    results = []
-    for fname in fnames:
-        results.append(pds.read_csv(fname, index_col=0, parse_dates=True))
-    data = pds.concat(results, axis=0)
+    data = mm_ace.load_csv_data(fnames, read_csv_kwargs={'index_col': 0,
+                                                         'parse_dates': True})
 
     # Assign the meta data
     meta, status_desc = mm_ace.common_metadata()

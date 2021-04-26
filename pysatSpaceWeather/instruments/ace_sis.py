@@ -24,9 +24,8 @@ tomorrow.
 ::
 
     sis = pysat.Instrument('ace', 'sis', tag='realtime')
-    now = dt.datetime.utcnow()
-    sis.download(start=now)
-    sis.load(date=now)
+    sis.download(start=sis.today())
+    sis.load(date=sis.today())
 
 
 
@@ -40,13 +39,10 @@ from pysat.Instrument objects.
 import datetime as dt
 import functools
 import numpy as np
-import pandas as pds
 
-import pysat
+from pysat import logger
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
-
-logger = pysat.logger
 
 # ----------------------------------------------------------------------------
 # Instrument attributes
@@ -70,6 +66,8 @@ _test_dates = {inst_id: {'realtime': dt.datetime(now.year, now.month, now.day),
 
 # ----------------------------------------------------------------------------
 # Instrument methods
+
+preprocess = mm_ace.preprocess
 
 
 def init(self):
@@ -109,7 +107,7 @@ def clean(self):
     eval_cols = ['int_pflux_10MeV', 'int_pflux_30MeV']
 
     # Remove lines without any good data
-    good_cols = (~np.isnan(self.data.loc[:, eval_cols])).sum(axis=1)
+    good_cols = (np.isfinite(self.data.loc[:, eval_cols])).sum(axis=1)
     bad_index = good_cols[good_cols == 0].index
     self.data = self.data.drop(index=bad_index)
 
@@ -154,10 +152,8 @@ def load(fnames, tag=None, inst_id=None):
     """
 
     # Save each file to the output DataFrame
-    data = pds.DataFrame()
-    for fname in fnames:
-        result = pds.read_csv(fname, index_col=0, parse_dates=True)
-        data = pds.concat([data, result], axis=0)
+    data = mm_ace.load_csv_data(fnames, read_csv_kwargs={'index_col': 0,
+                                                         'parse_dates': True})
 
     # Assign the meta data
     meta, status_desc = mm_ace.common_metadata()

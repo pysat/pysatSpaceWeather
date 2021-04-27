@@ -1,7 +1,12 @@
+.. _install:
+
 Installation
 ============
 
 The following instructions will allow you to install pysatSpaceWeather.
+
+
+.. _install-prereq:
 
 Prerequisites
 -------------
@@ -19,7 +24,7 @@ Python 3.7+.
  ============== =================
  Common modules Community modules
  ============== =================
-  netCDF4        pysat
+  netCDF4        pysat >= 3.0.0
   numpy
   pandas
   requests
@@ -27,8 +32,32 @@ Python 3.7+.
  ============== =================
 
 
+.. _install-opt:
+
+
 Installation Options
 --------------------
+
+
+.. _install-opt-pip:
+
+PyPi
+^^^^
+All official pysatSpaceWeather releases are
+`available <https://pypi.org/project/pysatSpaceWeather/>`_ through the PyPi
+package manager.
+::
+
+
+   pip install pysatSpaceWeather
+
+
+
+.. _install-opt-git:
+
+GitHub
+^^^^^^
+You can keep up to date with the latest changes at the GitHub repository.
 
 1. Clone the git repository
 ::

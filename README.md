@@ -7,6 +7,7 @@
 [![Pytest with Flake8](https://github.com/pysat/pysatSpaceWeather/actions/workflows/main.yml/badge.svg)](https://github.com/pysat/pysatSpaceWeather/actions/workflows/main.yml)
 [![Coverage Status](https://coveralls.io/repos/github/pysat/pysatSpaceWeather/badge.svg?branch=main)](https://coveralls.io/github/pysat/pysatSpaceWeather?branch=main)
 [![DOI](https://zenodo.org/badge/287377838.svg)](https://zenodo.org/badge/latestdoi/287377838) [![Documentation](https://readthedocs.org/projects/pysatspaceweather/badge/?version=latest)](https://pysatspaceweather.readthedocs.io/en/latest/?badge=latest)
+[![PyPI version](https://badge.fury.io/py/pysatSpaceWeather.svg)](https://badge.fury.io/py/pysatSpaceWeather)
 
 
 This module handles solar and geomagnetic indices needed for scientific and
@@ -14,10 +15,10 @@ operational projects.
 
 # Installation
 
-The following instructions provide a guide for installing pysatSpaceWeather and give
-some examples on how to use the routines
+The following instructions provide a guide for installing pysatSpaceWeather and
+give some examples on how to use the routines.
 
-### Prerequisites
+## Prerequisites
 
 pysatSpaceWeather uses common Python modules, as well as modules developed by
 and for the Space Physics community.  This module officially supports
@@ -25,16 +26,19 @@ Python 3.7+.
 
 | Common modules | Community modules |
 | -------------- | ----------------- |
-| netCDF4        | pysat             |
+| netCDF4        | pysat >= 3.0.0    |
 | numpy          |                   |
 | pandas         |                   |
 | requests       |                   |
 | xarray         |                   |
 
+
+## PyPi Installation
+```
+pip install pysatSpaceWeather
+```
+
 ## GitHub Installation
-
-Currently, the main way to get pysatSpaceWeather is through github.
-
 ```
 git clone https://github.com/pysat/pysatSpaceWeather.git
 ```
@@ -47,20 +51,10 @@ cd pysatSpaceWeather/
 python setup.py install
 ```
 
-Note: pre-1.0.0 version
+Note: pre-0.1.0 version
 -----------------------
-pysatSpaceWeather is currently in an initial development phase.  Much of the
-API is being built off of the upcoming pysat 3.0.0 software in order to
-streamline the usage and test coverage.  This version of pysat is planned for
-release in Feb 2021.  Currently, you can access the develop version of this
-through github:
-```
-git clone https://github.com/pysat/pysat.git
-cd pysat
-git checkout develop-3
-python setup.py install
-```
-It should be noted that this is a working branch and is subject to change.
+pysatSpaceWeather is currently in an alpha development phase.  Feedback and
+contributions are appreciated.
 
 # Examples
 

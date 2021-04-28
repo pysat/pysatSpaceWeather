@@ -82,7 +82,7 @@ tags = {'': 'Daily LASP value of F10.7',
         '45day': 'Air Force 45-day Forecast'}
 
 # dict keyed by inst_id that lists supported tags for each inst_id
-inst_ids = {'': tag for tag in tags.keys()}
+inst_ids = {'': [tag for tag in tags.keys()]}
 
 # dict keyed by inst_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
@@ -445,7 +445,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
 
         else:
             raise ValueError(' '.join(('Unrecognized tag name for Space',
-                                       'Weather Index F107')))
+                                       'Weather Index F107:', tag)))
     else:
         raise ValueError(' '.join(('A data_path must be passed to the loading',
                                    'routine for F107')))

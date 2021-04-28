@@ -122,7 +122,7 @@ def init(self):
     logger.info(self.acknowledgements)
 
     if self.tag == 'all':
-        warnings.warn("".join(["'all' tag has been deprecated, and will be",
+        warnings.warn("".join(["'all' tag has been deprecated, and will be ",
                                "removed in the 0.0.5+ release, use '' with ",
                                "`load(date=inst.lasp_stime, date=inst.today()",
                                ")`instead"]), DeprecationWarning)

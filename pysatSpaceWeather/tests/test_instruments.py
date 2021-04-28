@@ -1,4 +1,6 @@
+import numpy as np
 import tempfile
+import warnings
 
 import pytest
 
@@ -47,6 +49,7 @@ class TestInstruments(InstTestClass):
         self.tempdir = tempfile.TemporaryDirectory()
         self.saved_path = pysat.params['data_dirs']
         pysat.params.data['data_dirs'] = [self.tempdir.name]
+
         # Developers for instrument libraries should update the following line
         # to point to their own subpackage location, e.g.,
         # self.inst_loc = mypackage.instruments
@@ -63,3 +66,44 @@ class TestInstruments(InstTestClass):
 
     def teardown_method(self):
         """Runs after every method to clean up previous testing."""
+
+
+class TestDeprecation():
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always", DeprecationWarning)
+        self.in_kwargs = {"platform": 'sw', "name": 'f107', "tag": 'all',
+                          "inst_id": '', "clean_level": 'clean'}
+        self.warn_msgs = ["tag has been deprecated"]
+
+        self.warn_msgs = np.array(self.warn_msgs)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.in_kwargs, self.warn_msgs
+
+    def eval_warnings(self):
+        """Routine to evaluate warnings raised when Instrument instantiated
+        """
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            pysat.Instrument(**self.in_kwargs)
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, self.warn_msgs)
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(
+                self.warn_msgs[i])
+
+        return
+
+    def test_deprecated_init(self):
+        """Test for deprecated initialization options."""
+        # Evaluate warnings
+        self.eval_warnings()
+        return

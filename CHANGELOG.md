@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Made standard Kp loading more robust
 * Fixed bugs where current time used local time zone instead of UTC
 * Added PyPi links to README and documentation
+* Deprecated F10.7 instrument tag 'all'
 
 [0.0.3] - 2021-01-15
 --------------------

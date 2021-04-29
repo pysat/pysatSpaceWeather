@@ -72,8 +72,8 @@ class TestDeprecation():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         warnings.simplefilter("always", DeprecationWarning)
-        self.in_kwargs = {"platform": 'sw', "name": 'f107', "tag": 'all',
-                          "inst_id": '', "clean_level": 'clean'}
+        self.in_kwargs = {"inst_module": pysatSpaceWeather.instruments.sw_f107,
+                          "tag": 'all', "inst_id": '', "clean_level": 'clean'}
         self.warn_msgs = ["tag has been deprecated"]
 
         self.warn_msgs = np.array(self.warn_msgs)

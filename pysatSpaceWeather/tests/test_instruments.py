@@ -1,6 +1,4 @@
-import numpy as np
 import tempfile
-import warnings
 
 import pytest
 

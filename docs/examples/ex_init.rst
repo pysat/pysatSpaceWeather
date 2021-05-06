@@ -17,7 +17,7 @@ used as an example.
    f107 = pysat.Instrument(inst_module=py_sw.instruments.sw_f107,
                            tag='historic', update_files=True)
    f107.download(start=f107.lasp_stime, stop=f107.today(), freq='MS')
-   f107.load(date=f107.lasp_stime, end_date=f107.today())
+   f107.load()
    print(f107)
 
 
@@ -43,6 +43,5 @@ output shown below (the index header has been added here for clarity).
    2018-04-30   71.3
    
    [25367 rows x 1 columns]
-
 
 

@@ -126,7 +126,7 @@ class TestSWF107Combine():
         """Test combine_f107 failure when no times are provided"""
 
         with pytest.raises(ValueError):
-            mm_f107.combine_f107(self.combine_inst[''],
+            mm_f107.combine_f107(self.combine_inst['historic'],
                                  self.combine_inst['forecast'])
 
     def test_combine_f107_no_data(self):
@@ -145,14 +145,15 @@ class TestSWF107Combine():
     def test_combine_f107_inst_time(self):
         """Test combine_f107 with times provided through datasets"""
 
-        self.combine_inst[''].load(date=self.combine_inst[''].lasp_stime,
-                                   end_date=self.combine_times['start'])
+        self.combine_inst['historic'].load(
+            date=self.combine_inst['historic'].lasp_stime,
+            end_date=self.combine_times['start'])
         self.combine_inst['forecast'].load(date=self.test_day)
 
-        f107_inst = mm_f107.combine_f107(self.combine_inst[''],
+        f107_inst = mm_f107.combine_f107(self.combine_inst['historic'],
                                          self.combine_inst['forecast'])
 
-        assert f107_inst.index[0] == self.combine_inst[''].lasp_stime
+        assert f107_inst.index[0] == self.combine_inst['historic'].lasp_stime
         assert f107_inst.index[-1] <= self.combine_times['stop']
         assert len(f107_inst.data.columns) == 1
         assert f107_inst.data.columns[0] == 'f107'
@@ -160,9 +161,10 @@ class TestSWF107Combine():
         del f107_inst
 
     def test_combine_f107_all(self):
-        """Test combine_f107 when all input is provided with '' and '45day'"""
+        """Test combine_f107 when input is provided with 'historic' and '45day'
+        """
 
-        f107_inst = mm_f107.combine_f107(self.combine_inst[''],
+        f107_inst = mm_f107.combine_f107(self.combine_inst['historic'],
                                          self.combine_inst['45day'],
                                          **self.combine_times)
 

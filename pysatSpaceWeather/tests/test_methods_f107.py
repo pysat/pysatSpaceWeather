@@ -105,16 +105,16 @@ class TestSWF107Combine():
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 16)
-        self.combineInst = {tag: pysat.Instrument(inst_module=sw_f107, tag=tag,
-                                                  update_files=True)
-                            for tag in sw_f107.tags.keys()}
-        self.combineTimes = {"start": self.test_day - dt.timedelta(days=30),
-                             "stop": self.test_day + dt.timedelta(days=3)}
+        self.combine_inst = {tag: pysat.Instrument(inst_module=sw_f107, tag=tag,
+                                                   update_files=True)
+                             for tag in sw_f107.tags.keys()}
+        self.combine_times = {"start": self.test_day - dt.timedelta(days=30),
+                              "stop": self.test_day + dt.timedelta(days=3)}
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pysat.params.data['data_dirs'] = self.saved_path
-        del self.combineInst, self.test_day, self.combineTimes
+        del self.combine_inst, self.test_day, self.combine_times
 
     def test_combine_f107_none(self):
         """ Test combine_f107 failure when no input is provided"""
@@ -126,13 +126,13 @@ class TestSWF107Combine():
         """Test combine_f107 failure when no times are provided"""
 
         with pytest.raises(ValueError):
-            mm_f107.combine_f107(self.combineInst[''],
-                                 self.combineInst['forecast'])
+            mm_f107.combine_f107(self.combine_inst[''],
+                                 self.combine_inst['forecast'])
 
     def test_combine_f107_no_data(self):
         """Test combine_f107 when no data is present for specified times"""
 
-        combo_in = {kk: self.combineInst['forecast'] for kk in
+        combo_in = {kk: self.combine_inst['forecast'] for kk in
                     ['standard_inst', 'forecast_inst']}
         combo_in['start'] = dt.datetime(2014, 2, 19)
         combo_in['stop'] = dt.datetime(2014, 2, 24)
@@ -145,14 +145,15 @@ class TestSWF107Combine():
     def test_combine_f107_inst_time(self):
         """Test combine_f107 with times provided through datasets"""
 
-        self.combineInst['all'].load(date=self.combineTimes['start'])
-        self.combineInst['forecast'].load(date=self.test_day)
+        self.combine_inst[''].load(date=self.combine_inst[''].lasp_stime,
+                                   end_date=self.combine_times['start'])
+        self.combine_inst['forecast'].load(date=self.test_day)
 
-        f107_inst = mm_f107.combine_f107(self.combineInst['all'],
-                                         self.combineInst['forecast'])
+        f107_inst = mm_f107.combine_f107(self.combine_inst[''],
+                                         self.combine_inst['forecast'])
 
-        assert f107_inst.index[0] == dt.datetime(1947, 2, 13)
-        assert f107_inst.index[-1] <= self.combineTimes['stop']
+        assert f107_inst.index[0] == self.combine_inst[''].lasp_stime
+        assert f107_inst.index[-1] <= self.combine_times['stop']
         assert len(f107_inst.data.columns) == 1
         assert f107_inst.data.columns[0] == 'f107'
 
@@ -161,12 +162,12 @@ class TestSWF107Combine():
     def test_combine_f107_all(self):
         """Test combine_f107 when all input is provided with '' and '45day'"""
 
-        f107_inst = mm_f107.combine_f107(self.combineInst[''],
-                                         self.combineInst['45day'],
-                                         **self.combineTimes)
+        f107_inst = mm_f107.combine_f107(self.combine_inst[''],
+                                         self.combine_inst['45day'],
+                                         **self.combine_times)
 
-        assert f107_inst.index[0] >= self.combineTimes['start']
-        assert f107_inst.index[-1] < self.combineTimes['stop']
+        assert f107_inst.index[0] >= self.combine_times['start']
+        assert f107_inst.index[-1] < self.combine_times['stop']
         assert len(f107_inst.data.columns) == 1
         assert f107_inst.data.columns[0] == 'f107'
 

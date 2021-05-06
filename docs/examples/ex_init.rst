@@ -11,13 +11,11 @@ used as an example.
 ::
 
 
-   import datetime as dt
    import pysat
    import pysatSpaceWeather as py_sw
 
-   old_time = dt.datetime(2012, 5, 14)
    f107 = pysat.Instrument(inst_module=py_sw.instruments.sw_f107,
-                           tag='', update_files=True)
+                           tag='historic', update_files=True)
    f107.download(start=f107.lasp_stime, stop=f107.today(), freq='MS')
    f107.load(date=f107.lasp_stime, end_date=f107.today())
    print(f107)

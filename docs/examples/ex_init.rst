@@ -11,20 +11,19 @@ used as an example.
 ::
 
 
-   import datetime as dt
    import pysat
    import pysatSpaceWeather as py_sw
 
-   old_time = dt.datetime(2012, 5, 14)
    f107 = pysat.Instrument(inst_module=py_sw.instruments.sw_f107,
-                           tag='all', update_files=True)
-   f107.download(start=old_time)
-   f107.load(date=old_time)
+                           tag='historic', update_files=True)
+   f107.download(start=f107.lasp_stime, stop=f107.today(), freq='MS')
+   f107.load()
    print(f107)
 
 
 The output includes all available historic data (as implied by the tag name),
-including the specified date.  This data set starts on 14 February 1947 and will
+including the specified date.  This data set starts on 14 February 1947, as
+indicated by the special instrument attribute `f107.lasp_stime`, and will
 not reach up to the present day.  At the time of publication this produces the
 output shown below (the index header has been added here for clarity).
 
@@ -44,6 +43,5 @@ output shown below (the index header has been added here for clarity).
    2018-04-30   71.3
    
    [25367 rows x 1 columns]
-
 
 

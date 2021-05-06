@@ -26,7 +26,7 @@ def acknowledgements(name, tag):
     swpc = ''.join(['Prepared by the U.S. Dept. of Commerce, NOAA, Space ',
                     'Weather Prediction Center'])
 
-    ackn = {'f107': {'': lisird, 'all': lisird, 'prelim': swpc,
+    ackn = {'f107': {'historic': lisird, 'prelim': swpc,
                      'daily': swpc, 'forecast': swpc, '45day': swpc}}
 
     return ackn[name][tag]
@@ -55,8 +55,7 @@ def references(name, tag):
     swpc_desc = ''.join(['Dataset description: https://www.swpc.noaa.gov/',
                          'sites/default/files/images/u2/Usr_guide.pdf'])
 
-    refs = {'f107': {'': "\n".join([noaa_desc, orig_ref]),
-                     'all': "\n".join([noaa_desc, orig_ref]),
+    refs = {'f107': {'historic': "\n".join([noaa_desc, orig_ref]),
                      'prelim': "\n".join([swpc_desc, orig_ref]),
                      'daily': "\n".join([swpc_desc, orig_ref]),
                      'forecast': "\n".join([swpc_desc, orig_ref]),
@@ -72,7 +71,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     ----------
     standard_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'f107' name,
-        and '', 'all', 'prelim', or 'daily' tag
+        and 'historic', 'prelim', or 'daily' tag
     forecast_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'f107' name,
         and 'prelim', '45day' or 'forecast' tag

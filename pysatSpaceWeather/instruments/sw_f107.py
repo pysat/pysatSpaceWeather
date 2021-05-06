@@ -8,8 +8,7 @@ platform
 name
     'f107'
 tag
-    - '' LASP F10.7 data (downloads by month, loads by day)
-    - 'all' All LASP standard F10.7 (deprecated)
+    - 'historic' LASP F10.7 data (downloads by month, loads by day)
     - 'prelim' Preliminary SWPC daily solar indices
     - 'daily' Daily SWPC solar indices (contains last 30 days)
     - 'forecast' Grab forecast data from SWPC (next 3 days)
@@ -17,7 +16,9 @@ tag
 
 Example
 -------
-Download and load all of the historic F10.7 data
+Download and load all of the historic F10.7 data.  Note that it will not
+stop on the current date, but a point in the past when post-processing has
+been successfully completed.
 ::
 
     f107 = pysat.Instrument('sw', 'f107')
@@ -74,30 +75,28 @@ logger = pysat.logger
 
 platform = 'sw'
 name = 'f107'
-tags = {'': 'Daily LASP value of F10.7',
-        'all': "All LASP F10.7 values (deprecated, use '' instead)",
+tags = {'historic': 'Daily LASP value of F10.7',
         'prelim': 'Preliminary SWPC daily solar indices',
         'daily': 'Daily SWPC solar indices (contains last 30 days)',
         'forecast': 'SWPC Forecast F107 data next (3 days)',
         '45day': 'Air Force 45-day Forecast'}
 
-# dict keyed by inst_id that lists supported tags for each inst_id
+# Dict keyed by inst_id that lists supported tags for each inst_id
 inst_ids = {'': [tag for tag in tags.keys()]}
 
-# dict keyed by inst_id that lists supported tags and a good day of test data
+# Dict keyed by inst_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
 now = dt.datetime.utcnow()
 today = dt.datetime(now.year, now.month, now.day)
 tomorrow = today + pds.DateOffset(days=1)
 
 # The LASP archive start day is also important
-lasp_stime = dt.datetime(1947, 2, 13)
+lasp_stime = dt.datetime(1947, 2, 14)
 
 # ----------------------------------------------------------------------------
 # Instrument test attributes
 
-_test_dates = {'': {'': dt.datetime(2009, 1, 1),
-                    'all': dt.datetime(2009, 1, 1),  # Remove after full dep.
+_test_dates = {'': {'historic': dt.datetime(2009, 1, 1),
                     'prelim': dt.datetime(2009, 1, 1),
                     'daily': tomorrow,
                     'forecast': tomorrow,
@@ -121,14 +120,8 @@ def init(self):
     self.references = mm_f107.references(self.name, self.tag)
     logger.info(self.acknowledgements)
 
-    if self.tag == 'all':
-        warnings.warn("".join(["'all' tag has been deprecated, and will be ",
-                               "removed in the 0.0.5+ release, use '' with ",
-                               "`load(date=inst.lasp_stime, date=inst.today()",
-                               ")`instead"]), DeprecationWarning)
-
     # Define the historic F10.7 starting time
-    if self.tag == '':
+    if self.tag == 'historic':
         self.lasp_stime = lasp_stime
 
     return
@@ -174,7 +167,7 @@ def load(fnames, tag=None, inst_id=None):
     """
     # Get the desired file dates and file names from the daily indexed list
     file_dates = list()
-    if tag == '':
+    if tag == 'historic':
         unique_files = list()
         for fname in fnames:
             file_dates.append(dt.datetime.strptime(fname[-10:], '%Y-%m-%d'))
@@ -316,7 +309,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
 
     Returns
     -------
-    pysat.Files.from_os : pysat._files.Files
+    out_files : pysat._files.Files
         A class containing the verified available files
 
     Note
@@ -326,57 +319,33 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """
 
     if data_path is not None:
-        if tag == '':
-            # files are by month, going to add date to monthly filename for
+        if tag == 'historic':
+            # Files are by month, going to add date to monthly filename for
             # each day of the month. The load routine will load a month of
             # data and use the appended date to select out appropriate data.
             if format_str is None:
                 format_str = 'f107_monthly_{year:04d}-{month:02d}.txt'
-            out = pysat.Files.from_os(data_path=data_path,
-                                      format_str=format_str)
-            if not out.empty:
-                out.loc[out.index[-1] + pds.DateOffset(months=1)
-                        - pds.DateOffset(days=1)] = out.iloc[-1]
-                out = out.asfreq('D', 'pad')
-                out = out + '_' + out.index.strftime('%Y-%m-%d')
-            return out
-
-        elif tag == 'all':
-            # files are by year
-            if format_str is None:
-                format_str = ''.join(('f107_1947_to_{year:04d}-{month:02d}-',
-                                      '{day:02d}.txt'))
-            out = pysat.Files.from_os(data_path=data_path,
-                                      format_str=format_str)
-            # load the same data (all), regardless of which day a user selects
-            # resample file list to provide the same filename for every day
-            # of f107 data
-            if not out.empty:
-                # only want to use the most recent file
-                out = out.iloc[-1:]
-                # first day of data is 2-14, ensure same file for first and
-                # most recent day
-                out.loc[dt.datetime(1947, 2, 13)] = out.iloc[0]
-                # make sure things are in order and copy latest filename for
-                # all days, thus no matter which day with data the user loads
-                # they get the most recent F10.7 file
-                out = out.sort_index()
-                out = out.asfreq('D', 'pad')
-
-            return out
+            out_files = pysat.Files.from_os(data_path=data_path,
+                                            format_str=format_str)
+            if not out_files.empty:
+                out_files.loc[out_files.index[-1] + pds.DateOffset(months=1)
+                              - pds.DateOffset(days=1)] = out_files.iloc[-1]
+                out_files = out_files.asfreq('D', 'pad')
+                out_files = out_files + '_' + out_files.index.strftime(
+                    '%Y-%m-%d')
 
         elif tag == 'prelim':
-            # files are by year (and quarter). The load routine will load a
+            # Files are by year (and quarter). The load routine will load a
             # year of data
             if format_str is None:
                 format_str = \
                     'f107_prelim_{year:04d}_{month:02d}_v{version:01d}.txt'
-            out = pysat.Files.from_os(data_path=data_path,
-                                      format_str=format_str)
+            out_files = pysat.Files.from_os(data_path=data_path,
+                                            format_str=format_str)
 
-            if not out.empty:
+            if not out_files.empty:
                 # Set each file's valid length at a 1-day resolution
-                orig_files = out.sort_index().copy()
+                orig_files = out_files.sort_index().copy()
                 new_files = list()
 
                 for orig in orig_files.iteritems():
@@ -396,52 +365,30 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
                         iend = dend
 
                     # Pad the original file index
-                    out.loc[iend] = orig[1]
-                    out = out.sort_index()
+                    out_files.loc[iend] = orig[1]
+                    out_files = out_files.sort_index()
 
                     # Save the files at a daily cadence over the desired period
-                    new_files.append(out.loc[istart: iend].asfreq('D', 'pad'))
+                    new_files.append(out_files.loc[istart:
+                                                   iend].asfreq('D', 'pad'))
                 # Add the newly indexed files to the file output
-                out = pds.concat(new_files, sort=True)
-                out = out.dropna()
-                out = out.sort_index()
+                out_files = pds.concat(new_files, sort=True)
+                out_files = out_files.dropna()
+                out_files = out_files.sort_index()
 
-            return out
+        elif tag in ['daily', 'forecast', '45day']:
+            format_str = ''.join(['f107_', tag,
+                                  '_{year:04d}-{month:02d}-{day:02d}.txt'])
+            out_files = pysat.Files.from_os(data_path=data_path,
+                                            format_str=format_str)
 
-        elif tag == 'daily':
-            format_str = 'f107_daily_{year:04d}-{month:02d}-{day:02d}.txt'
-            files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=format_str)
-
-            # pad list of files data to include most recent file under tomorrow
-            if not files.empty:
+            # Pad list of files data to include most recent file under tomorrow
+            if not out_files.empty:
                 pds_off = pds.DateOffset(days=1)
-                files.loc[files.index[-1] + pds_off] = files.values[-1]
-                files.loc[files.index[-1] + pds_off] = files.values[-1]
-            return files
-
-        elif tag == 'forecast':
-            format_str = 'f107_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
-            files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=format_str)
-            # pad list of files data to include most recent file under tomorrow
-            if not files.empty:
-                pds_off = pds.DateOffset(days=1)
-                files.loc[files.index[-1] + pds_off] = files.values[-1]
-                files.loc[files.index[-1] + pds_off] = files.values[-1]
-            return files
-
-        elif tag == '45day':
-            format_str = 'f107_45day_{year:04d}-{month:02d}-{day:02d}.txt'
-            files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=format_str)
-
-            # pad list of files data to include most recent file under tomorrow
-            if not files.empty:
-                pds_off = pds.DateOffset(days=1)
-                files.loc[files.index[-1] + pds_off] = files.values[-1]
-                files.loc[files.index[-1] + pds_off] = files.values[-1]
-            return files
+                out_files.loc[out_files.index[-1]
+                              + pds_off] = out_files.values[-1]
+                out_files.loc[out_files.index[-1]
+                              + pds_off] = out_files.values[-1]
 
         else:
             raise ValueError(' '.join(('Unrecognized tag name for Space',
@@ -450,21 +397,22 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
         raise ValueError(' '.join(('A data_path must be passed to the loading',
                                    'routine for F107')))
 
+    return out_files
+
 
 def download(date_array, tag, inst_id, data_path, update_files=False):
     """Routine to download F107 index data
 
     Parameters
     -----------
+    date_array : list-like
+        Sequence of dates to download date for.
     tag : string or NoneType
-        Denotes type of file to load.  Accepted types are '' and 'forecast'.
-        (default=None)
+        Denotes type of file to load.
     inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
+        Specifies the satellite ID for a constellation.
     data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
+        Path to data directory.
     update_files : bool
         Re-download data for files that already exist if True (default=False)
 
@@ -479,7 +427,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     """
 
     # download standard F107 data
-    if tag in ['', 'all']:
+    if tag == 'historic':
         # Test the date array, updating it if necessary
         if date_array.freq != 'MS':
             warnings.warn(''.join(['Historic F10.7 downloads should be invoked',

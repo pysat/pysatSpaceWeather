@@ -136,8 +136,8 @@ latex_documents = [(master_doc, '{:s}.tex'.format(project),
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, project, '{:s} Documentation'.format(project), [author],
-              1)]
+man_pages = [(master_doc, project, '{:s} Documentation'.format(project),
+              [author], 1)]
 
 # -- Options for Texinfo output -------------------------------------------
 

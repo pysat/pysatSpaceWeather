@@ -167,7 +167,7 @@ def load(fnames, tag=None, inst_id=None):
     """
     # Get the desired file dates and file names from the daily indexed list
     file_dates = list()
-    if tag == 'historic':
+    if tag in ['historic', 'prelim']:
         unique_files = list()
         for fname in fnames:
             file_dates.append(dt.datetime.strptime(fname[-10:], '%Y-%m-%d'))
@@ -335,11 +335,10 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
                     '%Y-%m-%d')
 
         elif tag == 'prelim':
-            # Files are by year (and quarter). The load routine will load a
-            # year of data
+            # Files are by year (and quarter)
             if format_str is None:
-                format_str = \
-                    'f107_prelim_{year:04d}_{month:02d}_v{version:01d}.txt'
+                format_str = ''.join(['f107_prelim_{year:04d}_{month:02d}',
+                                      '_v{version:01d}.txt'])
             out_files = pysat.Files.from_os(data_path=data_path,
                                             format_str=format_str)
 
@@ -375,6 +374,8 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
                 out_files = pds.concat(new_files, sort=True)
                 out_files = out_files.dropna()
                 out_files = out_files.sort_index()
+                out_files = out_files + '_' + out_files.index.strftime(
+                    '%Y-%m-%d')
 
         elif tag in ['daily', 'forecast', '45day']:
             format_str = ''.join(['f107_', tag,

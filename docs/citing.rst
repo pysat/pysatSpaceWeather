@@ -10,8 +10,8 @@ pysatSpaceWeather
 -----------------
 
 The most recent citation can be found at `Zenodo
-<https://zenodo.org/record/4442679#.YJvSM2ZKgn0>`_.  The examples here are from
-the first release.
+<https://zenodo.org/record/4442679>`_.  The examples here are from the first
+release.
 
 * Burrell, A. G., et al. (2020).
   pysat/pysatSpaceWeather: Initial Release (Version 0.0.1). Zenodo.

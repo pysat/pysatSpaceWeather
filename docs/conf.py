@@ -55,10 +55,11 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pysatSpaceWeather'
-proj_desc = '{:s} Documentation'.format(project)
+title = '{:s} Documentation'.format(project)
 zenodo = json.loads(open('../.zenodo.json').read())
 author = ', '.join([x['name'] for x in zenodo['creators']])
-manual_copyright = ', '.join(['2021', author])
+description = 'Tools for space weather indices.'
+copyright = ', '.join(['2021', author])
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -130,22 +131,22 @@ latex_elements = {}
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [(master_doc, '{:s}.tex'.format(project), proj_desc, author,
+latex_documents = [(master_doc, '{:s}.tex'.format(project), title, author,
                     'manual')]
 
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, project, proj_desc, [author], 1)]
+man_pages = [(master_doc, project, title, [author], 1)]
 
 # -- Options for Texinfo output -------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
-texinfo_documents = [(master_doc, project, proj_desc, author, project,
-                      'Tools for space weather indices.', 'Space Physics')]
+texinfo_documents = [(master_doc, project, title, author, project,
+                      description, 'Space Physics')]
 
 # -- Options for Epub output ----------------------------------------------
 
@@ -153,7 +154,7 @@ texinfo_documents = [(master_doc, project, proj_desc, author, project,
 epub_title = project
 epub_author = author
 epub_publisher = author
-epub_copyright = manual_copyright
+epub_copyright = copyright
 
 # The unique identifier of the text. This can be a ISBN number
 # or the project homepage.

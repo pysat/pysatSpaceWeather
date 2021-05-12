@@ -54,8 +54,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pysatSpaceWeather'
-author = ''.join(['Angeline G Burrell, Jeffrey Klenzing, Russell Stoneback, ',
-                  'Asher Pembroke, Carey Spance'])
+zenodo = json.loads(open('../.zenodo.json').read())
+author = ', '.join([x['name'] for x in zenodo['creators']])
 manual_copyright = ', '.join(['2021', author])
 
 # The version info for the project you're documenting, acts as replacement for

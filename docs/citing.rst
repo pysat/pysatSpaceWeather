@@ -10,7 +10,7 @@ pysatSpaceWeather
 -----------------
 
 The most recent citation can be found at `Zenodo
-<https://zenodo.org/record/4442679>`_.  The examples here are from the first
+<https://zenodo.org/record/3986138>`_.  The examples here are from the first
 release.
 
 * Burrell, A. G., et al. (2020).

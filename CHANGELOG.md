@@ -18,6 +18,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Deprecated F10.7 instrument tag 'all' and '', replacing them with 'historic'
 * Improved F10.7 instrument routines by combining similar code blocks
 * Fixed F10.7 load/list bugs that lead to duplicate data entries
+* Fixed Dst load bugs when loading multiple days of data
 
 [0.0.3] - 2021-01-15
 --------------------

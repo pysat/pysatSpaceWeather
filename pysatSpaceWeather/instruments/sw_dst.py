@@ -114,10 +114,20 @@ def load(fnames, tag=None, inst_id=None):
 
     all_data = []
 
+    # Dst data is actually stored by year but users can load by day.
+    # Extract the actual dates from the input list of filenames as
+    # well as the names of the actual files.
+    fdates = []
+    ufnames = []
     for filename in fnames:
-        # Need to remove date appended to dst filename
-        fname = filename[0:-11]
+        fdates.append(dt.datetime.strptime(filename[-10:], '%Y-%m-%d'))
+        ufnames.append(filename[0:-11])
 
+    # Get unique filenames that map to actual data
+    ufnames = np.unique(ufnames).tolist()
+
+    # Load unique files
+    for fname in ufnames:
         with open(fname) as open_f:
             lines = open_f.readlines()
             idx = 0
@@ -153,25 +163,31 @@ def load(fnames, tag=None, inst_id=None):
                     dst[idx:idx + 24] = temp2
                     idx += 24
 
-            # Prep datetime index for the data
+            # Prep datetime index for the data and create DataFrame
             start = dt.datetime(yr[0], mo[0], day[0], ut[0])
             stop = dt.datetime(yr[-1], mo[-1], day[-1], ut[-1])
             dates = pds.date_range(start, stop, freq='H')
-
             new_data = pds.DataFrame(dst, index=dates, columns=['dst'])
 
-            # Pull out specific day
-            new_date = dt.datetime.strptime(filename[-10:], '%Y-%m-%d')
-            idx, = np.where((new_data.index >= new_date)
-                            & (new_data.index < new_date
-                               + pds.DateOffset(days=1)))
-            new_data = new_data.iloc[idx, :]
-
-            # Add specific day to all data loaded for filenames
+            # Add to all data loaded for filenames
             all_data.append(new_data)
 
     # Combine data together
     data = pds.concat(all_data, sort=True, axis=0)
+
+    # Pull out requested days
+    data = data.iloc[data.index >= fdates[0], :]
+    data = data.iloc[data.index < fdates[-1] + pds.DateOffset(days=1), :]
+
+    # Create metadata
+    meta = pysat.Meta()
+    meta['dst'] = {meta.labels.units: 'nT',
+                   meta.labels.name: 'Dst',
+                   meta.labels.notes: 'Downloaded from NOAA/NGDC',
+                   meta.labels.desc: 'Disturbance storm-time index',
+                   meta.labels.fill_val: np.nan,
+                   meta.labels.min_val: -np.inf,
+                   meta.labels.max_val: np.inf}
 
     return data, pysat.Meta()
 

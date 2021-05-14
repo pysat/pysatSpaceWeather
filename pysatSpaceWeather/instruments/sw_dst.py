@@ -112,25 +112,30 @@ def load(fnames, tag=None, inst_id=None):
 
     """
 
-    data = pds.DataFrame()
+    all_data = []
 
     for filename in fnames:
-        # need to remove date appended to dst filename
+        # Need to remove date appended to dst filename
         fname = filename[0:-11]
-        all_data = []
+
         with open(fname) as open_f:
             lines = open_f.readlines()
             idx = 0
-            # check if all lines are good
+
+            # Check if all lines are good
             max_lines = 0
             for line in lines:
                 if len(line) > 1:
                     max_lines += 1
+
+            # Prep memory
             yr = np.zeros(max_lines * 24, dtype=int)
             mo = np.zeros(max_lines * 24, dtype=int)
             day = np.zeros(max_lines * 24, dtype=int)
             ut = np.zeros(max_lines * 24, dtype=int)
             dst = np.zeros(max_lines * 24, dtype=int)
+
+            # Read data
             for line in lines:
                 if len(line) > 1:
                     temp_year = int(line[14:16] + line[3:5])
@@ -148,21 +153,25 @@ def load(fnames, tag=None, inst_id=None):
                     dst[idx:idx + 24] = temp2
                     idx += 24
 
+            # Prep datetime index for the data
             start = dt.datetime(yr[0], mo[0], day[0], ut[0])
             stop = dt.datetime(yr[-1], mo[-1], day[-1], ut[-1])
             dates = pds.date_range(start, stop, freq='H')
 
             new_data = pds.DataFrame(dst, index=dates, columns=['dst'])
-            # pull out specific day
+
+            # Pull out specific day
             new_date = dt.datetime.strptime(filename[-10:], '%Y-%m-%d')
             idx, = np.where((new_data.index >= new_date)
                             & (new_data.index < new_date
                                + pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx, :]
-            # add specific day to all data loaded for filenames
+
+            # Add specific day to all data loaded for filenames
             all_data.append(new_data)
-        # combine data together
-        data = pds.concat(all_data, sort=True, axis=0)
+
+    # Combine data together
+    data = pds.concat(all_data, sort=True, axis=0)
 
     return data, pysat.Meta()
 

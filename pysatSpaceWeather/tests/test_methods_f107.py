@@ -28,18 +28,18 @@ class TestSWF107():
         """ Test the calc_f107a with a bad input name """
 
         with pytest.raises(ValueError):
-            sw_f107.calc_f107a(self.testInst, 'bad')
+            mm_f107.calc_f107a(self.testInst, 'bad')
 
     def test_calc_f107a_bad_outname(self):
         """ Test the calc_f107a with a bad output name """
 
         with pytest.raises(ValueError):
-            sw_f107.calc_f107a(self.testInst, 'f107', 'f107')
+            mm_f107.calc_f107a(self.testInst, 'f107', 'f107')
 
     def test_calc_f107a_daily(self):
         """ Test the calc_f107a routine with daily data"""
 
-        sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
+        mm_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
 
         # Assert that new data and metadata exist
         assert 'f107a' in self.testInst.data.columns
@@ -57,7 +57,7 @@ class TestSWF107():
                                            index=[dt.datetime(2009, 1, 1)
                                                   + pds.DateOffset(hours=i)
                                                   for i in range(3840)])
-        sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
+        mm_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
 
         # Assert that new data and metadata exist
         assert 'f107a' in self.testInst.data.columns
@@ -79,7 +79,7 @@ class TestSWF107():
                                                   + pds.DateOffset(days=(2 * i
                                                                          + 1))
                                                   for i in range(160)])
-        sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
+        mm_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
 
         # Assert that new data and metadata exist
         assert 'f107a' in self.testInst.data.columns

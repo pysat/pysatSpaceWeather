@@ -189,7 +189,7 @@ def load(fnames, tag=None, inst_id=None):
                    meta.labels.min_val: -np.inf,
                    meta.labels.max_val: np.inf}
 
-    return data, pysat.Meta()
+    return data, meta
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None):

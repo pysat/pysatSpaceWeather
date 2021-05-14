@@ -14,9 +14,6 @@ Note
 ----
 Will only work until 2057.
 
-Download method should be invoked on a yearly frequency,
-dst.download(date1, date2, freq='AS')
-
 This material is based upon work supported by the
 National Science Foundation under Grant Number 1259508.
 

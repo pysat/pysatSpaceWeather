@@ -19,6 +19,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Improved F10.7 instrument routines by combining similar code blocks
 * Fixed F10.7 load/list bugs that lead to duplicate data entries
 * Fixed Dst load bugs when loading multiple days of data
+* Replaced Dst tag '' with 'noaa', making it easy to add other sources
+* Moved all instrument support routines to appropriate `methods` sub-module
 
 [0.0.3] - 2021-01-15
 --------------------

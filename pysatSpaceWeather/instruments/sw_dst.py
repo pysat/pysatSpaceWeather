@@ -8,7 +8,9 @@ platform
 name
     'dst'
 tag
-    None supported
+    'noaa' - Historic Dst data coalated by and maintained by NOAA/NCEI
+inst_id
+    ''
 
 Note
 ----
@@ -30,6 +32,7 @@ import os
 import pandas as pds
 
 import pysat
+
 from pysatSpaceWeather.instruments.methods import dst as mm_dst
 
 logger = pysat.logger
@@ -39,16 +42,16 @@ logger = pysat.logger
 
 platform = 'sw'
 name = 'dst'
-tags = {'': ''}
-inst_ids = {'': ['']}
+tags = {'noaa': 'Historic Dst data coalated by and maintained by NOAA/NCEI'}
+inst_ids = {'': [tag for tag in tags]}
 
 # ----------------------------------------------------------------------------
 # Instrument test attributes
 
-_test_dates = {'': {'': dt.datetime(2007, 1, 1)}}
+_test_dates = {'': {'noaa': dt.datetime(2007, 1, 1)}}
 
 # Other tags assumed to be True
-_test_download_travis = {'': {'': False}}
+_test_download_travis = {'': {'noaa': False}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods
@@ -56,10 +59,6 @@ _test_download_travis = {'': {'': False}}
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-
     """
 
     self.acknowledgements = mm_dst.acknowledgements(self.name, self.tag)
@@ -105,7 +104,6 @@ def load(fnames, tag=None, inst_id=None):
     Note
     ----
     Called by pysat. Not intended for direct use by user.
-
 
     """
 
@@ -180,7 +178,7 @@ def load(fnames, tag=None, inst_id=None):
     meta = pysat.Meta()
     meta['dst'] = {meta.labels.units: 'nT',
                    meta.labels.name: 'Dst',
-                   meta.labels.notes: 'Downloaded from NOAA/NGDC',
+                   meta.labels.notes: tags[tag],
                    meta.labels.desc: 'Disturbance storm-time index',
                    meta.labels.fill_val: np.nan,
                    meta.labels.min_val: -np.inf,
@@ -219,7 +217,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """
 
     if data_path is not None:
-        if tag == '':
+        if tag == 'noaa':
             # files are by year, going to add date to yearly filename for
             # each day of the month. The load routine will load a month of
             # data and use the appended date to select out appropriate data.
@@ -239,6 +237,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     else:
         raise ValueError(''.join(('A data_path must be passed to the loading ',
                                   'routine for Dst')))
+    return
 
 
 def download(date_array, tag, inst_id, data_path, user=None, password=None):

@@ -8,14 +8,13 @@ platform
 name
     'dst'
 tag
-    None supported
+    'noaa' - Historic Dst data coalated by and maintained by NOAA/NCEI
+inst_id
+    ''
 
 Note
 ----
 Will only work until 2057.
-
-Download method should be invoked on a yearly frequency,
-dst.download(date1, date2, freq='AS')
 
 This material is based upon work supported by the
 National Science Foundation under Grant Number 1259508.
@@ -33,6 +32,7 @@ import os
 import pandas as pds
 
 import pysat
+
 from pysatSpaceWeather.instruments.methods import dst as mm_dst
 
 logger = pysat.logger
@@ -42,16 +42,16 @@ logger = pysat.logger
 
 platform = 'sw'
 name = 'dst'
-tags = {'': ''}
-inst_ids = {'': ['']}
+tags = {'noaa': 'Historic Dst data coalated by and maintained by NOAA/NCEI'}
+inst_ids = {'': [tag for tag in tags]}
 
 # ----------------------------------------------------------------------------
 # Instrument test attributes
 
-_test_dates = {'': {'': dt.datetime(2007, 1, 1)}}
+_test_dates = {'': {'noaa': dt.datetime(2007, 1, 1)}}
 
 # Other tags assumed to be True
-_test_download_travis = {'': {'': False}}
+_test_download_travis = {'': {'noaa': False}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods
@@ -59,10 +59,6 @@ _test_download_travis = {'': {'': False}}
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-
     """
 
     self.acknowledgements = mm_dst.acknowledgements(self.name, self.tag)
@@ -109,28 +105,42 @@ def load(fnames, tag=None, inst_id=None):
     ----
     Called by pysat. Not intended for direct use by user.
 
-
     """
 
-    data = pds.DataFrame()
+    all_data = []
 
+    # Dst data is actually stored by year but users can load by day.
+    # Extract the actual dates from the input list of filenames as
+    # well as the names of the actual files.
+    fdates = []
+    ufnames = []
     for filename in fnames:
-        # need to remove date appended to dst filename
-        fname = filename[0:-11]
-        all_data = []
+        fdates.append(dt.datetime.strptime(filename[-10:], '%Y-%m-%d'))
+        ufnames.append(filename[0:-11])
+
+    # Get unique filenames that map to actual data
+    ufnames = np.unique(ufnames).tolist()
+
+    # Load unique files
+    for fname in ufnames:
         with open(fname) as open_f:
             lines = open_f.readlines()
             idx = 0
-            # check if all lines are good
+
+            # Check if all lines are good
             max_lines = 0
             for line in lines:
                 if len(line) > 1:
                     max_lines += 1
+
+            # Prep memory
             yr = np.zeros(max_lines * 24, dtype=int)
             mo = np.zeros(max_lines * 24, dtype=int)
             day = np.zeros(max_lines * 24, dtype=int)
             ut = np.zeros(max_lines * 24, dtype=int)
             dst = np.zeros(max_lines * 24, dtype=int)
+
+            # Read data
             for line in lines:
                 if len(line) > 1:
                     temp_year = int(line[14:16] + line[3:5])
@@ -148,23 +158,33 @@ def load(fnames, tag=None, inst_id=None):
                     dst[idx:idx + 24] = temp2
                     idx += 24
 
+            # Prep datetime index for the data and create DataFrame
             start = dt.datetime(yr[0], mo[0], day[0], ut[0])
             stop = dt.datetime(yr[-1], mo[-1], day[-1], ut[-1])
             dates = pds.date_range(start, stop, freq='H')
-
             new_data = pds.DataFrame(dst, index=dates, columns=['dst'])
-            # pull out specific day
-            new_date = dt.datetime.strptime(filename[-10:], '%Y-%m-%d')
-            idx, = np.where((new_data.index >= new_date)
-                            & (new_data.index < new_date
-                               + pds.DateOffset(days=1)))
-            new_data = new_data.iloc[idx, :]
-            # add specific day to all data loaded for filenames
-            all_data.append(new_data)
-        # combine data together
-        data = pds.concat(all_data, sort=True, axis=0)
 
-    return data, pysat.Meta()
+            # Add to all data loaded for filenames
+            all_data.append(new_data)
+
+    # Combine data together
+    data = pds.concat(all_data, sort=True, axis=0)
+
+    # Pull out requested days
+    data = data.iloc[data.index >= fdates[0], :]
+    data = data.iloc[data.index < fdates[-1] + pds.DateOffset(days=1), :]
+
+    # Create metadata
+    meta = pysat.Meta()
+    meta['dst'] = {meta.labels.units: 'nT',
+                   meta.labels.name: 'Dst',
+                   meta.labels.notes: tags[tag],
+                   meta.labels.desc: 'Disturbance storm-time index',
+                   meta.labels.fill_val: np.nan,
+                   meta.labels.min_val: -np.inf,
+                   meta.labels.max_val: np.inf}
+
+    return data, meta
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
@@ -197,7 +217,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """
 
     if data_path is not None:
-        if tag == '':
+        if tag == 'noaa':
             # files are by year, going to add date to yearly filename for
             # each day of the month. The load routine will load a month of
             # data and use the appended date to select out appropriate data.
@@ -217,6 +237,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     else:
         raise ValueError(''.join(('A data_path must be passed to the loading ',
                                   'routine for Dst')))
+    return
 
 
 def download(date_array, tag, inst_id, data_path, user=None, password=None):

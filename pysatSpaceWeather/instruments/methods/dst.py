@@ -16,7 +16,8 @@ def acknowledgements(name, tag):
 
     """
 
-    ackn = {'dst': {'': 'Dst is maintained at NCEI (formerly NGDC) at NOAA'}}
+    ackn = {'dst':
+            {'noaa': 'Dst is maintained at NCEI (formerly NGDC) at NOAA'}}
 
     return ackn[name][tag]
 
@@ -33,7 +34,7 @@ def references(name, tag):
 
     """
 
-    refs = {'dst': {'': ''.join([
+    refs = {'dst': {'noaa': ''.join([
         'See referenece list and publication at: Sugiura M. and T. Kamei, '
         'http://wdc.kugi.kyoto-u.ac.jp/dstdir/dst2/onDstindex.html, ',
         'last updated June 1991, accessed Dec 2020'])}}

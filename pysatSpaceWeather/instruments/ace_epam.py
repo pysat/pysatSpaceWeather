@@ -77,7 +77,7 @@ def init(self):
 
     """
 
-    # Set the appropraite acknowledgements and references
+    # Set the appropriate acknowledgements and references
     self.acknowledgements = mm_ace.acknowledgements()
     self.references = mm_ace.references(self.name)
 
@@ -103,14 +103,12 @@ def clean(self):
     ecols = ['eflux_38-53', 'eflux_175-315']
 
     # Evaluate the electron flux data
-    for col in ecols:
-        self.data[col][self.data['status_e'] > max_status] = np.nan
+    self[self.data['status_e'] > max_status, ecols] = np.nan
 
     # Evaluate the proton flux data
     pcols = ['pflux_47-68', 'pflux_115-195', 'pflux_310-580',
              'pflux_795-1193', 'pflux_1060-1900']
-    for col in pcols:
-        self.data[col][self.data['status_p'] > max_status] = np.nan
+    self[self.data['status_p'] > max_status, pcols] = np.nan
 
     # Include both fluxes and the anisotropy index in the removal eval
     eval_cols = ecols + pcols

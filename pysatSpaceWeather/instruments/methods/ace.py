@@ -91,7 +91,7 @@ def preprocess(inst):
         fill_val = inst.meta[col][inst.meta.labels.fill_val]
         if ~np.isnan(fill_val):
             inst.data[col] = inst.data[col].replace(fill_val, np.nan)
-            inst.meta[col][inst.meta.labels.fill_val] = np.nan
+            inst.meta[col] = {inst.meta.labels.fill_val: np.nan}
 
     return
 

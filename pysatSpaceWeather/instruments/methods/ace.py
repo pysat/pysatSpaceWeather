@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-.
-"""Provides default routines for the real-time ACE instruments
-
+"""Provides general routines for the ACE space weather instruments
 """
 
 import datetime as dt
@@ -75,25 +74,6 @@ def references(name):
             refs.keys()))
 
     return refs[name]
-
-
-def preprocess(inst):
-    """Preprocess the ACE data by replacing the file fill values with NaN
-
-    Parameters
-    ----------
-    inst : pysat.Instrument
-        ACE pysat.Instrument object
-
-    """
-    # Replace all fill values with NaN
-    for col in inst.data.columns:
-        fill_val = inst.meta[col][inst.meta.labels.fill_val]
-        if ~np.isnan(fill_val):
-            inst.data[col] = inst.data[col].replace(fill_val, np.nan)
-            inst.meta[col] = {inst.meta.labels.fill_val: np.nan}
-
-    return
 
 
 def clean(inst):

@@ -21,7 +21,7 @@ stop on the current date, but a point in the past when post-processing has
 been successfully completed.
 ::
 
-    f107 = pysat.Instrument('sw', 'f107')
+    f107 = pysat.Instrument('sw', 'f107', tag='historic')
     f107.download(start=f107.lasp_stime, stop=f107.today(), freq='MS')
     f107.load(date=f107.lasp_stime, end_date=f107.today())
 
@@ -41,15 +41,17 @@ the data with tomorrow's date.
     f107.load(date=f107.tomorrow())
 
 
-The forecast or prelim data should not be used with the data padding option
-available from pysat.Instrument objects. The 'all' tag shouldn't be used either,
-no other data available to pad with.
-
 Warnings
 --------
-The 'forecast' F10.7 data loads three days at a time. The data padding feature
-and multi_file_day feature available from the pyast.Instrument object
-is not appropriate for 'forecast' data.
+The 'forecast' F10.7 data loads three days at a time. Loading multiple files,
+loading multiple days, the data padding feature, and multi_file_day feature
+available from the pyast.Instrument object is not appropriate for 'forecast'
+data.
+
+Like 'forecast', the '45day' forecast loads a specific period of time (45 days)
+and subsequent files contain overlapping data.  Thus, loading multiple files,
+loading multiple days, the data padding feature, and multi_file_day feature
+available from the pyast.Instrument object is not appropriate for '45day' data.
 
 """
 
@@ -67,6 +69,7 @@ import pysat
 
 from pysatSpaceWeather.instruments.methods import f107 as mm_f107
 from pysatSpaceWeather.instruments.methods.ace import load_csv_data
+from pysatSpaceWeather.instruments.methods import general
 
 logger = pysat.logger
 
@@ -107,6 +110,8 @@ _test_download_travis = {'': {'prelim': False}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods
+
+preprocess = general.preprocess
 
 
 def init(self):

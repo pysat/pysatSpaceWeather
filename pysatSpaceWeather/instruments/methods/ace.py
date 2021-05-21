@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-.
-"""Provides default routines for the real-time ACE instruments
-
+"""Provides general routines for the ACE space weather instruments
 """
 
 import datetime as dt
@@ -75,25 +74,6 @@ def references(name):
             refs.keys()))
 
     return refs[name]
-
-
-def preprocess(inst):
-    """Preprocess the ACE data by replacing the file fill values with NaN
-
-    Parameters
-    ----------
-    inst : pysat.Instrument
-        ACE pysat.Instrument object
-
-    """
-    # Replace all fill values with NaN
-    for col in inst.data.columns:
-        fill_val = inst.meta[col][inst.meta.labels.fill_val]
-        if ~np.isnan(fill_val):
-            inst.data[col] = inst.data[col].replace(fill_val, np.nan)
-            inst.meta[col][inst.meta.labels.fill_val] = np.nan
-
-    return
 
 
 def clean(inst):
@@ -195,7 +175,8 @@ def download(date_array, name='', tag='', inst_id='', data_path='', now=None):
 
     Warnings
     --------
-    Only able to download current real-time data
+    - Only able to download current real-time data
+    - File requested not available on server
 
     """
     # Ensure now is up-to-date, if desired
@@ -240,33 +221,38 @@ def download(date_array, name='', tag='', inst_id='', data_path='', now=None):
         raw_data = req.text.split('#-----------------')[-1]
         raw_data = raw_data.split('\n')[1:]  # Remove the last header line
 
-        # Parse the file, treating the 4 time columns separately
-        data_dict = {col: list() for col in data_cols[name]}
-        times = list()
-        nsplit = len(data_cols[name]) + 4
-        for raw_line in raw_data:
-            split_line = raw_line.split()
-            if len(split_line) == nsplit:
-                times.append(dt.datetime.strptime(' '.join(split_line[:4]),
-                                                  '%Y %m %d %H%M'))
-                for i, col in enumerate(data_cols[name]):
-                    # Convert to a number and save
-                    #
-                    # Output is saved as a float, so don't bother to
-                    # differentiate between int and float
-                    data_dict[col].append(float(split_line[4 + i]))
-            else:
-                if len(split_line) > 0:
-                    raise IOError(''.join(['unexpected line encoutered in ',
-                                           furl, ":\n", raw_line]))
+        # Test to see if the file was found on the server
+        if ' '.join(raw_data).find('not found on this server') > 0:
+            logger.warning('File for {:} not found on server: {:}'.format(
+                dl_date.strftime("%d %b %Y"), furl))
+        else:
+            # Parse the file, treating the 4 time columns separately
+            data_dict = {col: list() for col in data_cols[name]}
+            times = list()
+            nsplit = len(data_cols[name]) + 4
+            for raw_line in raw_data:
+                split_line = raw_line.split()
+                if len(split_line) == nsplit:
+                    times.append(dt.datetime.strptime(' '.join(split_line[:4]),
+                                                      '%Y %m %d %H%M'))
+                    for i, col in enumerate(data_cols[name]):
+                        # Convert to a number and save
+                        #
+                        # Output is saved as a float, so don't bother to
+                        # differentiate between int and float
+                        data_dict[col].append(float(split_line[4 + i]))
+                else:
+                    if len(split_line) > 0:
+                        raise IOError(''.join(['unexpected line encoutered in ',
+                                               furl, ":\n", raw_line]))
 
-        # Put data into nicer DataFrame
-        data = pds.DataFrame(data_dict, index=times)
+            # Put data into nicer DataFrame
+            data = pds.DataFrame(data_dict, index=times)
 
-        # Write out as a file
-        data_file = '{:s}.txt'.format('_'.join(["ace", name, tag,
-                                                dl_date.strftime('%Y-%m-%d')]))
-        data.to_csv(os.path.join(data_path, data_file), header=True)
+            # Write out as a file
+            data_file = '{:s}.txt'.format(
+                '_'.join(["ace", name, tag, dl_date.strftime('%Y-%m-%d')]))
+            data.to_csv(os.path.join(data_path, data_file), header=True)
 
     return
 

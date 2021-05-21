@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[0.0.4] - 2021-XX-XX
+[0.0.4] - 2021-05-19
 --------------------
 * Implements GitHub Actions for primary CI testing
 * Updated tested python versions
@@ -18,6 +18,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Deprecated F10.7 instrument tag 'all' and '', replacing them with 'historic'
 * Improved F10.7 instrument routines by combining similar code blocks
 * Fixed F10.7 load/list bugs that lead to duplicate data entries
+* Fixed Dst load bugs when loading multiple days of data
+* Replaced Dst tag '' with 'noaa', making it easy to add other sources
+* Moved all instrument support routines to appropriate `methods` sub-module
 
 [0.0.3] - 2021-01-15
 --------------------

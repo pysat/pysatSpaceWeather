@@ -34,15 +34,12 @@ Recent data is also stored by the generation date from the SWPC. Each file
 contains 30 days of Kp measurements. The load date issued to pysat corresponds
 to the generation date.
 
-The recent and forecast data should not be used with the data padding option
-available from pysat.Instrument objects.
-
 Warnings
 --------
-The 'forecast' Kp data loads three days at a time. The data padding feature
-and multi_file_day feature available from the pyast.Instrument object
-is not appropriate for Kp 'forecast' data.
-
+The 'forecast' and 'recent' tags load Kp data for a specific period of time.
+Loading multiple files, loading multiple days, the data padding feature, and
+multi_file_day feature available from the pyast.Instrument object is not
+appropriate for these tags data.
 
 This material is based upon work supported by the
 National Science Foundation under Grant Number 1259508.
@@ -64,6 +61,7 @@ import sys
 import pysat
 
 from pysatSpaceWeather.instruments.methods import kp_ap
+from pysatSpaceWeather.instruments.methods import general
 
 logger = pysat.logger
 
@@ -94,6 +92,8 @@ _test_download_travis = {'': {'': False}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods
+
+preprocess = general.preprocess
 
 
 def init(self):

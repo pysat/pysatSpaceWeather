@@ -30,8 +30,10 @@ tomorrow.
 
 Warnings
 --------
-The real-time data should not be used with the data padding option available
-from pysat.Instrument objects.
+The 'realtime' data contains a changing period of time. Loading multiple files,
+loading multiple days, the data padding feature, and multi_file_day feature
+available from the pyast.Instrument object is not appropriate for 'realtime'
+data.
 
 """
 
@@ -42,6 +44,7 @@ import numpy as np
 from pysat import logger
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
+from pysatSpaceWeather.instruments.methods import general
 
 # ----------------------------------------------------------------------------
 # Instrument attributes
@@ -66,7 +69,7 @@ _test_dates = {inst_id: {'realtime': dt.datetime(now.year, now.month, now.day),
 # ----------------------------------------------------------------------------
 # Instrument methods
 
-preprocess = mm_ace.preprocess
+preprocess = general.preprocess
 
 
 def init(self):

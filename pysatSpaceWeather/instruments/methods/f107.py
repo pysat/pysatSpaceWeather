@@ -3,6 +3,7 @@
 
 """
 
+import datetime as dt
 import pandas as pds
 import numpy as np
 
@@ -262,3 +263,244 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     f107_inst.meta['f107'] = {f107_inst.meta.labels.notes: notes}
 
     return f107_inst
+
+
+def parse_45day_block(block_lines):
+    """ Parse the data blocks used in the 45-day Ap and F10.7 Flux Forecast
+    file
+
+    Parameters
+    ----------
+    block_lines : list
+        List of lines containing data in this data block
+
+    Returns
+    -------
+    dates : list
+        List of dates for each date/data pair in this block
+    values : list
+        List of values for each date/data pair in this block
+
+    """
+
+    # Initialize the output
+    dates = list()
+    values = list()
+
+    # Cycle through each line in this block
+    for line in block_lines:
+        # Split the line on whitespace
+        split_line = line.split()
+
+        # Format the dates
+        dates.extend([dt.datetime.strptime(tt, "%d%b%y")
+                      for tt in split_line[::2]])
+
+        # Format the data values
+        values.extend([int(vv) for vv in split_line[1::2]])
+
+    return dates, values
+
+
+def rewrite_daily_file(year, outfile, lines):
+    """ Rewrite the SWPC Daily Solar Data files
+
+    Parameters
+    ----------
+    year : int
+        Year of data file (format changes based on date)
+    outfile : str
+        Output filename
+    lines : str
+        String containing all output data (result of 'read')
+
+    """
+
+    # get to the solar index data
+    if year > 2000:
+        raw_data = lines.split('#---------------------------------')[-1]
+        raw_data = raw_data.split('\n')[1:-1]
+        optical = True
+    else:
+        raw_data = lines.split('# ')[-1]
+        raw_data = raw_data.split('\n')
+        optical = False if raw_data[0].find('Not Available') or year == 1994 \
+            else True
+        istart = 7 if year < 2000 else 1
+        raw_data = raw_data[istart:-1]
+
+    # parse the data
+    solar_times, data_dict = parse_daily_solar_data(raw_data, year, optical)
+
+    # collect into DataFrame
+    data = pds.DataFrame(data_dict, index=solar_times,
+                         columns=data_dict.keys())
+
+    # write out as a file
+    data.to_csv(outfile, header=True)
+
+    return
+
+
+def parse_daily_solar_data(data_lines, year, optical):
+    """ Parse the data in the SWPC daily solar index file
+
+    Parameters
+    ----------
+    data_lines : list
+        List of lines containing data
+    year : list
+        Year of file
+    optical : boolean
+        Flag denoting whether or not optical data is available
+
+    Returns
+    -------
+    dates : list
+        List of dates for each date/data pair in this block
+    values : dict
+        Dict of lists of values, where each key is the value name
+
+    """
+
+    # Initialize the output
+    dates = list()
+    val_keys = ['f107', 'ssn', 'ss_area', 'new_reg', 'smf', 'goes_bgd_flux',
+                'c_flare', 'm_flare', 'x_flare', 'o1_flare', 'o2_flare',
+                'o3_flare']
+    optical_keys = ['o1_flare', 'o2_flare', 'o3_flare']
+    xray_keys = ['c_flare', 'm_flare', 'x_flare']
+    values = {kk: list() for kk in val_keys}
+
+    # Cycle through each line in this file
+    for line in data_lines:
+        # Split the line on whitespace
+        split_line = line.split()
+
+        # Format the date
+        dfmt = "%Y %m %d" if year > 1996 else "%d %b %y"
+        dates.append(dt.datetime.strptime(" ".join(split_line[0:3]), dfmt))
+
+        # Format the data values
+        j = 0
+        for i, kk in enumerate(val_keys):
+            if year == 1994 and kk == 'new_reg':
+                # New regions only in files after 1994
+                val = -999
+            elif((year == 1994 and kk in xray_keys)
+                 or (not optical and kk in optical_keys)):
+                # X-ray flares in files after 1994, optical flares come later
+                val = -1
+            else:
+                val = split_line[j + 3]
+                j += 1
+
+            if kk != 'goes_bgd_flux':
+                if val == "*":
+                    val = -999 if i < 5 else -1
+                else:
+                    val = int(val)
+            values[kk].append(val)
+
+    return dates, values
+
+
+def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
+    """ Calculate the 81 day mean F10.7
+
+    Parameters
+    ----------
+    f107_inst : pysat.Instrument
+        pysat Instrument holding the F10.7 data
+    f107_name : str
+        Data column name for the F10.7 data (default='f107')
+    f107a_name : str
+        Data column name for the F10.7a data (default='f107a')
+    min_pnts : int
+        Minimum number of points required to calculate an average (default=41)
+
+    Note
+    ----
+    Will not pad data on its own
+
+    """
+
+    # Test to see that the input data is present
+    if f107_name not in f107_inst.data.columns:
+        raise ValueError("unknown input data column: " + f107_name)
+
+    # Test to see that the output data does not already exist
+    if f107a_name in f107_inst.data.columns:
+        raise ValueError("output data column already exists: " + f107a_name)
+
+    if f107_name in f107_inst.meta:
+        fill_val = f107_inst.meta[f107_name][f107_inst.meta.labels.fill_val]
+    else:
+        fill_val = np.nan
+
+    # Calculate the rolling mean.  Since these values are centered but rolling
+    # function doesn't allow temporal windows to be calculated this way, create
+    # a hack for this.
+    #
+    # Ensure the data are evenly sampled at a daily frequency, since this is
+    # how often F10.7 is calculated.
+    f107_fill = f107_inst.data.resample('1D').fillna(method=None)
+
+    # Replace the time index with an ordinal
+    time_ind = f107_fill.index
+    f107_fill['ord'] = pds.Series([tt.toordinal() for tt in time_ind],
+                                  index=time_ind)
+    f107_fill.set_index('ord', inplace=True)
+
+    # Calculate the mean
+    f107_fill[f107a_name] = f107_fill[f107_name].rolling(window=81,
+                                                         min_periods=min_pnts,
+                                                         center=True).mean()
+
+    # Replace the ordinal index with the time
+    f107_fill['time'] = pds.Series(time_ind, index=f107_fill.index)
+    f107_fill.set_index('time', inplace=True)
+
+    # Resample to the original frequency, if it is not equal to 1 day
+    freq = pysat.utils.time.calc_freq(f107_inst.index)
+    if freq != "86400S":
+        # Resample to the desired frequency
+        f107_fill = f107_fill.resample(freq).pad()
+
+        # Save the output in a list
+        f107a = list(f107_fill[f107a_name])
+
+        # Fill any dates that fall
+        time_ind = pds.date_range(f107_fill.index[0], f107_inst.index[-1],
+                                  freq=freq)
+        for itime in time_ind[f107_fill.index.shape[0]:]:
+            if (itime - f107_fill.index[-1]).total_seconds() < 86400.0:
+                f107a.append(f107a[-1])
+            else:
+                f107a.append(fill_val)
+
+        # Redefine the Series
+        f107_fill = pds.DataFrame({f107a_name: f107a}, index=time_ind)
+
+    # There may be missing days in the output data, remove these
+    if f107_inst.index.shape < f107_fill.index.shape:
+        f107_fill = f107_fill.loc[f107_inst.index]
+
+    # Save the data
+    f107_inst[f107a_name] = f107_fill[f107a_name]
+
+    # Update the metadata
+    meta_dict = {f107_inst.meta.labels.units: 'SFU',
+                 f107_inst.meta.labels.name: 'F10.7a',
+                 f107_inst.meta.labels.desc: "81-day centered average of F10.7",
+                 f107_inst.meta.labels.min_val: 0.0,
+                 f107_inst.meta.labels.max_val: np.nan,
+                 f107_inst.meta.labels.fill_val: fill_val,
+                 f107_inst.meta.labels.notes:
+                 ' '.join(('Calculated using data between',
+                           '{:} and {:}'.format(f107_inst.index[0],
+                                                f107_inst.index[-1])))}
+
+    f107_inst.meta[f107a_name] = meta_dict
+
+    return

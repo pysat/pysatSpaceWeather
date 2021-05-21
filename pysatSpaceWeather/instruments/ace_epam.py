@@ -31,8 +31,10 @@ tomorrow.
 
 Warnings
 --------
-The real-time data should not be used with the data padding option available
-from pysat.Instrument objects.
+The 'realtime' data contains a changing period of time. Loading multiple files,
+loading multiple days, the data padding feature, and multi_file_day feature
+available from the pyast.Instrument object is not appropriate for 'realtime'
+data.
 
 """
 
@@ -43,6 +45,7 @@ import numpy as np
 from pysat import logger
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
+from pysatSpaceWeather.instruments.methods import general
 
 # ----------------------------------------------------------------------------
 # Instrument attributes
@@ -67,7 +70,7 @@ _test_dates = {inst_id: {'realtime': dt.datetime(now.year, now.month, now.day),
 # ----------------------------------------------------------------------------
 # Instrument methods
 
-preprocess = mm_ace.preprocess
+preprocess = general.preprocess
 
 
 def init(self):
@@ -77,7 +80,7 @@ def init(self):
 
     """
 
-    # Set the appropraite acknowledgements and references
+    # Set the appropriate acknowledgements and references
     self.acknowledgements = mm_ace.acknowledgements()
     self.references = mm_ace.references(self.name)
 
@@ -103,14 +106,12 @@ def clean(self):
     ecols = ['eflux_38-53', 'eflux_175-315']
 
     # Evaluate the electron flux data
-    for col in ecols:
-        self.data[col][self.data['status_e'] > max_status] = np.nan
+    self[self.data['status_e'] > max_status, ecols] = np.nan
 
     # Evaluate the proton flux data
     pcols = ['pflux_47-68', 'pflux_115-195', 'pflux_310-580',
              'pflux_795-1193', 'pflux_1060-1900']
-    for col in pcols:
-        self.data[col][self.data['status_p'] > max_status] = np.nan
+    self[self.data['status_p'] > max_status, pcols] = np.nan
 
     # Include both fluxes and the anisotropy index in the removal eval
     eval_cols = ecols + pcols

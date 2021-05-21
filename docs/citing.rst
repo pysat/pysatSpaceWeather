@@ -9,6 +9,10 @@ reproducibility of your presented results.
 pysatSpaceWeather
 -----------------
 
+The most recent citation can be found at `Zenodo
+<https://zenodo.org/record/3986138>`_.  The examples here are from the first
+release.
+
 * Burrell, A. G., et al. (2020).
   pysat/pysatSpaceWeather: Initial Release (Version 0.0.1). Zenodo.
   doi:10.5281/zenodo.3986139

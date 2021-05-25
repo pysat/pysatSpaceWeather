@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.0.4] - 2021-05-19
 --------------------
+* New Logo
 * Implements GitHub Actions for primary CI testing
 * Updated tested python versions
 * Removed non-document testing from Travis-CI and updated installation method

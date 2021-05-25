@@ -1,6 +1,6 @@
 <div align="left">
         <img height="0" width="0px">
-        <img width="20%" src="/docs/figures/pysatSpaceWeather.png" alt="pysatSpaceWeather" title="pysatSpaceWeather" </img>
+        <img width="20%" src="https://raw.githubusercontent.com/pysat/pysatSpaceWeather/main/docs/figures/pysatSpaceWeather.png" alt="pysatSpaceWeather" title="pysatSpaceWeather" </img>
 </div>
 
 # pysatSpaceWeather: pysat support for Space Weather Indices

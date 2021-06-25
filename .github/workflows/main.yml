@@ -11,8 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.8", "3.9"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.8, 3.9]
         numpy_ver: [latest]
         include:
           - python-version: "3.7"
@@ -34,6 +34,10 @@ jobs:
         pip install -r requirements.txt
         pip install -r test_requirements.txt
 
+        # Temporary install commands to test RC
+        pip install -r pysat_requirements.txt
+        pip install -i https://test.pypi.org/simple/ pysat==3.0.1rc1
+
     - name: Install NEP29 dependencies
       if: ${{ matrix.numpy_ver != 'latest'}}
       run: |
@@ -42,7 +46,7 @@ jobs:
     - name: Set up pysat
       run: |
         mkdir pysatData
-        python -c "import pysat; pysat.params['data_dirs'] = './pysatData'"
+        python -c "import pysat; pysat.params['data_dirs'] = 'pysatData'"
 
     - name: Test PEP8 compliance
       run: flake8 . --count --select=E,F,W --show-source --statistics

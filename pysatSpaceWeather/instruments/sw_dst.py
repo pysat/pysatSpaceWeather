@@ -58,8 +58,7 @@ _test_download_travis = {'': {'noaa': False}}
 
 
 def init(self):
-    """Initializes the Instrument object with instrument specific values.
-    """
+    """Initialize the Instrument object with instrument specific values."""
 
     self.acknowledgements = mm_dst.acknowledgements(self.name, self.tag)
     self.references = mm_dst.references(self.name, self.tag)
@@ -68,13 +67,8 @@ def init(self):
 
 
 def clean(self):
-    """ Cleaning function for Dst
+    """Clean the Dst index, empty function."""
 
-    Note
-    ----
-    No necessary for the Dst index
-
-    """
     return
 
 
@@ -82,17 +76,17 @@ def clean(self):
 # Instrument functions
 
 
-def load(fnames, tag=None, inst_id=None):
-    """Load Kp index files
+def load(fnames, tag, inst_id):
+    """Load the Dst index files.
 
     Parameters
     ----------
     fnames : pandas.Series
         Series of filenames
-    tag : str or NoneType
-        tag or None (default=None)
-    inst_id : str or NoneType
-        satellite id or None (default=None)
+    tag : str
+        Instrument tag string.
+    inst_id : str
+        Instrument ID, not used.
 
     Returns
     -------
@@ -187,21 +181,18 @@ def load(fnames, tag=None, inst_id=None):
     return data, meta
 
 
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
+def list_files(tag, inst_id, data_path, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
     Parameters
     ----------
-    tag : string or NoneType
-        Denotes type of file to load.  Accepted types are '1min' and '5min'.
-        (default=None)
-    inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
-    format_str : string or NoneType
+    tag : str
+        Instrument tag, accepts any value from `tags`.
+    inst_id : str
+        Instrument ID, not used.
+    data_path : str or NoneType
+        Path to data directory.  If None is supplied, raises ValueError.
+    format_str : str or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 
@@ -209,6 +200,11 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     -------
     pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
+
+    Raises
+    ------
+    ValueError
+        If `data_path` is NoneType or an unknown `tag` is supplied.
 
     Note
     ----
@@ -240,20 +236,19 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     return
 
 
-def download(date_array, tag, inst_id, data_path, user=None, password=None):
-    """Routine to download Dst index data
+def download(date_array, tag, inst_id, data_path):
+    """Download the Dst index data from the appropriate repository.
 
     Parameters
     ----------
-    tag : string or NoneType
-        Denotes type of file to load.
-        (default=None)
-    inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
+    date_array : array-like or pandas.DatetimeIndex
+        Array-like or index of datetimes for which files will be downloaded.
+    tag : str
+        Instrument tag, used to determine download location.
+    inst_id : str
+        Instrument ID, not used.
+    data_path : str
+        Path to data directory.
 
     Note
     ----

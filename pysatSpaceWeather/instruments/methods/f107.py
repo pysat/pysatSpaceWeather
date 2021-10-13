@@ -201,11 +201,14 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                 good_vals = forecast_inst['f107'][good_times] != fill_val
 
                 # Save desired data and cycle time
-                new_times = list(forecast_inst.index[good_times][good_vals])
-                f107_times.extend(new_times)
-                new_vals = list(forecast_inst['f107'][good_times][good_vals])
-                f107_values.extend(new_vals)
-                itime = f107_times[-1] + pds.DateOffset(days=1)
+                if len(good_vals) > 0:
+                    new_times = list(
+                        forecast_inst.index[good_times][good_vals])
+                    f107_times.extend(new_times)
+                    new_vals = list(
+                        forecast_inst['f107'][good_times][good_vals])
+                    f107_values.extend(new_vals)
+                    itime = f107_times[-1] + pds.DateOffset(days=1)
 
             notes += "{:})".format(itime.date())
 

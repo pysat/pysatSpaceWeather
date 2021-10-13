@@ -8,18 +8,6 @@ import pysat
 
 import pysatSpaceWeather as pysat_sw
 
-# Define the general variables
-one_third = 1.0 / 3.0
-two_third = 2.0 / 3.0
-ap_to_kp = {0: 0, 2: one_third, 3: two_third, 4: 1, 5: 1.0 + one_third,
-            6: 1.0 + two_third, 7: 2, 9: 2.0 + one_third, 12: 2.0 + two_third,
-            15: 3, 18: 3.0 + one_third, 22: 3.0 + two_third, 27: 4,
-            32: 4.0 + one_third, 39: 4.0 + two_third, 48: 5,
-            56: 5.0 + one_third, 67: 5.0 + two_third, 80: 6,
-            94: 6.0 + one_third, 111: 6.0 + two_third, 132: 7,
-            154: 7.0 + one_third, 179: 7.0 + two_third, 207: 8,
-            236: 8.0 + one_third, 300: 8.0 + two_third, 400: 9}
-
 
 # --------------------------------------------------------------------------
 # Instrument utilities
@@ -326,9 +314,8 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
 # --------------------------------------------------------------------------
 # Common analysis functions
 
-
 def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap', kp_name='Kp'):
-    """ Convert Ap into Kp
+    """Convert Ap into Kp.
 
     Parameters
     ----------
@@ -350,12 +337,8 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap', kp_name='Kp'):
 
     """
 
-    # Ap are keys, Kp returned as double (N- = N.6667, N+=N.3333333)
-    ap_keys = sorted([akey for akey in ap_to_kp.keys()])
-
     # Convert from ap to Kp
-    kp_data = np.array([ap_to_kp[aa] if aa in ap_keys else
-                        round_ap(aa, fill_val=fill_val) for aa in ap_data])
+    kp_data = np.array([round_ap(aa, fill_val=fill_val) for aa in ap_data])
 
     # Set the metadata
     meta = pysat.Meta()
@@ -385,21 +368,48 @@ def round_ap(ap_in, fill_val=np.nan):
     Returns
     -------
     float
-        Fill value for infinite or out-of-range data, rounded ap value
-        otherwise.
+        Fill value for infinite or out-of-range data, otherwise the best kp
+        index is provided.
 
     """
+
+    # Define the ap to kp conversion
+    one_third = 1.0 / 3.0
+    two_third = 2.0 / 3.0
+    ap_to_kp = {0: 0, 2: one_third, 3: two_third, 4: 1, 5: 1.0 + one_third,
+                6: 1.0 + two_third, 7: 2, 9: 2.0 + one_third,
+                12: 2.0 + two_third, 15: 3, 18: 3.0 + one_third,
+                22: 3.0 + two_third, 27: 4, 32: 4.0 + one_third,
+                39: 4.0 + two_third, 48: 5, 56: 5.0 + one_third,
+                67: 5.0 + two_third, 80: 6, 94: 6.0 + one_third,
+                111: 6.0 + two_third, 132: 7, 154: 7.0 + one_third,
+                179: 7.0 + two_third, 207: 8, 236: 8.0 + one_third,
+                300: 8.0 + two_third, 400: 9}
+
+    # Infinite or NaN values will return the fill value
     if not np.isfinite(ap_in):
         return fill_val
 
+    # Ap values that correspond exactly to a Kp value will return that value
+    if ap_in in ap_to_kp.keys():
+        return ap_to_kp[ap_in]
+
+    # The input Ap value may be appropriate, but does not correspond directly
+    # to a Kp index.  Get a sorted list of directly corresponding Ap indices,
+    # with Kp returned as double (N- = N.6667, N+=N.3333333)
+    ap_keys = sorted([akey for akey in ap_to_kp.keys()])
+
+    # Determine the correct key based on the value of the input
     i = 0
     while ap_keys[i] <= ap_in:
         i += 1
     i -= 1
 
+    # If the value is too large or too small, return the fill value
     if i >= len(ap_keys) or ap_keys[i] > ap_in:
         return fill_val
 
+    # The value is realistic, return the Kp value
     return ap_to_kp[ap_keys[i]]
 
 

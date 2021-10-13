@@ -410,14 +410,14 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     """Routine to download F107 index data
 
     Parameters
-    -----------
-    date_array : list-like
-        Sequence of dates to download date for.
-    tag : string or NoneType
+    ----------
+    date_array : array-like
+        Sequence of dates for which files will be downloaded.
+    tag : str
         Denotes type of file to load.
-    inst_id : string or NoneType
+    inst_id : str
         Specifies the satellite ID for a constellation.
-    data_path : string or NoneType
+    data_path : str
         Path to data directory.
     update_files : bool
         Re-download data for files that already exist if True (default=False)
@@ -432,7 +432,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
 
     """
 
-    # download standard F107 data
+    # Download standard F107 data
     if tag == 'historic':
         # Test the date array, updating it if necessary
         if date_array.freq != 'MS':
@@ -463,6 +463,10 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                 req = requests.get(dstr)
 
                 # Process the JSON file
+                if req.text.find('Gateway Timeout'):
+                    raise IOError(''.join(['Gateway timeout when requesting ',
+                                           'file using command: ', dstr]))
+                
                 raw_dict = json.loads(req.text)['noaa_radio_flux']
                 data = pds.DataFrame.from_dict(raw_dict['samples'])
                 if data.empty:
@@ -487,8 +491,8 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                     # Create a local CSV file
                     data.to_csv(data_file, header=True)
     elif tag == 'prelim':
-        ftp = ftplib.FTP('ftp.swpc.noaa.gov')  # connect to host, default port
-        ftp.login()  # user anonymous, passwd anonymous@
+        ftp = ftplib.FTP('ftp.swpc.noaa.gov')  # Connect to host, default port
+        ftp.login()  # User anonymous, passwd anonymous@
         ftp.cwd('/pub/indices/old_indices')
 
         bad_fname = list()

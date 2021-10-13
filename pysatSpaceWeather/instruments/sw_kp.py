@@ -214,28 +214,32 @@ def load(fnames, tag=None, inst_id=None):
         # Combine data together
         data = pds.concat(all_data, axis=0, sort=True)
 
-        # Each column increments UT by three hours. Produce a single data
-        # series that has Kp value monotonically increasing in time with
-        # appropriate datetime indices
-        data_series = pds.Series(dtype='float64')
-        for i in np.arange(8):
-            tind = data.index + pds.DateOffset(hours=int(3 * i))
-            temp = pds.Series(data.iloc[:, i].values, index=tind)
-            data_series = data_series.append(temp)
-        data_series = data_series.sort_index()
-        data_series.index.name = 'time'
+        if len(data.index) > 0:
+            # Each column increments UT by three hours. Produce a single data
+            # series that has Kp value monotonically increasing in time with
+            # appropriate datetime indices
+            data_series = pds.Series(dtype='float64')
+            for i in np.arange(8):
+                tind = data.index + pds.DateOffset(hours=int(3 * i))
+                temp = pds.Series(data.iloc[:, i].values, index=tind)
+                data_series = data_series.append(temp)
+            data_series = data_series.sort_index()
+            data_series.index.name = 'time'
 
-        # Kp comes in non-user friendly values like 2-, 2o, and 2+. Relate
-        # these to 1.667, 2.0, 2.333 for processing and user friendliness
-        first = np.array([float(str_val[0]) for str_val in data_series])
-        flag = np.array([str_val[1] for str_val in data_series])
+            # Kp comes in non-user friendly values like 2-, 2o, and 2+. Relate
+            # these to 1.667, 2.0, 2.333 for processing and user friendliness
+            first = np.array([float(str_val[0]) for str_val in data_series])
+            flag = np.array([str_val[1] for str_val in data_series])
 
-        ind, = np.where(flag == '+')
-        first[ind] += 1.0 / 3.0
-        ind, = np.where(flag == '-')
-        first[ind] -= 1.0 / 3.0
+            ind, = np.where(flag == '+')
+            first[ind] += 1.0 / 3.0
+            ind, = np.where(flag == '-')
+            first[ind] -= 1.0 / 3.0
 
-        result = pds.DataFrame(first, columns=['Kp'], index=data_series.index)
+            result = pds.DataFrame(first, columns=['Kp'],
+                                   index=data_series.index)
+        else:
+            result = pds.DataFrame()
         fill_val = np.nan
     elif tag == 'forecast':
         # Load forecast data
@@ -340,16 +344,15 @@ def download(date_array, tag, inst_id, data_path):
     """Routine to download Kp index data
 
     Parameters
-    -----------
-    tag : string or NoneType
-        Denotes type of file to load.  Accepted types are '' and 'forecast'.
-        (default=None)
-    inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
+    ----------
+    date_array : array-like or pandas.DatetimeIndex
+        Array-like or index of datetimes to be downloaded.
+    tag : string
+        Denotes type of file to load.
+    inst_id : string
+        Specifies the instrument identification, not used.
+    data_path : string
+        Path to data directory.
 
     Note
     ----

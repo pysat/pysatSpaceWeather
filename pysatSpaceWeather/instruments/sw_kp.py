@@ -308,11 +308,11 @@ def list_files(tag, inst_id, data_path, format_str=None):
             if format_str is None:
                 format_str = 'kp{year:2d}{month:02d}.tab'
             files = pysat.Files.from_os(data_path=data_path,
-                                      format_str=format_str,
-                                      two_digit_year_break=99)
+                                        format_str=format_str,
+                                        two_digit_year_break=99)
             if not files.empty:
                 files.loc[files.index[-1] + pds.DateOffset(months=1)
-                        - pds.DateOffset(days=1)] = files.iloc[-1]
+                          - pds.DateOffset(days=1)] = files.iloc[-1]
                 files = files.asfreq('D', 'pad')
                 files = files + '_' + files.index.strftime('%Y-%m-%d')
 

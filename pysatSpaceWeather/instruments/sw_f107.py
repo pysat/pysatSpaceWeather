@@ -472,7 +472,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                 if req.text.find('Gateway Timeout'):
                     raise IOError(''.join(['Gateway timeout when requesting ',
                                            'file using command: ', dstr]))
-                
+
                 raw_dict = json.loads(req.text)['noaa_radio_flux']
                 data = pds.DataFrame.from_dict(raw_dict['samples'])
                 if data.empty:

@@ -118,8 +118,8 @@ def init(self):
     """Initialize the Instrument object with instrument specific values."""
 
     # Set the required Instrument attributes
-    self.acknowledgements = mm_f107.acknowledgements(self.name, self.tag)
-    self.references = mm_f107.references(self.name, self.tag)
+    self.acknowledgements = mm_f107.acknowledgements(self.tag)
+    self.references = mm_f107.references(self.tag)
     logger.info(self.acknowledgements)
 
     # Define the historic F10.7 starting time

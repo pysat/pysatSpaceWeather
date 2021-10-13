@@ -60,8 +60,8 @@ _test_download_travis = {'': {'noaa': False}}
 def init(self):
     """Initialize the Instrument object with instrument specific values."""
 
-    self.acknowledgements = mm_dst.acknowledgements(self.name, self.tag)
-    self.references = mm_dst.references(self.name, self.tag)
+    self.acknowledgements = mm_dst.acknowledgements(self.tag)
+    self.references = mm_dst.references(self.tag)
     logger.info(self.acknowledgements)
     return
 

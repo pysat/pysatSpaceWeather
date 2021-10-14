@@ -86,12 +86,12 @@ class TestSWKp():
     def test_convert_kp_to_ap_bad_input(self):
         """Test conversion of Kp to ap with bad input."""
 
-        self.testInst.data.rename(columns={"Kp": "bad"}, inplace=True)
+        self.testInst.data = self.testInst.data.rename(columns={"Kp": "bad"})
 
         with pytest.raises(ValueError) as verr:
             kp_ap.convert_3hr_kp_to_ap(self.testInst)
 
-        assert str(verr).find("variable name for Kp is missing") >= 0
+        assert str(verr).find("variable name for Kp data is missing") >= 0
         return
 
     def test_initialize_kp_metadata(self):
@@ -294,15 +294,16 @@ class TestSwKpCombine():
     def test_combine_kp_no_time(self):
         """Test combine_kp raises ValueError when no times are provided."""
 
-        combo_in = {kk: self.combine[kk] for kk in
-                    ['standard_inst', 'recent_inst', 'forecast_inst']}
+        # Remove the start times from the input dict
+        del self.combine['start'], self.combine['stop']
 
+        # Raise a value error
         with pytest.raises(ValueError) as verr:
-            kp_ap.combine_kp(combo_in)
+            kp_ap.combine_kp(**self.combine)
 
+        # Test the error message
         assert str(verr).find("must either load in Instrument objects or") >= 0
 
-        del combo_in
         return
 
     def test_combine_kp_no_data(self):

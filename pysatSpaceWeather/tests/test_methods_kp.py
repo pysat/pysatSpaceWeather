@@ -3,6 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
 # ----------------------------------------------------------------------------
+"""Test suite for Kp and Ap methods."""
 
 import datetime as dt
 import numpy as np
@@ -17,8 +18,10 @@ from pysatSpaceWeather.instruments.methods import kp_ap
 
 
 class TestSWKp():
+    """Test class for Kp methods."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup"""
+        """Create a clean testing setup."""
         # Load a test instrument
         self.testInst = pysat.Instrument()
         self.testInst.data = \
@@ -37,13 +40,15 @@ class TestSWKp():
 
         # Load a test Metadata
         self.testMeta = pysat.Meta()
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up previous testing setup."""
         del self.testInst, self.testMeta
+        return
 
     def test_convert_kp_to_ap(self):
-        """ Test conversion of Kp to ap"""
+        """Test conversion of Kp to ap."""
 
         kp_ap.convert_3hr_kp_to_ap(self.testInst)
 
@@ -53,9 +58,10 @@ class TestSWKp():
             '3hr_ap'][self.testInst.meta.labels.min_val]
         assert self.testInst['3hr_ap'].max() <= self.testInst.meta[
             '3hr_ap'][self.testInst.meta.labels.max_val]
+        return
 
     def test_convert_kp_to_ap_fill_val(self):
-        """ Test conversion of Kp to ap with fill values"""
+        """Test conversion of Kp to ap with fill values."""
 
         # Set the first value to a fill value, then calculate ap
         fill_val = self.testInst.meta.labels.fill_val
@@ -75,17 +81,22 @@ class TestSWKp():
         assert np.isnan(self.testInst.meta['3hr_ap'][fill_val])
 
         del fill_val
+        return
 
     def test_convert_kp_to_ap_bad_input(self):
-        """ Test conversion of Kp to ap with bad input"""
+        """Test conversion of Kp to ap with bad input."""
 
         self.testInst.data.rename(columns={"Kp": "bad"}, inplace=True)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             kp_ap.convert_3hr_kp_to_ap(self.testInst)
 
+        assert str(verr).find("variable name for Kp is missing") >= 0
+        return
+
     def test_initialize_kp_metadata(self):
-        """Test default Kp metadata initialization"""
+        """Test default Kp metadata initialization."""
+
         kp_ap.initialize_kp_metadata(self.testInst.meta, 'Kp')
 
         assert self.testInst.meta['Kp'][self.testInst.meta.labels.units] == ''
@@ -96,9 +107,10 @@ class TestSWKp():
         assert self.testInst.meta['Kp'][self.testInst.meta.labels.max_val] == 9
         assert self.testInst.meta['Kp'][
             self.testInst.meta.labels.fill_val] == -1
+        return
 
     def test_uninit_kp_metadata(self):
-        """Test Kp metadata initialization with uninitialized Metadata"""
+        """Test Kp metadata initialization with uninitialized Metadata."""
         kp_ap.initialize_kp_metadata(self.testMeta, 'Kp')
 
         assert self.testMeta['Kp'][self.testMeta.labels.units] == ''
@@ -108,16 +120,18 @@ class TestSWKp():
         assert self.testMeta['Kp'][self.testMeta.labels.min_val] == 0
         assert self.testMeta['Kp'][self.testMeta.labels.max_val] == 9
         assert self.testMeta['Kp'][self.testMeta.labels.fill_val] == -1
+        return
 
     def test_fill_kp_metadata(self):
-        """Test Kp metadata initialization with user-specified fill value"""
+        """Test Kp metadata initialization with user-specified fill value."""
         kp_ap.initialize_kp_metadata(self.testInst.meta, 'Kp', fill_val=666)
 
         assert self.testInst.meta['Kp'][
             self.testInst.meta.labels.fill_val] == 666
+        return
 
     def test_long_name_kp_metadata(self):
-        """Test Kp metadata initialization with a long name"""
+        """Test Kp metadata initialization with a long name."""
         dkey = 'high_lat_Kp'
         kp_ap.initialize_kp_metadata(self.testInst.meta, dkey)
 
@@ -125,9 +139,10 @@ class TestSWKp():
         assert(self.testInst.meta[dkey][self.testInst.meta.labels.desc]
                == 'Planetary K-index')
         del dkey
+        return
 
     def test_convert_ap_to_kp(self):
-        """ Test conversion of ap to Kp"""
+        """Test conversion of ap to Kp."""
 
         kp_ap.convert_3hr_kp_to_ap(self.testInst)
         kp_out, kp_meta = kp_ap.convert_ap_to_kp(self.testInst['3hr_ap'])
@@ -140,9 +155,10 @@ class TestSWKp():
         assert kp_meta['Kp'][kp_meta.labels.fill_val] == -1
 
         del kp_out, kp_meta
+        return
 
     def test_convert_ap_to_kp_middle(self):
-        """ Test conversion of ap to Kp where ap is not an exact Kp value"""
+        """Test conversion of ap to Kp where ap is not an exact Kp value."""
 
         kp_ap.convert_3hr_kp_to_ap(self.testInst)
         self.testInst['3hr_ap'][8] += 1
@@ -156,9 +172,10 @@ class TestSWKp():
         assert(kp_meta['Kp'][kp_meta.labels.fill_val] == -1)
 
         del kp_out, kp_meta
+        return
 
     def test_convert_ap_to_kp_nan_input(self):
-        """ Test conversion of ap to Kp where ap is NaN"""
+        """Test conversion of ap to Kp where ap is NaN."""
 
         kp_out, kp_meta = kp_ap.convert_ap_to_kp(self.testInst['ap_nan'])
 
@@ -170,9 +187,10 @@ class TestSWKp():
         assert(kp_meta['Kp'][kp_meta.labels.fill_val] == -1)
 
         del kp_out, kp_meta
+        return
 
     def test_convert_ap_to_kp_inf_input(self):
-        """ Test conversion of ap to Kp where ap is Inf"""
+        """Test conversion of ap to Kp where ap is Inf."""
 
         kp_out, kp_meta = kp_ap.convert_ap_to_kp(self.testInst['ap_inf'])
 
@@ -184,9 +202,10 @@ class TestSWKp():
         assert(kp_meta['Kp'][kp_meta.labels.fill_val] == -1)
 
         del kp_out, kp_meta
+        return
 
     def test_convert_ap_to_kp_fill_val(self):
-        """ Test conversion of ap to Kp with fill values"""
+        """Test conversion of ap to Kp with fill values."""
 
         # Set the first Kp value to a fill value
         fill_val = self.testInst.meta.labels.fill_val
@@ -208,11 +227,14 @@ class TestSWKp():
         assert np.isnan(kp_meta['Kp'][fill_val])
 
         del fill_val, kp_out, kp_meta
+        return
 
 
 class TestSwKpCombine():
+    """Tests for the `combine_kp` method."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup"""
+        """Create a clean testing setup."""
         # Switch to test_data directory
         self.saved_path = pysat.params['data_dirs']
         pysat.params.data['data_dirs'] = [pysat_sw.test_data_path]
@@ -231,20 +253,25 @@ class TestSwKpCombine():
                         "start": self.test_day - dt.timedelta(days=30),
                         "stop": self.test_day + dt.timedelta(days=3),
                         "fill_val": -1}
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up previous testing."""
         pysat.params.data['data_dirs'] = self.saved_path
         del self.combine, self.test_day, self.saved_path
+        return
 
     def test_combine_kp_none(self):
         """ Test combine_kp failure when no input is provided"""
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             kp_ap.combine_kp()
 
+        assert str(verr).find("need at two Kp Instrument objects to") >= 0
+        return
+
     def test_combine_kp_one(self):
-        """ Test combine_kp failure when only one instrument is provided"""
+        """Test combine_kp raises ValueError with only one instrument."""
 
         # Load a test instrument
         testInst = pysat.Instrument()
@@ -256,24 +283,30 @@ class TestSwKpCombine():
         testInst.meta['Kp'] = {testInst.meta.labels.fill_val: np.nan}
 
         combo_in = {"standard_inst": testInst}
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             kp_ap.combine_kp(combo_in)
 
+        assert str(verr).find("need at two Kp Instrument objects to") >= 0
+
         del combo_in, testInst
+        return
 
     def test_combine_kp_no_time(self):
-        """Test combine_kp failure when no times are provided"""
+        """Test combine_kp raises ValueError when no times are provided."""
 
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             kp_ap.combine_kp(combo_in)
 
+        assert str(verr).find("must either load in Instrument objects or") >= 0
+
         del combo_in
+        return
 
     def test_combine_kp_no_data(self):
-        """Test combine_kp when no data is present for specified times"""
+        """Test combine_kp when no data is present for specified times."""
 
         combo_in = {kk: self.combine['forecast_inst'] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
@@ -284,9 +317,10 @@ class TestSwKpCombine():
         assert kp_inst.data.isnull().all()["Kp"]
 
         del combo_in, kp_inst
+        return
 
     def test_combine_kp_inst_time(self):
-        """Test combine_kp when times are provided through the instruments"""
+        """Test combine_kp when times are provided through the instruments."""
 
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
@@ -308,9 +342,10 @@ class TestSwKpCombine():
         assert len(kp_inst['Kp'][np.isnan(kp_inst['Kp'])]) == 0
 
         del combo_in, kp_inst
+        return
 
     def test_combine_kp_all(self):
-        """Test combine_kp when all input is provided"""
+        """Test combine_kp when all input is provided."""
 
         kp_inst = kp_ap.combine_kp(**self.combine)
 
@@ -325,9 +360,10 @@ class TestSwKpCombine():
         assert (kp_inst['Kp'] != self.combine['fill_val']).all()
 
         del kp_inst
+        return
 
     def test_combine_kp_no_forecast(self):
-        """Test combine_kp when forecasted data is not provided"""
+        """Test combine_kp when forecasted data is not provided."""
 
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'forecast_inst'}
@@ -342,9 +378,10 @@ class TestSwKpCombine():
         assert (kp_inst['Kp'] == self.combine['fill_val']).any()
 
         del kp_inst, combo_in
+        return
 
     def test_combine_kp_no_recent(self):
-        """Test combine_kp when recent data is not provided"""
+        """Test combine_kp when recent data is not provided."""
 
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'recent_inst'}
@@ -359,9 +396,10 @@ class TestSwKpCombine():
         assert (kp_inst['Kp'] == self.combine['fill_val']).any()
 
         del kp_inst, combo_in
+        return
 
     def test_combine_kp_no_standard(self):
-        """Test combine_kp when standard data is not provided"""
+        """Test combine_kp when standard data is not provided."""
 
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'standard_inst'}
@@ -377,11 +415,14 @@ class TestSwKpCombine():
                    == self.combine['fill_val']) > 0
 
         del kp_inst, combo_in
+        return
 
 
 class TestSWAp():
+    """Test class for Ap methods."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup"""
+        """Create a clean testing setup."""
         # Load a test instrument with 3hr ap data
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'3hr_ap': [0, 2, 3, 4, 5, 6, 7, 9,
@@ -399,13 +440,15 @@ class TestSWAp():
                           self.testInst.meta.labels.fill_val: np.nan,
                           self.testInst.meta.labels.notes: 'test ap'}
         self.testInst.meta['3hr_ap'] = self.meta_dict
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up previous testing."""
         del self.testInst, self.meta_dict
+        return
 
     def test_calc_daily_Ap(self):
-        """ Test daily Ap calculation"""
+        """ Test daily Ap calculation."""
 
         kp_ap.calc_daily_Ap(self.testInst)
 
@@ -417,15 +460,25 @@ class TestSWAp():
 
         # Test fill values (partial days)
         assert np.all(np.isnan(self.testInst['Ap'][8:]))
+        return
 
-    def test_calc_daily_Ap_bad_3hr(self):
-        """ Test daily Ap calculation with bad input key"""
+    @pytest.mark.parametrize("inargs,vmsg", [
+        (["no"], "bad 3-hourly ap column name"),
+        (["3hr_ap", "3hr_ap"], "daily Ap column name already exists")])
+    def test_calc_daily_Ap_bad_3hr(self, inargs, vmsg):
+        """Test bad inputs raise ValueError for daily Ap calculation.
 
-        with pytest.raises(ValueError):
-            kp_ap.calc_daily_Ap(self.testInst, "no")
+        Parameters
+        ----------
+        inargs : list
+            Input arguements that should raise a ValueError
+        vmsg : str
+            Expected ValueError message
 
-    def test_calc_daily_Ap_bad_daily(self):
-        """ Test daily Ap calculation with bad output key"""
+        """
 
-        with pytest.raises(ValueError):
-            kp_ap.calc_daily_Ap(self.testInst, "3hr_ap", "3hr_ap")
+        with pytest.raises(ValueError) as verr:
+            kp_ap.calc_daily_Ap(self.testInst, *inargs)
+
+        assert str(verr).find(vmsg) >= 0
+        return

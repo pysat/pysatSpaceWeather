@@ -1,4 +1,9 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-.
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+# ----------------------------------------------------------------------------
 """Provides routines to support the geomagnetic indeces, Kp and Ap."""
 
 import pandas as pds
@@ -163,7 +168,7 @@ def convert_3hr_kp_to_ap(kp_inst, var_name='Kp'):
 
 def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
                   running_name=None):
-    """ Calculate the daily Ap index from the 3hr ap index
+    """Calculate the daily Ap index from the 3hr ap index.
 
     Parameters
     ----------
@@ -253,7 +258,7 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
 
 def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
                   var_name='Kp'):
-    """Filters pysat.Instrument data for given time after Kp drops below gate.
+    """Filter pysat.Instrument data for given time after Kp drops below gate.
 
     Parameters
     ----------

@@ -3,7 +3,7 @@
 
 
 def acknowledgements(tag):
-    """Defines the acknowledgements for the Dst data.
+    """Define the acknowledgements for the Dst data.
 
     Parameters
     ----------
@@ -23,7 +23,7 @@ def acknowledgements(tag):
 
 
 def references(tag):
-    """Defines the references for the Dst data.
+    """Define the references for the Dst data.
 
     Parameters
     ----------

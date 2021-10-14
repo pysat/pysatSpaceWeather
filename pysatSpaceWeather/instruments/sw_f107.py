@@ -293,7 +293,7 @@ def load(fnames, tag, inst_id):
 
 
 def list_files(tag, inst_id, data_path, format_str=None):
-    """Return a Pandas Series of every file for F10.7 data
+    """List local F10.7 data files.
 
     Parameters
     ----------

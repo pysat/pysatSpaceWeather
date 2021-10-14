@@ -1,4 +1,9 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-.
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+# ----------------------------------------------------------------------------
 """Provides general routines for the ACE space weather instruments."""
 
 import datetime as dt
@@ -311,7 +316,7 @@ def common_metadata():
 
 
 def load_csv_data(fnames, read_csv_kwargs=None):
-    """Load CSV data from a list of files into a single DataFrame
+    """Load CSV data from a list of files into a single DataFrame.
 
     Parameters
     ----------

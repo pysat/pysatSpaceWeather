@@ -60,16 +60,16 @@ import ftplib
 import json
 import numpy as np
 import os
+import pandas as pds
+import pysat
 import requests
 import sys
 import warnings
 
-import pandas as pds
-import pysat
 
-from pysatSpaceWeather.instruments.methods import f107 as mm_f107
-from pysatSpaceWeather.instruments.methods.ace import load_csv_data
 from pysatSpaceWeather.instruments.methods import general
+from pysatSpaceWeather.instruments.methods.ace import load_csv_data
+from pysatSpaceWeather.instruments.methods import f107 as mm_f107
 
 logger = pysat.logger
 
@@ -407,7 +407,7 @@ def list_files(tag, inst_id, data_path, format_str=None):
 
 
 def download(date_array, tag, inst_id, data_path, update_files=False):
-    """Routine to download F107 index data
+    """Fownload F107 index data from the appropriate repository.
 
     Parameters
     ----------

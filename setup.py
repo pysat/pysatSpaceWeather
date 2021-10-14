@@ -3,6 +3,7 @@
 # Copyright (C) 2020, Authors
 # Full license can be found in License.md
 # -----------------------------------------------------------------------------
+"""Setup script for pysatSpaceWeather module."""
 
 from setuptools import setup
 

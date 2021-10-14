@@ -9,15 +9,15 @@ import datetime as dt
 import numpy as np
 
 import pandas as pds
-import pytest
 import pysat
+import pytest
 
 import pysatSpaceWeather as pysat_sw
 from pysatSpaceWeather.instruments import sw_f107
 from pysatSpaceWeather.instruments.methods import f107 as mm_f107
 
 
-class TestSWF107():
+class TestSWF107(object):
     """Test class for F10.7 methods."""
 
     def setup(self):
@@ -119,7 +119,7 @@ class TestSWF107():
         return
 
 
-class TestSWF107Combine():
+class TestSWF107Combine(object):
     """Test class for the `combine_f107` method."""
     def setup(self):
         """Create a clean testing setup."""

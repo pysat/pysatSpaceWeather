@@ -6,8 +6,9 @@
 # ----------------------------------------------------------------------------
 """Provides routines to support the geomagnetic indeces, Kp and Ap."""
 
-import pandas as pds
+import datetime as dt
 import numpy as np
+import pandas as pds
 
 import pysat
 

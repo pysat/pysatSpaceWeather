@@ -8,9 +8,8 @@
 """Routines for the F10.7 solar index."""
 
 import datetime as dt
-import pandas as pds
 import numpy as np
-
+import pandas as pds
 import pysat
 
 import pysatSpaceWeather as pysat_sw

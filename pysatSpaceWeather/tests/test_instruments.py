@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+# ----------------------------------------------------------------------------
+"""Standard pysat tests for pysatSpaceWeather Instruments."""
+
 import tempfile
 
 import pytest
@@ -40,8 +47,10 @@ for method in method_list:
 
 
 class TestInstruments(InstTestClass):
+    """Test class for pysatSpaceWeather Instruments."""
+
     def setup_class(self):
-        """Runs once before the tests to initialize the testing setup."""
+        """Create a clean the testing setup."""
         # Make sure to use a temporary directory so that the user's setup is
         # not altered
         self.tempdir = tempfile.TemporaryDirectory()
@@ -52,15 +61,19 @@ class TestInstruments(InstTestClass):
         # to point to their own subpackage location, e.g.,
         # self.inst_loc = mypackage.instruments
         self.inst_loc = pysatSpaceWeather.instruments
+        return
 
     def teardown_class(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up previous testing setup."""
         pysat.params.data['data_dirs'] = self.saved_path
         self.tempdir.cleanup()
         del self.inst_loc, self.saved_path, self.tempdir
+        return
 
     def setup_method(self):
-        """Runs before every method to create a clean testing setup."""
+        """Create a clean testing setup."""
+        return
 
     def teardown_method(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up previous testing setup."""
+        return

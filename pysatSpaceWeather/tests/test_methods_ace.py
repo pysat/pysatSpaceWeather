@@ -10,7 +10,7 @@ import pytest
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
 
 
-class TestACEMethods():
+class TestACEMethods(object):
     """Test class for ACE methods."""
 
     def setup(self):

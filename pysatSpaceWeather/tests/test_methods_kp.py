@@ -17,7 +17,7 @@ from pysatSpaceWeather.instruments import sw_kp
 from pysatSpaceWeather.instruments.methods import kp_ap
 
 
-class TestSWKp():
+class TestSWKp(object):
     """Test class for Kp methods."""
 
     def setup(self):
@@ -230,7 +230,7 @@ class TestSWKp():
         return
 
 
-class TestSwKpCombine():
+class TestSwKpCombine(object):
     """Tests for the `combine_kp` method."""
 
     def setup(self):
@@ -262,7 +262,7 @@ class TestSwKpCombine():
         return
 
     def test_combine_kp_none(self):
-        """ Test combine_kp failure when no input is provided"""
+        """Test combine_kp failure when no input is provided."""
 
         with pytest.raises(ValueError) as verr:
             kp_ap.combine_kp()
@@ -419,7 +419,7 @@ class TestSwKpCombine():
         return
 
 
-class TestSWAp():
+class TestSWAp(object):
     """Test class for Ap methods."""
 
     def setup(self):
@@ -449,7 +449,7 @@ class TestSWAp():
         return
 
     def test_calc_daily_Ap(self):
-        """ Test daily Ap calculation."""
+        """Test daily Ap calculation."""
 
         kp_ap.calc_daily_Ap(self.testInst)
 

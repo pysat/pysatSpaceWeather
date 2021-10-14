@@ -469,7 +469,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                 req = requests.get(dstr)
 
                 # Process the JSON file
-                if req.text.find('Gateway Timeout'):
+                if req.text.find('Gateway Timeout') >= 0:
                     raise IOError(''.join(['Gateway timeout when requesting ',
                                            'file using command: ', dstr]))
 

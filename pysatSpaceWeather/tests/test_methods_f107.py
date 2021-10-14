@@ -13,8 +13,8 @@ import pysat
 import pytest
 
 import pysatSpaceWeather as pysat_sw
-from pysatSpaceWeather.instruments import sw_f107
 from pysatSpaceWeather.instruments.methods import f107 as mm_f107
+from pysatSpaceWeather.instruments import sw_f107
 
 
 class TestSWF107(object):
@@ -121,6 +121,7 @@ class TestSWF107(object):
 
 class TestSWF107Combine(object):
     """Test class for the `combine_f107` method."""
+
     def setup(self):
         """Create a clean testing setup."""
         # Switch to test_data directory

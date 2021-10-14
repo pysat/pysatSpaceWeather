@@ -66,10 +66,9 @@ import requests
 import sys
 import warnings
 
-
-from pysatSpaceWeather.instruments.methods import general
 from pysatSpaceWeather.instruments.methods.ace import load_csv_data
 from pysatSpaceWeather.instruments.methods import f107 as mm_f107
+from pysatSpaceWeather.instruments.methods import general
 
 logger = pysat.logger
 

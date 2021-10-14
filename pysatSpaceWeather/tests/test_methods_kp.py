@@ -9,12 +9,12 @@ import datetime as dt
 import numpy as np
 
 import pandas as pds
-import pytest
 import pysat
+import pytest
 
 import pysatSpaceWeather as pysat_sw
-from pysatSpaceWeather.instruments import sw_kp
 from pysatSpaceWeather.instruments.methods import kp_ap
+from pysatSpaceWeather.instruments import sw_kp
 
 
 class TestSWKp(object):

@@ -63,13 +63,12 @@ import ftplib
 import numpy as np
 import os
 import pandas as pds
+import pysat
 import requests
 import sys
 
-import pysat
-
-from pysatSpaceWeather.instruments.methods import kp_ap
 from pysatSpaceWeather.instruments.methods import general
+from pysatSpaceWeather.instruments.methods import kp_ap
 
 logger = pysat.logger
 

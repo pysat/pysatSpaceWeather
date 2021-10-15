@@ -497,7 +497,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                     data.to_csv(data_file, header=True)
     elif tag == 'prelim':
         ftp = ftplib.FTP('ftp.swpc.noaa.gov')  # Connect to host, default port
-        ftp.login()  # User anonymous, passwd anonymous@
+        ftp.login()  # User anonymous, passwd anonymous
         ftp.cwd('/pub/indices/old_indices')
 
         bad_fname = list()

@@ -1,42 +1,45 @@
 # -*- coding: utf-8 -*-.
-"""Provides default routines for Dst
-
-"""
+"""Provides default routines for Dst."""
 
 
-def acknowledgements(name, tag):
-    """Returns acknowledgements for space weather dataset
+def acknowledgements(tag):
+    """Define the acknowledgements for the Dst data.
 
     Parameters
     ----------
-    name : string
-        Name of space weather index, eg, dst, f107, kp
-    tag : string
+    tag : str
         Tag of the space weather index
+
+    Returns
+    -------
+    ackn : str
+        Acknowledgements string associated with the appropriate Dst tag.
 
     """
 
-    ackn = {'dst':
-            {'noaa': 'Dst is maintained at NCEI (formerly NGDC) at NOAA'}}
+    ackn = {'noaa': 'Dst is maintained at NCEI (formerly NGDC) at NOAA'}
 
-    return ackn[name][tag]
+    return ackn[tag]
 
 
-def references(name, tag):
-    """Returns references for space weather dataset
+def references(tag):
+    """Define the references for the Dst data.
 
     Parameters
     ----------
-    name : string
-        Name of space weather index, eg, dst, f107, kp
     tag : string
         Tag of the space weather index
 
+    Returns
+    -------
+    refs : str
+        Reference string associated with the appropriate Dst tag.
+
     """
 
-    refs = {'dst': {'noaa': ''.join([
+    refs = {'noaa': ''.join([
         'See referenece list and publication at: Sugiura M. and T. Kamei, '
         'http://wdc.kugi.kyoto-u.ac.jp/dstdir/dst2/onDstindex.html, ',
-        'last updated June 1991, accessed Dec 2020'])}}
+        'last updated June 1991, accessed Dec 2020'])}
 
-    return refs[name][tag]
+    return refs[tag]

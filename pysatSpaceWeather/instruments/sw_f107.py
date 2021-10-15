@@ -14,8 +14,8 @@ tag
     - 'forecast' Grab forecast data from SWPC (next 3 days)
     - '45day' 45-Day Forecast data from the Air Force
 
-Example
--------
+Examples
+--------
 Download and load all of the historic F10.7 data.  Note that it will not
 stop on the current date, but a point in the past when post-processing has
 been successfully completed.
@@ -60,15 +60,14 @@ import ftplib
 import json
 import numpy as np
 import os
+import pandas as pds
+import pysat
 import requests
 import sys
 import warnings
 
-import pandas as pds
-import pysat
-
-from pysatSpaceWeather.instruments.methods import f107 as mm_f107
 from pysatSpaceWeather.instruments.methods.ace import load_csv_data
+from pysatSpaceWeather.instruments.methods import f107 as mm_f107
 from pysatSpaceWeather.instruments.methods import general
 
 logger = pysat.logger
@@ -115,14 +114,11 @@ preprocess = general.preprocess
 
 
 def init(self):
-    """Initializes the Instrument object with instrument specific values.
+    """Initialize the Instrument object with instrument specific values."""
 
-    Runs once upon instantiation.
-
-    """
-
-    self.acknowledgements = mm_f107.acknowledgements(self.name, self.tag)
-    self.references = mm_f107.references(self.name, self.tag)
+    # Set the required Instrument attributes
+    self.acknowledgements = mm_f107.acknowledgements(self.tag)
+    self.references = mm_f107.references(self.tag)
     logger.info(self.acknowledgements)
 
     # Define the historic F10.7 starting time
@@ -133,12 +129,8 @@ def init(self):
 
 
 def clean(self):
-    """ Cleaning function for Space Weather indices
+    """Clean the F10.7 data, empty function as this is not necessary."""
 
-    Note
-    ----
-    F10.7 doesn't require cleaning
-    """
     return
 
 
@@ -146,30 +138,35 @@ def clean(self):
 # Instrument functions
 
 
-def load(fnames, tag=None, inst_id=None):
-    """Load F10.7 index files
+def load(fnames, tag, inst_id):
+    """Load F10.7 index files.
 
     Parameters
     ----------
     fnames : pandas.Series
-        Series of filenames
-    tag : str or NoneType
-        tag or None (default=None)
-    inst_id : str or NoneType
-        satellite id or None (default=None)
+        Series of filenames.
+    tag : str
+        Instrument tag.
+    inst_id : str
+        Instrument ID, not used.
 
     Returns
     -------
     data : pandas.DataFrame
-        Object containing satellite data
+        Object containing satellite data.
     meta : pysat.Meta
-        Object containing metadata such as column names and units
+        Object containing metadata such as column names and units.
+
+    See Also
+    --------
+    pysatSpaceWeather.instruments.methods.ace.load_csv_data
 
     Note
     ----
     Called by pysat. Not intended for direct use by user.
 
     """
+
     # Get the desired file dates and file names from the daily indexed list
     file_dates = list()
     if tag in ['historic', 'prelim']:
@@ -294,21 +291,18 @@ def load(fnames, tag=None, inst_id=None):
     return data, meta
 
 
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
-    """Return a Pandas Series of every file for F10.7 data
+def list_files(tag, inst_id, data_path, format_str=None):
+    """List local F10.7 data files.
 
     Parameters
     ----------
-    tag : string or NoneType
-        Denotes type of file to load.
-        (default=None)
-    inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
-    format_str : string or NoneType
+    tag : str
+        Instrument tag, accepts any value from `tags`.
+    inst_id : str
+        Instrument ID, not used.
+    data_path : str or NoneType
+        Path to data directory.  If None is specified, a ValueError is raised.
+    format_str : str or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 
@@ -316,6 +310,11 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     -------
     out_files : pysat._files.Files
         A class containing the verified available files
+
+    Raises
+    ------
+    ValueError
+        If `data_path` is NoneType or an unknown `tag` is supplied.
 
     Note
     ----
@@ -407,32 +406,38 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
 
 
 def download(date_array, tag, inst_id, data_path, update_files=False):
-    """Routine to download F107 index data
+    """Fownload F107 index data from the appropriate repository.
 
     Parameters
-    -----------
-    date_array : list-like
-        Sequence of dates to download date for.
-    tag : string or NoneType
+    ----------
+    date_array : array-like
+        Sequence of dates for which files will be downloaded.
+    tag : str
         Denotes type of file to load.
-    inst_id : string or NoneType
+    inst_id : str
         Specifies the satellite ID for a constellation.
-    data_path : string or NoneType
+    data_path : str
         Path to data directory.
     update_files : bool
         Re-download data for files that already exist if True (default=False)
 
-    Note
-    ----
-    Called by pysat. Not intended for direct use by user.
+    Raises
+    ------
+    IOError
+        If a problem is encountered connecting to the gateway or retrieving
+        data from the repository.
 
     Warnings
     --------
     Only able to download current forecast data, not archived forecasts.
 
+    Note
+    ----
+    Called by pysat. Not intended for direct use by user.
+
     """
 
-    # download standard F107 data
+    # Download standard F107 data
     if tag == 'historic':
         # Test the date array, updating it if necessary
         if date_array.freq != 'MS':
@@ -463,6 +468,10 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                 req = requests.get(dstr)
 
                 # Process the JSON file
+                if req.text.find('Gateway Timeout') >= 0:
+                    raise IOError(''.join(['Gateway timeout when requesting ',
+                                           'file using command: ', dstr]))
+
                 raw_dict = json.loads(req.text)['noaa_radio_flux']
                 data = pds.DataFrame.from_dict(raw_dict['samples'])
                 if data.empty:
@@ -487,8 +496,8 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                     # Create a local CSV file
                     data.to_csv(data_file, header=True)
     elif tag == 'prelim':
-        ftp = ftplib.FTP('ftp.swpc.noaa.gov')  # connect to host, default port
-        ftp.login()  # user anonymous, passwd anonymous@
+        ftp = ftplib.FTP('ftp.swpc.noaa.gov')  # Connect to host, default port
+        ftp.login()  # User anonymous, passwd anonymous
         ftp.cwd('/pub/indices/old_indices')
 
         bad_fname = list()
@@ -563,7 +572,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
 
                         # Test for an error
                         if str(exception.args[0]).split(" ", 1)[0] != '550':
-                            raise RuntimeError(exception)
+                            raise IOError(exception)
                         else:
                             # file isn't actually there, try the next name
                             os.remove(saved_fname)

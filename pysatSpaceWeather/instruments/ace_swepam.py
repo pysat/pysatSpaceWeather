@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Supports ACE Solar Wind Electron Proton Alpha Monitor data
+"""Supports ACE Solar Wind Electron Proton Alpha Monitor data.
 
 Properties
 ----------
@@ -17,6 +17,8 @@ Note
 ----
 This is not the ACE scientific data set, which will be available at pysatNASA
 
+Examples
+--------
 The real-time data is stored by generation date, where each file contains the
 data for the current day.  If you leave download dates empty, though, it will
 grab today's file three times and assign dates from yesterday, today, and
@@ -73,11 +75,7 @@ preprocess = general.preprocess
 
 
 def init(self):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    """
+    """Initialize the Instrument object with instrument specific values."""
 
     # Set the appropraite acknowledgements and references
     self.acknowledgements = mm_ace.acknowledgements()
@@ -89,7 +87,7 @@ def init(self):
 
 
 def clean(self):
-    """Routine to clean real-time ACE data using the status flag
+    """Clean real-time ACE data using the status flag.
 
     Note
     ----
@@ -114,17 +112,17 @@ download = functools.partial(mm_ace.download, name=name, now=now)
 list_files = functools.partial(mm_ace.list_files, name=name)
 
 
-def load(fnames, tag=None, inst_id=None):
-    """Load the ACE space weather prediction data
+def load(fnames, tag, inst_id):
+    """Load the ACE space weather prediction data.
 
     Parameters
     ----------
     fnames : array-like
-        Series, list, or array of filenames
-    tag : str or NoneType
-        tag or None (default=None)
-    inst_id : str or NoneType
-        ACE instrument or None (default=None)
+        Series, list, or array of filenames.
+    tag : str
+        Instrument tag, not used.
+    inst_id : str
+        ACE instrument ID, not used.
 
     Returns
     -------
@@ -133,10 +131,9 @@ def load(fnames, tag=None, inst_id=None):
     meta : pysat.Meta
         Object containing metadata such as column names and units
 
-    Raises
-    ------
-    ValueError
-        When unknown inst_id is supplied.
+    See Also
+    --------
+    pysatSpaceWeather.instruments.methods.ace.load_csv_data
 
     Note
     ----

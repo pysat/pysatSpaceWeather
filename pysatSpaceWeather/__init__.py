@@ -1,3 +1,5 @@
+"""Initialization file for pysatSpaceWeather module."""
+
 import os
 
 from pysatSpaceWeather import instruments  # noqa F401

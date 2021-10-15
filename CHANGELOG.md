@@ -3,6 +3,13 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.0.5] - 2021-XX-XX
+--------------------
+* Updated the docstrings to conform to pysat standards
+* Added docstring tests to Flake8 portion of CI testing
+* Fixed bug in combine_kp that occurs if no times are provided
+* Improved unit test style
+
 [0.0.4] - 2021-05-19
 --------------------
 * New Logo

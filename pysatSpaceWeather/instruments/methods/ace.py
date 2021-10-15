@@ -1,6 +1,10 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-.
-"""Provides general routines for the ACE space weather instruments
-"""
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+# ----------------------------------------------------------------------------
+"""Provides general routines for the ACE space weather instruments."""
 
 import datetime as dt
 import numpy as np
@@ -14,11 +18,11 @@ logger = pysat.logger
 
 
 def acknowledgements():
-    """Returns acknowledgements for the specified ACE instrument
+    """Define the acknowledgements for the specified ACE instrument.
 
     Returns
     -------
-    ackn : string
+    ackn : str
         Acknowledgements for the ACE instrument
 
     """
@@ -33,16 +37,16 @@ def acknowledgements():
 
 
 def references(name):
-    """Returns references for the specified ACE instrument
+    """Define the references for the specified ACE instrument.
 
     Parameters
     ----------
-    name : string
+    name : str
         Instrument name of the ACE instrument
 
     Returns
     -------
-    ref : string
+    ref : str
         Reference for the ACE instrument paper
 
     """
@@ -77,7 +81,7 @@ def references(name):
 
 
 def clean(inst):
-    """Common aspects of the ACE space weather data cleaning
+    """Clean the common aspects of the ACE space weather data.
 
     Parameters
     ----------
@@ -113,20 +117,20 @@ def clean(inst):
     return max_status
 
 
-def list_files(name='', tag='', inst_id='', data_path='', format_str=None):
-    """Return a Pandas Series of every file for ACE data
+def list_files(name, tag='', inst_id='', data_path=None, format_str=None):
+    """List the local ACE data files.
 
     Parameters
     ----------
     name : str
-        ACE Instrument name. (default='')
+        ACE Instrument name.
     tag : str
-        Denotes type of file to load. (default='')
+        ACE Instrument tag. (default='')
     inst_id : str
         Specifies the ACE instrument ID. (default='')
-    data_path : str
-        Path to data directory. (default='')
-    format_str : string or NoneType
+    data_path : str or NoneType
+        Path to data directory. Raises ValueError if None. (default=None)
+    format_str : str or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 
@@ -134,6 +138,11 @@ def list_files(name='', tag='', inst_id='', data_path='', format_str=None):
     -------
     pysat.Files.from_os : pysat.utils.files.Files
         A class containing the verified available files
+
+    Raises
+    ------
+    ValueError
+        If None is supplied through the data path.
 
     Note
     ----
@@ -144,30 +153,37 @@ def list_files(name='', tag='', inst_id='', data_path='', format_str=None):
         format_str = '_'.join(["ace", name, tag,
                                '{year:04d}-{month:02d}-{day:02d}.txt'])
 
-    files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
+    if data_path is None:
+        raise ValueError('No path to data supplied through `data_path`')
+    else:
+        files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
     return files
 
 
-def download(date_array, name='', tag='', inst_id='', data_path='', now=None):
-    """Routine to download ACE Space Weather data
+def download(date_array, name, tag='', inst_id='', data_path=None, now=None):
+    """Download the requested ACE Space Weather data.
 
     Parameters
     ----------
     date_array : array-like
         Array of datetime values
     name : str
-        ACE Instrument name. (default='')
+        ACE Instrument name.
     tag : str
-        Denotes type of file to load. Accepted types are 'realtime' and
-        'historic'. (default='')
+        ACE Instrument tag. (default='')
     inst_id : str
-        Specifies the ACE instrument ID. (default='')
-    data_path : str
-        Path to data directory. (default='')
+        ACE instrument ID. (default='')
+    data_path : str or NoneType
+        Path to data directory. Raises ValueError if None. (default=None)
     now : dt.datetime or NoneType
         Current universal time, if None this is determined for each
         download. (default=None)
+
+    Raises
+    ------
+    ValueError
+        If None is supplied through `data_path`.
 
     Note
     ----
@@ -179,6 +195,10 @@ def download(date_array, name='', tag='', inst_id='', data_path='', now=None):
     - File requested not available on server
 
     """
+    # Ensure a real data path has been provided
+    if data_path is None:
+        raise ValueError('No data path supplied')
+
     # Ensure now is up-to-date, if desired
     if now is None:
         now = dt.datetime.utcnow()
@@ -258,7 +278,7 @@ def download(date_array, name='', tag='', inst_id='', data_path='', now=None):
 
 
 def common_metadata():
-    """Provides common metadata information for all ACE instruments
+    """Define the common metadata information for all ACE instruments.
 
     Returns
     -------
@@ -296,7 +316,7 @@ def common_metadata():
 
 
 def load_csv_data(fnames, read_csv_kwargs=None):
-    """Load CSV data from a list of files into a single DataFrame
+    """Load CSV data from a list of files into a single DataFrame.
 
     Parameters
     ----------

@@ -7,7 +7,6 @@
 
 import numpy as np
 import pysat
-import pytest
 
 from pysatSpaceWeather.instruments.methods import general
 

@@ -384,7 +384,7 @@ def ace_swepam_hourly_omni_norm(as_inst, speed_key='sw_bulk_speed',
             raise ValueError('instrument missing variable: {:}'.format(var))
 
     # Let yt be the fractional years since 1998.0
-    yt = np.array([datetime_to_dec_year(itime) - 1998.0
+    yt = np.array([pysat.utils.time.datetime_to_dec_year(itime) - 1998.0
                    for itime in as_inst.index])
 
     # Get the masks for the different velocity limits
@@ -396,8 +396,8 @@ def ace_swepam_hourly_omni_norm(as_inst, speed_key='sw_bulk_speed',
     norm_n = np.array(as_inst[dens_key])
     norm_n[ilow] *= (0.925 + 0.0039 * yt[ilow])
     norm_n[imid] *= (74.02 - 0.164 * as_inst[speed_key][imid]
-                     + 0.0171 * as_inst[speed_key][imid] * yt[imid
-                     - 6.72 * yt[imid]]) / 10.0
+                     + 0.0171 * as_inst[speed_key][imid] * yt[imid]
+                     - 6.72 * yt[imid]) / 10.0
     norm_n[ihigh] *= (0.761 + 0.0210 * yt[ihigh])
 
     # Normalize the temperature
@@ -412,13 +412,13 @@ def ace_swepam_hourly_omni_norm(as_inst, speed_key='sw_bulk_speed',
         nkey = '{:s}_norm'.format(dkey)
         meta_dict = {}
 
-        for mkey in as_inst.meta_labels.keys():
-            if mkey == 'notes':
+        for mkey in as_inst.meta[dkey].keys():
+            if mkey == as_inst.meta.labels.notes:
                 meta_dict[mkey] = ''.join([
                     'Normalized for hourly OMNI as described in ',
                     'https://omniweb.gsfc.nasa.gov/html/omni_min_data.html'])
-            else:
-                meta_dict[mkey] = as_inst.meta[dkey]
+            elif mkey != "children":
+                meta_dict[mkey] = as_inst.meta[dkey, mkey]
 
         as_inst.meta[nkey] = meta_dict
 

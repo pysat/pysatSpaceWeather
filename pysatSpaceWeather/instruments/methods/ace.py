@@ -351,3 +351,75 @@ def load_csv_data(fnames, read_csv_kwargs=None):
 
     data = pds.DataFrame() if len(fdata) == 0 else pds.concat(fdata, axis=0)
     return data
+
+
+def ace_swepam_hourly_omni_norm(as_inst, speed_key='sw_bulk_speed',
+                                dens_key='sw_proton_dens',
+                                temp_key='sw_ion_temp'):
+    """Normalize ACE SWEPAM variables as described in the OMNI processing _[1].
+
+    Parameters
+    ----------
+    as_inst : pysat.Instrument
+        pysat Instrument object with ACE SWEPAM data
+    speed_key : str
+        Data key for bulk solar wind speed data in km/s
+        (default='sw_bulk_speed')
+    dens_key : str
+        Data key for solar wind proton density data in P/cm^3
+        (default='sw_proton_dens')
+    temp_key : str
+        Data key for solar wind ion temperature data in K
+        (default='sw_ion_temp')
+
+    References
+    ----------
+    [1] https://omniweb.gsfc.nasa.gov/html/omni_min_data.html
+
+    """
+
+    # Check the input to make sure all the necessary data variables are present
+    for var in [speed_key, dens_key, temp_key]:
+        if var not in as_inst.variables:
+            raise ValueError('instrument missing variable: {:}'.format(var))
+
+    # Let yt be the fractional years since 1998.0
+    yt = np.array([datetime_to_dec_year(itime) - 1998.0
+                   for itime in as_inst.index])
+
+    # Get the masks for the different velocity limits
+    ilow = as_inst[speed_key] < 395
+    imid = (as_inst[speed_key] >= 395) & (as_inst[speed_key] <= 405)
+    ihigh = as_inst[speed_key] > 405
+
+    # Calculate the normalized plasma density
+    norm_n = np.array(as_inst[dens_key])
+    norm_n[ilow] *= (0.925 + 0.0039 * yt[ilow])
+    norm_n[imid] *= (74.02 - 0.164 * as_inst[speed_key][imid]
+                     + 0.0171 * as_inst[speed_key][imid] * yt[imid
+                     - 6.72 * yt[imid]]) / 10.0
+    norm_n[ihigh] *= (0.761 + 0.0210 * yt[ihigh])
+
+    # Normalize the temperature
+    norm_t = np.power(10.0, -0.069 + 1.024 * np.log10(as_inst[temp_key]))
+
+    # Update the instrument data
+    as_inst['sw_proton_dens_norm'] = pds.Series(norm_n, index=as_inst.index)
+    as_inst['sw_ion_temp_norm'] = pds.Series(norm_t, index=as_inst.index)
+
+    # Add meta data
+    for dkey in [dens_key, temp_key]:
+        nkey = '{:s}_norm'.format(dkey)
+        meta_dict = {}
+
+        for mkey in as_inst.meta_labels.keys():
+            if mkey == 'notes':
+                meta_dict[mkey] = ''.join([
+                    'Normalized for hourly OMNI as described in ',
+                    'https://omniweb.gsfc.nasa.gov/html/omni_min_data.html'])
+            else:
+                meta_dict[mkey] = as_inst.meta[dkey]
+
+        as_inst.meta[nkey] = meta_dict
+
+    return

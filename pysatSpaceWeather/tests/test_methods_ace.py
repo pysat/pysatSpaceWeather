@@ -10,6 +10,8 @@ import pytest
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
 
+pysat_version_minor = int(pysat.__version__.split('.')[1])
+
 
 class TestACEMethods(object):
     """Test class for ACE methods."""
@@ -46,6 +48,7 @@ class TestACEMethods(object):
         return
 
 
+@pytest.mark.skipif(pysat_version_minor < 1)
 class TestACESWEPAMMethods(object):
     """Test class for ACE SWEPAM methods."""
 

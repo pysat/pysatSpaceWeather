@@ -15,8 +15,8 @@ def preprocess(inst):
     """
 
     # Replace all fill values with NaN
-    for col in inst.data.columns:
-        fill_val = inst.meta[col][inst.meta.labels.fill_val]
+    for col in inst.variables:
+        fill_val = inst.meta[col, inst.meta.labels.fill_val]
 
         # Ensure we are dealing with a float for future nan comparison
         if isinstance(fill_val, np.floating) or isinstance(fill_val, float):

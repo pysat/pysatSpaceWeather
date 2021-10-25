@@ -10,6 +10,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Fixed bug in combine_kp that occurs if no times are provided
 * Improved unit test style
 * Updated package organization documentation
+* Added a function to normalize ACE SWEPAM variables as described in the OMNI
+  processing guide
 
 [0.0.4] - 2021-05-19
 --------------------

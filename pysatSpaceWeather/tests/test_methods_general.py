@@ -14,7 +14,8 @@ from pysatSpaceWeather.instruments.methods import general
 pysat_version_minor = int(pysat.__version__.split('.')[1])
 
 
-@pytest.mark.skipif(pysat_version_minor < 1)
+@pytest.mark.skipif(pysat_version_minor < 1,
+                    reason="Test setup requires pysat 3.1+")
 class TestGeneralMethods(object):
     """Test class for general methods."""
 

@@ -319,6 +319,10 @@ def common_metadata():
 def load_csv_data(fnames, read_csv_kwargs=None):
     """Load CSV data from a list of files into a single DataFrame.
 
+    .. deprecated:: 0.0.5
+        `load_csv_data` will be removed in pysatSpaceWeather 0.0.6+, as it has
+        been moved to `pysat.instruments.methods.general` as of pysat 3.0.1.
+
     Parameters
     ----------
     fnames : array-like
@@ -334,12 +338,6 @@ def load_csv_data(fnames, read_csv_kwargs=None):
     See Also
     --------
     pds.read_csv, pysat.instruments.methods.general.load_csv_data
-
-    Warnings
-    --------
-    DeprecationWarning
-        This routine has been included in pysat, and will be removed from here
-        at the 0.0.6+ release.
 
     """
 

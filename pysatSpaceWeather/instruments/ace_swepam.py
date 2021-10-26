@@ -43,8 +43,8 @@ import datetime as dt
 import functools
 import numpy as np
 
-from pysat import logger
 from pysat.instruments.methods.general import load_csv_data
+from pysat import logger
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
 from pysatSpaceWeather.instruments.methods import general

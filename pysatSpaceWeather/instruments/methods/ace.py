@@ -347,7 +347,7 @@ def load_csv_data(fnames, read_csv_kwargs=None):
                            "load_csv_data in pysat version 3.0.1. This method ",
                            "will be removed at the 0.0.6+ release."]),
                   DeprecationWarning)
-    
+
     # Ensure the filename input is array-like
     fnames = np.asarray(fnames)
     if fnames.shape == ():

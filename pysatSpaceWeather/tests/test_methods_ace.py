@@ -7,6 +7,7 @@
 
 import pysat
 import pytest
+import warnings
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
 
@@ -55,7 +56,7 @@ class TestACEMethods(object):
 
         assert len(war) == 1
         assert war[0].category == DeprecationWarning
-        assert str(war[0].messsage).find(
+        assert str(war[0].message).find(
             "Moved to pysat.instruments.methods.general.load_csv_data") >= 0
         return
 

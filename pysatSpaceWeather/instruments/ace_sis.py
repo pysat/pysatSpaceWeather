@@ -44,6 +44,7 @@ import datetime as dt
 import functools
 import numpy as np
 
+from pysat.instruments.methods.general import load_csv_data
 from pysat import logger
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
@@ -143,7 +144,7 @@ def load(fnames, tag=None, inst_id=None):
 
     See Also
     --------
-    pysatSpaceWeather.instruments.methods.ace.load_csv_data
+    pysat.instruments.methods.general.load_csv_data
 
     Note
     ----
@@ -152,8 +153,8 @@ def load(fnames, tag=None, inst_id=None):
     """
 
     # Save each file to the output DataFrame
-    data = mm_ace.load_csv_data(fnames, read_csv_kwargs={'index_col': 0,
-                                                         'parse_dates': True})
+    data = load_csv_data(fnames, read_csv_kwargs={'index_col': 0,
+                                                  'parse_dates': True})
 
     # Assign the meta data
     meta, status_desc = mm_ace.common_metadata()

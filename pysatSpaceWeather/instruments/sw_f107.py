@@ -66,7 +66,6 @@ import requests
 import sys
 import warnings
 
-from pysatSpaceWeather.instruments.methods.ace import load_csv_data
 from pysatSpaceWeather.instruments.methods import f107 as mm_f107
 from pysatSpaceWeather.instruments.methods import general
 
@@ -159,7 +158,7 @@ def load(fnames, tag, inst_id):
 
     See Also
     --------
-    pysatSpaceWeather.instruments.methods.ace.load_csv_data
+    pysat.instruments.methods.general.load_csv_data
 
     Note
     ----
@@ -178,8 +177,8 @@ def load(fnames, tag, inst_id):
         fnames = unique_files
 
     # Load the CSV data files
-    data = load_csv_data(fnames, read_csv_kwargs={"index_col": 0,
-                                                  "parse_dates": True})
+    data = pysat.instruments.methods.general.load_csv_data(
+        fnames, read_csv_kwargs={"index_col": 0, "parse_dates": True})
 
     # If there is a date range, downselect here
     if len(file_dates) > 0:

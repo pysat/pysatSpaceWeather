@@ -75,7 +75,10 @@ The Disturbance Storm Time (Dst) Index is a measure of magnetic activity
 associated with the ring current.  The National Geophysical Data Center (NGDC)
 maintains the
 `current database <https://www.ngdc.noaa.gov/stp/geomag/dst.html>`_ from which
-the Dst is downloaded.  You can learn more about the Dst Index at the
+the historic Dst is downloaded.
+`LASP <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_
+performs the calculates and provides the predicted Dst for the last 96 hours.
+You can learn more about the Dst Index at the
 `WDC Kyoto Observatory page <http://wdc.kugi.kyoto-u.ac.jp/dstdir/index.html>`_.
 
 

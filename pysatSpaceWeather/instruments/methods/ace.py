@@ -137,7 +137,7 @@ def list_files(name, tag='', inst_id='', data_path=None, format_str=None):
 
     Returns
     -------
-    pysat.Files.from_os : pysat.utils.files.Files
+    files : pysat.Files
         A class containing the verified available files
 
     Raises

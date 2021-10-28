@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Added a function to normalize ACE SWEPAM variables as described in the OMNI
   processing guide
 * Deprecated `load_csv_data` method, which was moved to pysat
+* Added the LASP predicted Dst to the Dst Instrument
 
 [0.0.4] - 2021-05-19
 --------------------

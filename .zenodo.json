@@ -1,4 +1,17 @@
 {
+    "keywords": [
+	"pysat",
+	"ionosphere",
+	"atmosphere",
+	"thermosphere",
+	"magnetosphere",
+	"heliosphere",
+	"observations",
+	"space-weather",
+	"solar-index",
+	"geomagnetic-index",
+	"forecasts"
+    ],
     "creators": [
       {
         "affiliation": "U.S. Naval Research Laboratory", 

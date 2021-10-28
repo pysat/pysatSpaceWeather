@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Added docstring tests to Flake8 portion of CI testing
 * Fixed bug in combine_kp that occurs if no times are provided
 * Improved unit test style
+* Updated package organization documentation
 * Added a function to normalize ACE SWEPAM variables as described in the OMNI
   processing guide
 * Deprecated `load_csv_data` method, which was moved to pysat

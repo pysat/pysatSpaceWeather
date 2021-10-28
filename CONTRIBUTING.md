@@ -5,6 +5,11 @@ Bug reports, feature suggestions and other contributions are greatly
 appreciated!  pysat and pysatSpaceWeather are community-driven projects and
 welcomes both feedback and contributions.
 
+Come join us on Slack! An invitation to the pysat workspace is available 
+in the 'About' section of the
+[pysat GitHub Repository.](https://github.com/pysat/pysat)
+Development meetings are generally held fortnightly.
+
 Short version
 -------------
 
@@ -71,7 +76,7 @@ To set up `pysatSpaceWeather` for local development:
 7. Commit your changes and push your branch to GitHub::
 
     git add .
-    git commit -m "Brief description of your changes"
+    git commit -m "CODE: Brief description of your changes"
     git push origin name-of-your-bugfix-or-feature
 
 8. Submit a pull request through the GitHub website. Pull requests should be
@@ -118,6 +123,8 @@ These include:
   * `import numpy as np`
   * `import pandas as pds`
   * `import xarray as xr`
+* When incrementing a timestamp, use `dt.timedelta` instead of `pds.DateOffset`
+  when possible to reduce program runtime
 * All classes should have `__repr__` and `__str__` functions
 * Docstrings use `Note` instead of `Notes`
 * Try to avoid creating a try/except statement where except passes

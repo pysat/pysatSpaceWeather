@@ -37,8 +37,6 @@ import pysat
 
 from pysatSpaceWeather.instruments.methods import dst as mm_dst
 
-logger = pysat.logger
-
 # ----------------------------------------------------------------------------
 # Instrument attributes
 
@@ -69,7 +67,7 @@ def init(self):
 
     self.acknowledgements = mm_dst.acknowledgements(self.tag)
     self.references = mm_dst.references(self.tag)
-    logger.info(self.acknowledgements)
+    pysat.logger.info(self.acknowledgements)
     return
 
 
@@ -285,7 +283,8 @@ def download(date_array, tag, inst_id, data_path):
             fname = fname_root.format(year=year)
             saved_fname = os.path.join(data_path, fname)
             try:
-                pysat.logger.info('Downloading file for {year:04d}'.format(year=year))
+                pysat.logger.info('Downloading file for {year:04d}'.format(
+                    year=year))
                 with open(saved_fname, 'wb') as fp:
                     ftp.retrbinary('RETR ' + fname, fp.write)
             except ftplib.error_perm as exception:
@@ -294,7 +293,8 @@ def download(date_array, tag, inst_id, data_path):
                 else:
                     # File not present
                     os.remove(saved_fname)
-                    pysat.logger.info('File not available for {:04d}'.format(year))
+                    pysat.logger.info('File not available for {:04d}'.format(
+                        year))
 
         ftp.close()
     elif tag == 'lasp':
@@ -308,8 +308,8 @@ def download(date_array, tag, inst_id, data_path):
 
         # Test to see if the file was found on the server
         if req.text.find('not found on this server') > 0:
-            pysat.logger.warning(''.join(['LASP last 96 hour Dst file not found on ',
-                                    'server: ', url]))
+            pysat.logger.warning(''.join(['LASP last 96 hour Dst file not ',
+                                          'found on server: ', url]))
         else:
             # Split the file into lines, removing the header and
             # trailing empty line

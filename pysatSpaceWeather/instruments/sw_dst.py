@@ -176,7 +176,6 @@ def load(fnames, tag, inst_id):
     else:
         data = pysat.instruments.methods.general.load_csv_data(
             fnames, read_csv_kwargs={'index_col': 0, 'parse_dates': True})
-        data = data.drop('time', axis=1)
 
     # Create metadata
     meta = pysat.Meta()
@@ -302,7 +301,8 @@ def download(date_array, tag, inst_id, data_path):
         # Set the remote data variables
         url = ''.join(['https://lasp.colorado.edu/space_weather/dsttemerin/',
                        'dst_last_96_hrs.txt'])
-        data_dict = {'time': [], 'dst': []}
+        times = list()
+        data_dict = {'dst': []}
 
         # Download the webpage
         req = requests.get(url)
@@ -327,12 +327,12 @@ def download(date_array, tag, inst_id, data_path):
                                            line]))
 
                 # Format the time and Dst values
-                data_dict['time'].append(
-                    dt.datetime.strptime(line_cols[0], '%Y/%j-%H:%M:%S'))
+                times.append(dt.datetime.strptime(line_cols[0],
+                                                  '%Y/%j-%H:%M:%S'))
                 data_dict['dst'].append(float(line_cols[1]))
 
         # Re-cast the data as a pandas DataFrame
-        data = pds.DataFrame(data_dict, index=data_dict['time'])
+        data = pds.DataFrame(data_dict, index=times)
 
         # Write out as a file
         file_base = '_'.join(['sw', 'dst', tag, today.strftime('%Y-%m-%d')])

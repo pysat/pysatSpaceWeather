@@ -37,8 +37,6 @@ import pysat
 
 from pysatSpaceWeather.instruments.methods import dst as mm_dst
 
-logger = pysat.logger
-
 # ----------------------------------------------------------------------------
 # Instrument attributes
 
@@ -49,8 +47,7 @@ tags = {'noaa': 'Historic Dst data coalated by and maintained by NOAA/NCEI',
 inst_ids = {'': [tag for tag in tags.keys()]}
 
 # Generate today's date to support loading predicted data sets
-now = dt.datetime.utcnow()
-today = dt.datetime(now.year, now.month, now.day)
+today = pysat.utils.time.today()
 tomorrow = today + dt.timedelta(days=1)
 
 # ----------------------------------------------------------------------------
@@ -70,7 +67,7 @@ def init(self):
 
     self.acknowledgements = mm_dst.acknowledgements(self.tag)
     self.references = mm_dst.references(self.tag)
-    logger.info(self.acknowledgements)
+    pysat.logger.info(self.acknowledgements)
     return
 
 
@@ -211,7 +208,7 @@ def list_files(tag, inst_id, data_path, format_str=None):
 
     Returns
     -------
-    files : pysat.utils.files.Files
+    files : pysat.Files
         A class containing the verified available files
 
     Raises
@@ -287,7 +284,8 @@ def download(date_array, tag, inst_id, data_path):
             fname = fname_root.format(year=year)
             saved_fname = os.path.join(data_path, fname)
             try:
-                logger.info('Downloading file for {year:04d}'.format(year=year))
+                pysat.logger.info('Downloading file for {year:04d}'.format(
+                    year=year))
                 with open(saved_fname, 'wb') as fp:
                     ftp.retrbinary('RETR ' + fname, fp.write)
             except ftplib.error_perm as exception:
@@ -296,7 +294,8 @@ def download(date_array, tag, inst_id, data_path):
                 else:
                     # File not present
                     os.remove(saved_fname)
-                    logger.info('File not available for {:04d}'.format(year))
+                    pysat.logger.info('File not available for {:04d}'.format(
+                        year))
 
         ftp.close()
     elif tag == 'lasp':
@@ -310,8 +309,8 @@ def download(date_array, tag, inst_id, data_path):
 
         # Test to see if the file was found on the server
         if req.text.find('not found on this server') > 0:
-            logger.warning(''.join(['LASP last 96 hour Dst file not found on ',
-                                    'server: ', url]))
+            pysat.logger.warning(''.join(['LASP last 96 hour Dst file not ',
+                                          'found on server: ', url]))
         else:
             # Split the file into lines, removing the header and
             # trailing empty line

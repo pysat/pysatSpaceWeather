@@ -179,6 +179,7 @@ def load(fnames, tag, inst_id):
     else:
         data = pysat.instruments.methods.general.load_csv_data(
             fnames, read_csv_kwargs={'index_col': 0, 'parse_dates': True})
+        data = data.drop('time', axis=1)
 
     # Create metadata
     meta = pysat.Meta()

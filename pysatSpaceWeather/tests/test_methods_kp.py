@@ -28,9 +28,9 @@ class TestSWKp(object):
         self.testInst.load(date=self.test_time)
 
         # Create Kp data
-        self.testInst.data.index=pds.DatetimeIndex(data=[
+        self.testInst.data.index = pds.DatetimeIndex(data=[
             self.test_time + pds.DateOffset(hours=3 * i) for i in range(12)])
-        self.testInst['Kp'] = np.arange(0, 4, 1.0 / 3.0);
+        self.testInst['Kp'] = np.arange(0, 4, 1.0 / 3.0)
         self.testInst['ap_nan'] = np.full(shape=12, fill_value=np.nan)
         self.testInst['ap_inf'] = np.full(shape=12, fill_value=np.inf)
         self.testInst.meta['Kp'] = {self.testInst.meta.labels.fill_val: np.nan}
@@ -461,7 +461,7 @@ class TestSWAp(object):
         self.testInst.load(date=self.test_time)
 
         # Create 3 hr Ap data
-        self.testInst.data.index=pds.DatetimeIndex(data=[
+        self.testInst.data.index = pds.DatetimeIndex(data=[
             self.test_time + pds.DateOffset(hours=3 * i) for i in range(10)])
         self.testInst['3hr_ap'] = np.array([0, 2, 3, 4, 5, 6, 7, 9, 12, 15])
         self.testInst.meta['3hr_ap'] = {
@@ -553,6 +553,6 @@ class TestSWAp(object):
         fill_value = -47.0
         if out is None:
             out = fill_value
-        
+
         assert out == kp_ap.round_ap(ap, fill_val=fill_value)
         return

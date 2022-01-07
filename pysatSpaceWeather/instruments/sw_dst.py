@@ -199,8 +199,8 @@ def list_files(tag, inst_id, data_path, format_str=None):
         Instrument tag, accepts any value from `tags`.
     inst_id : str
         Instrument ID, not used.
-    data_path : str or NoneType
-        Path to data directory.  If None is supplied, raises ValueError.
+    data_path : str
+        Path to data directory.
     format_str : str or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
@@ -209,11 +209,6 @@ def list_files(tag, inst_id, data_path, format_str=None):
     -------
     files : pysat.Files
         A class containing the verified available files
-
-    Raises
-    ------
-    ValueError
-        If `data_path` is NoneType or an unknown `tag` is supplied.
 
     Note
     ----
@@ -229,21 +224,17 @@ def list_files(tag, inst_id, data_path, format_str=None):
                                   '{day:2d}.txt'])
 
     # Get the desired files
-    if data_path is not None:
-        files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
+    files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
-        if tag == 'noaa':
-            # NOAA files yearly, so we need to add daily dates to the yearly
-            # filenames. The load routine will load a month of data and use
-            # the appended date to select out appropriate data.
-            if not files.empty:
-                files.loc[files.index[-1] + pds.DateOffset(years=1)
-                          - pds.DateOffset(days=1)] = files.iloc[-1]
-                files = files.asfreq('D', 'pad')
-                files = files + '_' + files.index.strftime('%Y-%m-%d')
-    else:
-        raise ValueError(''.join(('A data_path must be passed to the loading ',
-                                  'routine for Dst')))
+    if tag == 'noaa':
+        # NOAA files yearly, so we need to add daily dates to the yearly
+        # filenames. The load routine will load a month of data and use
+        # the appended date to select out appropriate data.
+        if not files.empty:
+            files.loc[files.index[-1] + pds.DateOffset(years=1)
+                      - pds.DateOffset(days=1)] = files.iloc[-1]
+            files = files.asfreq('D', 'pad')
+            files = files + '_' + files.index.strftime('%Y-%m-%d')
 
     return files
 

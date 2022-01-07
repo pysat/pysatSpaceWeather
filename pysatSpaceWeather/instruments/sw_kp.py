@@ -277,8 +277,8 @@ def list_files(tag, inst_id, data_path, format_str=None):
         Instrument tag, accepts any value from `tags`.
     inst_id : str
         Instrument ID, not used.
-    data_path : str or NoneType
-        Path to data directory.  Raises ValueError if None is supplied.
+    data_path : str
+        Path to data directory.
     format_str : str or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
@@ -288,61 +288,38 @@ def list_files(tag, inst_id, data_path, format_str=None):
     files : pysat._files.Files
         A class containing the verified available files
 
-    Raises
-    ------
-    ValueError
-        If `data_path` is NoneType or an unknown `tag` is supplied.
-
     Note
     ----
     Called by pysat. Not intended for direct use by user.
 
     """
 
-    if data_path is not None:
-        if tag == '':
-            # Files are by month, going to add date to monthly filename for
-            # each day of the month. The load routine will load a month of
-            # data and use the appended date to select out appropriate data.
-            if format_str is None:
-                format_str = 'kp{year:2d}{month:02d}.tab'
-            files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=format_str,
-                                        two_digit_year_break=99)
-            if not files.empty:
-                files.loc[files.index[-1] + pds.DateOffset(months=1)
-                          - pds.DateOffset(days=1)] = files.iloc[-1]
-                files = files.asfreq('D', 'pad')
-                files = files + '_' + files.index.strftime('%Y-%m-%d')
+    if tag == '':
+        # Files are by month, going to add date to monthly filename for
+        # each day of the month. The load routine will load a month of
+        # data and use the appended date to select out appropriate data.
+        if format_str is None:
+            format_str = 'kp{year:2d}{month:02d}.tab'
+        files = pysat.Files.from_os(data_path=data_path,
+                                    format_str=format_str,
+                                    two_digit_year_break=99)
+        if not files.empty:
+            files.loc[files.index[-1] + pds.DateOffset(months=1)
+                      - pds.DateOffset(days=1)] = files.iloc[-1]
+            files = files.asfreq('D', 'pad')
+            files = files + '_' + files.index.strftime('%Y-%m-%d')
 
-        elif tag == 'forecast':
-            format_str = 'kp_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
-            files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=format_str)
-
-            # Pad list of files data to include most recent file under tomorrow
-            if not files.empty:
-                pds_offset = pds.DateOffset(days=1)
-                files.loc[files.index[-1] + pds_offset] = files.values[-1]
-                files.loc[files.index[-1] + pds_offset] = files.values[-1]
-
-        elif tag == 'recent':
-            format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
-            files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=format_str)
-
-            # Pad list of files data to include most recent file under tomorrow
-            if not files.empty:
-                pds_offset = pds.DateOffset(days=1)
-                files.loc[files.index[-1] + pds_offset] = files.values[-1]
-                files.loc[files.index[-1] + pds_offset] = files.values[-1]
-
-        else:
-            raise ValueError(' '.join(('Unrecognized tag name for Space',
-                                       'Weather Index Kp')))
     else:
-        raise ValueError(' '.join(('A data_path must be passed to the loading',
-                                   'routine for Kp')))
+        format_str = '_'.join(['kp', tag,
+                               '{year:04d}-{month:02d}-{day:02d}.txt'])
+        files = pysat.Files.from_os(data_path=data_path,
+                                    format_str=format_str)
+
+        # Pad list of files data to include most recent file under tomorrow
+        if not files.empty:
+            pds_offset = pds.DateOffset(days=1)
+            files.loc[files.index[-1] + pds_offset] = files.values[-1]
+            files.loc[files.index[-1] + pds_offset] = files.values[-1]
 
     return files
 

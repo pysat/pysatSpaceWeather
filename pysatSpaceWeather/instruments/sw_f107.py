@@ -299,8 +299,8 @@ def list_files(tag, inst_id, data_path, format_str=None):
         Instrument tag, accepts any value from `tags`.
     inst_id : str
         Instrument ID, not used.
-    data_path : str or NoneType
-        Path to data directory.  If None is specified, a ValueError is raised.
+    data_path : str
+        Path to data directory.
     format_str : str or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
@@ -310,96 +310,80 @@ def list_files(tag, inst_id, data_path, format_str=None):
     out_files : pysat._files.Files
         A class containing the verified available files
 
-    Raises
-    ------
-    ValueError
-        If `data_path` is NoneType or an unknown `tag` is supplied.
-
     Note
     ----
     Called by pysat. Not intended for direct use by user.
 
     """
 
-    if data_path is not None:
-        if tag == 'historic':
-            # Files are by month, going to add date to monthly filename for
-            # each day of the month. The load routine will load a month of
-            # data and use the appended date to select out appropriate data.
-            if format_str is None:
-                format_str = 'f107_monthly_{year:04d}-{month:02d}.txt'
-            out_files = pysat.Files.from_os(data_path=data_path,
-                                            format_str=format_str)
-            if not out_files.empty:
-                out_files.loc[out_files.index[-1] + pds.DateOffset(months=1)
-                              - pds.DateOffset(days=1)] = out_files.iloc[-1]
-                out_files = out_files.asfreq('D', 'pad')
-                out_files = out_files + '_' + out_files.index.strftime(
-                    '%Y-%m-%d')
+    if tag == 'historic':
+        # Files are by month, going to add date to monthly filename for
+        # each day of the month. The load routine will load a month of
+        # data and use the appended date to select out appropriate data.
+        if format_str is None:
+            format_str = 'f107_monthly_{year:04d}-{month:02d}.txt'
+        out_files = pysat.Files.from_os(data_path=data_path,
+                                        format_str=format_str)
+        if not out_files.empty:
+            out_files.loc[out_files.index[-1] + pds.DateOffset(months=1)
+                          - pds.DateOffset(days=1)] = out_files.iloc[-1]
+            out_files = out_files.asfreq('D', 'pad')
+            out_files = out_files + '_' + out_files.index.strftime(
+                '%Y-%m-%d')
 
-        elif tag == 'prelim':
-            # Files are by year (and quarter)
-            if format_str is None:
-                format_str = ''.join(['f107_prelim_{year:04d}_{month:02d}',
-                                      '_v{version:01d}.txt'])
-            out_files = pysat.Files.from_os(data_path=data_path,
-                                            format_str=format_str)
+    elif tag == 'prelim':
+        # Files are by year (and quarter)
+        if format_str is None:
+            format_str = ''.join(['f107_prelim_{year:04d}_{month:02d}',
+                                  '_v{version:01d}.txt'])
+        out_files = pysat.Files.from_os(data_path=data_path,
+                                        format_str=format_str)
 
-            if not out_files.empty:
-                # Set each file's valid length at a 1-day resolution
-                orig_files = out_files.sort_index().copy()
-                new_files = list()
+        if not out_files.empty:
+            # Set each file's valid length at a 1-day resolution
+            orig_files = out_files.sort_index().copy()
+            new_files = list()
 
-                for orig in orig_files.iteritems():
-                    # Version determines each file's valid length
-                    version = int(orig[1].split("_v")[1][0])
-                    doff = pds.DateOffset(years=1) if version == 2 \
-                        else pds.DateOffset(months=3)
-                    istart = orig[0]
-                    iend = istart + doff - pds.DateOffset(days=1)
+            for orig in orig_files.iteritems():
+                # Version determines each file's valid length
+                version = int(orig[1].split("_v")[1][0])
+                doff = pds.DateOffset(years=1) if version == 2 \
+                    else pds.DateOffset(months=3)
+                istart = orig[0]
+                iend = istart + doff - pds.DateOffset(days=1)
 
-                    # Ensure the end time does not extend past the number of
-                    # possible days included based on the file's download time
-                    fname = os.path.join(data_path, orig[1])
-                    dend = dt.datetime.utcfromtimestamp(os.path.getctime(fname))
-                    dend = dend - pds.DateOffset(days=1)
-                    if dend < iend:
-                        iend = dend
+                # Ensure the end time does not extend past the number of
+                # possible days included based on the file's download time
+                fname = os.path.join(data_path, orig[1])
+                dend = dt.datetime.utcfromtimestamp(os.path.getctime(fname))
+                dend = dend - pds.DateOffset(days=1)
+                if dend < iend:
+                    iend = dend
 
-                    # Pad the original file index
-                    out_files.loc[iend] = orig[1]
-                    out_files = out_files.sort_index()
-
-                    # Save the files at a daily cadence over the desired period
-                    new_files.append(out_files.loc[istart:
-                                                   iend].asfreq('D', 'pad'))
-                # Add the newly indexed files to the file output
-                out_files = pds.concat(new_files, sort=True)
-                out_files = out_files.dropna()
+                # Pad the original file index
+                out_files.loc[iend] = orig[1]
                 out_files = out_files.sort_index()
-                out_files = out_files + '_' + out_files.index.strftime(
-                    '%Y-%m-%d')
 
-        elif tag in ['daily', 'forecast', '45day']:
-            format_str = ''.join(['f107_', tag,
-                                  '_{year:04d}-{month:02d}-{day:02d}.txt'])
-            out_files = pysat.Files.from_os(data_path=data_path,
-                                            format_str=format_str)
+                # Save the files at a daily cadence over the desired period
+                new_files.append(out_files.loc[istart:
+                                               iend].asfreq('D', 'pad'))
+            # Add the newly indexed files to the file output
+            out_files = pds.concat(new_files, sort=True)
+            out_files = out_files.dropna()
+            out_files = out_files.sort_index()
+            out_files = out_files + '_' + out_files.index.strftime('%Y-%m-%d')
 
-            # Pad list of files data to include most recent file under tomorrow
-            if not out_files.empty:
-                pds_off = pds.DateOffset(days=1)
-                out_files.loc[out_files.index[-1]
-                              + pds_off] = out_files.values[-1]
-                out_files.loc[out_files.index[-1]
-                              + pds_off] = out_files.values[-1]
+    elif tag in ['daily', 'forecast', '45day']:
+        format_str = ''.join(['f107_', tag,
+                              '_{year:04d}-{month:02d}-{day:02d}.txt'])
+        out_files = pysat.Files.from_os(data_path=data_path,
+                                        format_str=format_str)
 
-        else:
-            raise ValueError(' '.join(('Unrecognized tag name for Space',
-                                       'Weather Index F107:', tag)))
-    else:
-        raise ValueError(' '.join(('A data_path must be passed to the loading',
-                                   'routine for F107')))
+        # Pad list of files data to include most recent file under tomorrow
+        if not out_files.empty:
+            pds_off = pds.DateOffset(days=1)
+            out_files.loc[out_files.index[-1] + pds_off] = out_files.values[-1]
+            out_files.loc[out_files.index[-1] + pds_off] = out_files.values[-1]
 
     return out_files
 

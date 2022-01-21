@@ -23,15 +23,16 @@ class TestSWKp(object):
     def setup(self):
         """Create a clean testing setup."""
         # Load a test instrument
-        self.testInst = pysat.Instrument()
-        self.testInst.data = \
-            pds.DataFrame({'Kp': np.arange(0, 4, 1.0 / 3.0),
-                           'ap_nan': np.full(shape=12, fill_value=np.nan),
-                           'ap_inf': np.full(shape=12, fill_value=np.inf)},
-                          index=[dt.datetime(2009, 1, 1)
-                                 + pds.DateOffset(hours=3 * i)
-                                 for i in range(12)])
-        self.testInst.meta = pysat.Meta()
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12)
+        self.test_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.testInst.load(date=self.test_time)
+
+        # Create Kp data
+        self.testInst.data.index = pds.DatetimeIndex(data=[
+            self.test_time + pds.DateOffset(hours=3 * i) for i in range(12)])
+        self.testInst['Kp'] = np.arange(0, 4, 1.0 / 3.0)
+        self.testInst['ap_nan'] = np.full(shape=12, fill_value=np.nan)
+        self.testInst['ap_inf'] = np.full(shape=12, fill_value=np.inf)
         self.testInst.meta['Kp'] = {self.testInst.meta.labels.fill_val: np.nan}
         self.testInst.meta['ap_nan'] = {self.testInst.meta.labels.fill_val:
                                         np.nan}
@@ -44,7 +45,7 @@ class TestSWKp(object):
 
     def teardown(self):
         """Clean up previous testing setup."""
-        del self.testInst, self.testMeta
+        del self.testInst, self.testMeta, self.test_time
         return
 
     def test_convert_kp_to_ap(self):
@@ -227,6 +228,40 @@ class TestSWKp(object):
         assert np.isnan(kp_meta['Kp'][fill_val])
 
         del fill_val, kp_out, kp_meta
+        return
+
+    @pytest.mark.parametrize("filter_kwargs,ngood", [
+        ({"min_kp": 2, 'filter_time': 0}, 6),
+        ({"max_kp": 2, 'filter_time': 0}, 7),
+        ({"min_kp": 2, "filter_time": 12}, 2),
+        ({"min_kp": 2, "max_kp": 3, 'filter_time': 0}, 4)])
+    def test_filter_geomag(self, filter_kwargs, ngood):
+        """Test geomag_filter success for different limits.
+
+        Parameters
+        ----------
+        filter_kwargs : dict
+            Dict with kwarg input for `filter_geomag`
+        ngood : int
+            Expected number of good samples
+
+        """
+
+        kp_ap.filter_geomag(self.testInst, kp_inst=self.testInst,
+                            **filter_kwargs)
+        assert len(self.testInst.index) == ngood, \
+            'Incorrect filtering using {:} of {:}'.format(filter_kwargs,
+                                                          self.testInst['Kp'])
+        return
+
+    def test_filter_geomag_load_kp(self):
+        """Test geomag_filter loading the Kp instrument."""
+
+        try:
+            kp_ap.filter_geomag(self.testInst)
+            assert len(self.testInst.index) == 12  # No filtering with defaults
+        except KeyError:
+            pass  # Routine failed on filtering, after loading w/o Kp data
         return
 
 
@@ -424,28 +459,28 @@ class TestSWAp(object):
 
     def setup(self):
         """Create a clean testing setup."""
-        # Load a test instrument with 3hr ap data
-        self.testInst = pysat.Instrument()
-        self.testInst.data = pds.DataFrame({'3hr_ap': [0, 2, 3, 4, 5, 6, 7, 9,
-                                                       12, 15]},
-                                           index=[dt.datetime(2009, 1, 1)
-                                                  + pds.DateOffset(hours=3 * i)
-                                                  for i in range(10)])
-        self.testInst.meta = pysat.Meta()
-        self.meta_dict = {self.testInst.meta.labels.units: '',
-                          self.testInst.meta.labels.name: 'ap',
-                          self.testInst.meta.labels.desc:
-                          "3-hour ap (equivalent range) index",
-                          self.testInst.meta.labels.min_val: 0,
-                          self.testInst.meta.labels.max_val: 400,
-                          self.testInst.meta.labels.fill_val: np.nan,
-                          self.testInst.meta.labels.notes: 'test ap'}
-        self.testInst.meta['3hr_ap'] = self.meta_dict
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10)
+        self.test_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.testInst.load(date=self.test_time)
+
+        # Create 3 hr Ap data
+        self.testInst.data.index = pds.DatetimeIndex(data=[
+            self.test_time + pds.DateOffset(hours=3 * i) for i in range(10)])
+        self.testInst['3hr_ap'] = np.array([0, 2, 3, 4, 5, 6, 7, 9, 12, 15])
+        self.testInst.meta['3hr_ap'] = {
+            self.testInst.meta.labels.units: '',
+            self.testInst.meta.labels.name: 'ap',
+            self.testInst.meta.labels.desc:
+            "3-hour ap (equivalent range) index",
+            self.testInst.meta.labels.min_val: 0,
+            self.testInst.meta.labels.max_val: 400,
+            self.testInst.meta.labels.fill_val: np.nan,
+            self.testInst.meta.labels.notes: 'test ap'}
         return
 
     def teardown(self):
         """Clean up previous testing."""
-        del self.testInst, self.meta_dict
+        del self.testInst, self.test_time
         return
 
     def test_calc_daily_Ap(self):
@@ -461,6 +496,25 @@ class TestSWAp(object):
 
         # Test fill values (partial days)
         assert np.all(np.isnan(self.testInst['Ap'][8:]))
+        return
+
+    def test_calc_daily_Ap_w_running(self):
+        """Test daily Ap calculation with running mean."""
+
+        kp_ap.calc_daily_Ap(self.testInst, running_name="running_ap")
+
+        assert 'Ap' in self.testInst.data.columns
+        assert 'Ap' in self.testInst.meta.keys()
+        assert 'running_ap' in self.testInst.data.columns
+        assert 'running_ap' in self.testInst.meta.keys()
+
+        # Test unfilled values (full days)
+        assert np.all(self.testInst['Ap'][:8].min() == 4.5)
+        assert np.all(self.testInst['running_ap'][6:].min() == 4.5)
+
+        # Test fill values (partial days)
+        assert np.all(np.isnan(self.testInst['Ap'][8:]))
+        assert np.all(np.isnan(self.testInst['running_ap'][:6]))
         return
 
     @pytest.mark.parametrize("inargs,vmsg", [
@@ -482,4 +536,26 @@ class TestSWAp(object):
             kp_ap.calc_daily_Ap(self.testInst, *inargs)
 
         assert str(verr).find(vmsg) >= 0
+        return
+
+    @pytest.mark.parametrize("ap,out", [(0, 0), (1, 0), (153, 7), (-1, None),
+                                        (460, None), (np.nan, None),
+                                        (np.inf, None), (-np.inf, None)])
+    def test_round_ap(self, ap, out):
+        """Test `round_ap` returns expected value for successes and failures.
+
+        Parameters
+        ----------
+        ap : float
+            Input ap
+        out : float or NoneType
+            Expected output kp or None to use fill_value
+
+        """
+
+        fill_value = -47.0
+        if out is None:
+            out = fill_value
+
+        assert out == kp_ap.round_ap(ap, fill_val=fill_value)
         return

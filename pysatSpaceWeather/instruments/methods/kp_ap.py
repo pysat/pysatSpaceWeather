@@ -291,9 +291,6 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
     This routine is written for standard Kp data (tag=''), not the forecast or
     recent data.  However, it will work with these Kp data if they are supplied.
 
-    This routine is designed to be used with the 'modify' flag if applied as
-    a custom routine.
-
     """
     # Load the desired data
     if kp_inst is None:
@@ -301,14 +298,17 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
                                    tag='', pad=pds.DateOffset(days=1))
 
     if kp_inst.empty:
-        kp_inst.load(date=inst.date, verifyPad=True)
+        kp_inst.load(date=inst.index[0], end_date=inst.index[-1],
+                     verifyPad=True)
 
     # Begin filtering, starting at the beginning of the instrument data
-    sel_data = kp_inst[(inst.date - pds.DateOffset(days=1)):
-                       (inst.date + pds.DateOffset(days=1))]
+    sel_data = kp_inst[(inst.index[0] - pds.DateOffset(days=1)):
+                       (inst.index[-1] + pds.DateOffset(days=1))]
     ind, = np.where((sel_data[var_name] > max_kp)
                     | (sel_data[var_name] < min_kp))
+
     for lind in ind:
+        # Determine the time filter range for removing each flagged data
         sind = sel_data.index[lind]
         eind = sind + pds.DateOffset(hours=filter_time)
         inst[sind:eind] = np.nan
@@ -391,6 +391,7 @@ def round_ap(ap_in, fill_val=np.nan):
                 111: 6.0 + two_third, 132: 7, 154: 7.0 + one_third,
                 179: 7.0 + two_third, 207: 8, 236: 8.0 + one_third,
                 300: 8.0 + two_third, 400: 9}
+    max_ap = 400
 
     # Infinite or NaN values will return the fill value
     if not np.isfinite(ap_in):
@@ -402,21 +403,15 @@ def round_ap(ap_in, fill_val=np.nan):
 
     # The input Ap value may be appropriate, but does not correspond directly
     # to a Kp index.  Get a sorted list of directly corresponding Ap indices,
-    # with Kp returned as double (N- = N.6667, N+=N.3333333)
-    ap_keys = sorted([akey for akey in ap_to_kp.keys()])
-
-    # Determine the correct key based on the value of the input
-    i = 0
-    while ap_keys[i] <= ap_in:
-        i += 1
-    i -= 1
+    # with Kp returned as double (N- = N.6667, N+ = N.3333333)
+    ap_keys = sorted([akey for akey in ap_to_kp.keys() if akey <= ap_in])
 
     # If the value is too large or too small, return the fill value
-    if i >= len(ap_keys) or ap_keys[i] > ap_in:
+    if len(ap_keys) == 0 or (ap_keys[-1] < ap_in and ap_keys[-1] == max_ap):
         return fill_val
 
     # The value is realistic, return the Kp value
-    return ap_to_kp[ap_keys[i]]
+    return ap_to_kp[ap_keys[-1]]
 
 
 def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,

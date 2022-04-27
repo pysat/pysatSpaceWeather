@@ -123,7 +123,7 @@ download = functools.partial(mm_ace.download, name=name, now=now)
 list_files = functools.partial(mm_ace.list_files, name=name)
 
 
-def load(fnames, tag=None, inst_id=None):
+def load(fnames, tag='', inst_id=''):
     """Load the ACE space weather prediction data.
 
     Parameters
@@ -131,9 +131,9 @@ def load(fnames, tag=None, inst_id=None):
     fnames : array-like
         Series, list, or array of filenames.
     tag : str
-        Instrument tag, not used.
+        Instrument tag, not used. (default='')
     inst_id : str
-        ACE instrument ID, not used.
+        ACE instrument ID, not used. (default='')
 
     Returns
     -------

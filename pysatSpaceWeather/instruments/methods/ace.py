@@ -140,11 +140,6 @@ def list_files(name, tag='', inst_id='', data_path=None, format_str=None):
     files : pysat.Files
         A class containing the verified available files
 
-    Raises
-    ------
-    ValueError
-        If None is supplied through the data path.
-
     Note
     ----
     Called by pysat. Not intended for direct use by user.

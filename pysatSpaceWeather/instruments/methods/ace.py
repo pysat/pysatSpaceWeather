@@ -130,7 +130,7 @@ def list_files(name, tag='', inst_id='', data_path=None, format_str=None):
     inst_id : str
         Specifies the ACE instrument ID. (default='')
     data_path : str
-        Path to data directory.  (default='')
+        Path to data directory. (default='')
     format_str : str or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)

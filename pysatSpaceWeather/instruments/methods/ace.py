@@ -129,8 +129,8 @@ def list_files(name, tag='', inst_id='', data_path=None, format_str=None):
         ACE Instrument tag. (default='')
     inst_id : str
         Specifies the ACE instrument ID. (default='')
-    data_path : str or NoneType
-        Path to data directory. Raises ValueError if None. (default=None)
+    data_path : str
+        Path to data directory. (default='')
     format_str : str or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
@@ -139,11 +139,6 @@ def list_files(name, tag='', inst_id='', data_path=None, format_str=None):
     -------
     files : pysat.Files
         A class containing the verified available files
-
-    Raises
-    ------
-    ValueError
-        If None is supplied through the data path.
 
     Note
     ----
@@ -154,10 +149,7 @@ def list_files(name, tag='', inst_id='', data_path=None, format_str=None):
         format_str = '_'.join(["ace", name, tag,
                                '{year:04d}-{month:02d}-{day:02d}.txt'])
 
-    if data_path is None:
-        raise ValueError('No path to data supplied through `data_path`')
-    else:
-        files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
+    files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
     return files
 

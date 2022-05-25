@@ -221,7 +221,7 @@ def load(fnames, tag, inst_id):
             for i in np.arange(8):
                 tind = data.index + pds.DateOffset(hours=int(3 * i))
                 temp = pds.Series(data.iloc[:, i].values, index=tind)
-                data_series = data_series.append(temp)
+                data_series = pds.concat([data_series, temp])
 
             data_series = data_series.sort_index()
             data_series.index.name = 'time'

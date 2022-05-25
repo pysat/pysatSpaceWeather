@@ -9,6 +9,8 @@
 
 import datetime as dt
 import numpy as np
+from packaging.version import Version
+
 import pandas as pds
 import pysat
 
@@ -157,11 +159,17 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         if inst_flag == 'standard':
             # Test to see if data loading is needed
             if not np.any(standard_inst.index == itime):
+                # Set the load kwargs, which vary by pysat version and tag
+                load_kwargs = {'date': itime}
+
+                if Version(pysat.__version__) > Version('3.0.1'):
+                    load_kwargs['use_header'] = True
+
                 if standard_inst.tag == 'daily':
                     # Add 30 days
-                    standard_inst.load(date=itime + pds.DateOffset(days=30))
-                else:
-                    standard_inst.load(date=itime)
+                    load_kwargs['date'] += dt.timedelta(days=30)
+
+                standard_inst.load(**load_kwargs)
 
             good_times = ((standard_inst.index >= itime)
                           & (standard_inst.index < stop))
@@ -198,7 +206,11 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
             # data
             for filename in files:
                 if filename is not None:
-                    forecast_inst.load(fname=filename)
+                    load_kwargs = {'fname': filename}
+                    if Version(pysat.__version__) > Version('3.0.1'):
+                        load_kwargs['use_header'] = True
+
+                    forecast_inst.load(**load_kwargs)
 
                 if notes.find("forecast") < 0:
                     notes += " the {:} source ({:} to ".format(inst_flag,
@@ -482,7 +494,7 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     freq = pysat.utils.time.calc_freq(f107_inst.index)
     if freq != "86400S":
         # Resample to the desired frequency
-        f107_fill = f107_fill.resample(freq).pad()
+        f107_fill = f107_fill.resample(freq).ffill()
 
         # Save the output in a list
         f107a = list(f107_fill[f107a_name])

@@ -373,7 +373,7 @@ class TestSwKpCombine(object):
         combo_in['standard_inst'].load(date=self.combine['start'],
                                        **self.load_kwargs)
         combo_in['recent_inst'].load(date=self.test_day,
-                                       **self.load_kwargs)
+                                     **self.load_kwargs)
         combo_in['forecast_inst'].load(date=self.test_day,
                                        **self.load_kwargs)
         combo_in['stop'] = combo_in['forecast_inst'].index[-1]

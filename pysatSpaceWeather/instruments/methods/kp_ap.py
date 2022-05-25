@@ -525,7 +525,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
             load_kwargs = {'date': itime}
             if Version(pysat.__version__) > Version('3.0.1'):
                 load_kwargs['use_header'] = True
-            
+
             standard_inst.load(**load_kwargs)
 
             if notes.find("standard") < 0:

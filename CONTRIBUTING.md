@@ -45,17 +45,26 @@ Development
 
 To set up `pysatSpaceWeather` for local development:
 
-1. `Fork pysatSpaceWeather on GitHub <https://github.com/pysat/pysatSpaceWeather/fork>`_.
-2. Clone your fork locally::
+1. [Fork pysatSpaceWeather on GitHub](https://github.com/pysat/pysatSpaceWeather/fork>).
 
+2. Clone your fork locally:
+
+  ```
     git clone git@github.com:your_name_here/pysatSpaceWeather.git
+  ```
 
-3. Create a branch for local development::
+3. Create a branch for local development:
 
+  ```
     git checkout -b name-of-your-bugfix-or-feature
+  ```
 
    Now you can make your changes locally. Tests for new instruments are
-   performed automatically.  Tests for custom functions should be added to the
+   performed automatically.  See discussion
+   [here](https://pysat.readthedocs.io/en/main/new_instrument.html#testing-support)
+   for more information on triggering these standard tests.
+
+   Tests for custom functions should be added to the
    appropriately named file in ``pysatSpaceWeather/tests``.  For example,
    space weather methods should be named
    ``pysatSpaceWeather/tests/test_methods_sw.py``.  If no test file exists,
@@ -64,20 +73,28 @@ To set up `pysatSpaceWeather` for local development:
    must begin with ``Test``, and test methods must also begin with ``test``.
 
 4. When you're done making changes, run all the checks to ensure that nothing
-   is broken on your local system::
+   is broken on your local system:
 
+   ```
     pytest -vs pysatSpaceWeather
+   ```
 
 5. Update/add documentation (in ``docs``).  Even if you don't think it's
    relevant, check to see if any existing examples have changed.
 
 6. Add your name to the .zenodo.json file as an author
 
-7. Commit your changes and push your branch to GitHub::
+7. Commit your changes and push your branch to GitHub:
 
+   ```
     git add .
     git commit -m "CODE: Brief description of your changes"
     git push origin name-of-your-bugfix-or-feature
+   ```
+   
+   Where CODE is a standard shorthand for the type of change (eg, BUG or DOC).
+   `pysat` follows the [numpy development workflow](https://numpy.org/doc/stable/dev/development_workflow.html),
+   see the discussion there for a full list of this shorthand notation.
 
 8. Submit a pull request through the GitHub website. Pull requests should be
    made to the ``develop`` branch.
@@ -92,8 +109,8 @@ For merging, you should:
 
 1. Include an example for use
 2. Add a note to ``CHANGELOG.md`` about the changes
-3. Ensure that all checks passed (current checks include Travis-CI
-   and Coveralls) [1]_
+3. Ensure that all checks passed (current checks include GitHub Actions,
+   Coveralls, and ReadTheDocs) [1]_
 
 .. [1] If you don't have all the necessary Python versions available locally or
        have trouble building all the testing environments, you can rely on

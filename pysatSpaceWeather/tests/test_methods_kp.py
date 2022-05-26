@@ -7,6 +7,7 @@
 
 import datetime as dt
 import numpy as np
+from packaging.version import Version
 
 import pandas as pds
 import pysat
@@ -25,7 +26,12 @@ class TestSWKp(object):
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12)
         self.test_time = pysat.instruments.pysat_testing._test_dates['']['']
-        self.testInst.load(date=self.test_time)
+
+        load_kwargs = {'date': self.test_time}
+        if Version(pysat.__version__) > Version('3.0.1'):
+            load_kwargs['use_header'] = True
+
+        self.testInst.load(**load_kwargs)
 
         # Create Kp data
         self.testInst.data.index = pds.DatetimeIndex(data=[
@@ -65,8 +71,9 @@ class TestSWKp(object):
         """Test conversion of Kp to ap with fill values."""
 
         # Set the first value to a fill value, then calculate ap
-        fill_val = self.testInst.meta.labels.fill_val
-        self.testInst['Kp'][0] = self.testInst.meta['Kp'][fill_val]
+        fill_label = self.testInst.meta.labels.fill_val
+        fill_value = self.testInst.meta['Kp', fill_label]
+        self.testInst.data.at[self.testInst.index[0], 'Kp'] = fill_value
         kp_ap.convert_3hr_kp_to_ap(self.testInst)
 
         # Test non-fill ap values
@@ -79,9 +86,8 @@ class TestSWKp(object):
 
         # Test the fill value in the data and metadata
         assert np.isnan(self.testInst['3hr_ap'][0])
-        assert np.isnan(self.testInst.meta['3hr_ap'][fill_val])
+        assert np.isnan(self.testInst.meta['3hr_ap'][fill_label])
 
-        del fill_val
         return
 
     def test_convert_kp_to_ap_bad_input(self):
@@ -162,7 +168,8 @@ class TestSWKp(object):
         """Test conversion of ap to Kp where ap is not an exact Kp value."""
 
         kp_ap.convert_3hr_kp_to_ap(self.testInst)
-        self.testInst['3hr_ap'][8] += 1
+        new_val = self.testInst['3hr_ap'][8] + 1
+        self.testInst.data.at[self.testInst.index[8], '3hr_ap'] = new_val
         kp_out, kp_meta = kp_ap.convert_ap_to_kp(self.testInst['3hr_ap'])
 
         # Assert original and coverted there and back Kp are equal
@@ -172,7 +179,6 @@ class TestSWKp(object):
         assert 'Kp' in kp_meta.keys()
         assert(kp_meta['Kp'][kp_meta.labels.fill_val] == -1)
 
-        del kp_out, kp_meta
         return
 
     def test_convert_ap_to_kp_nan_input(self):
@@ -209,25 +215,24 @@ class TestSWKp(object):
         """Test conversion of ap to Kp with fill values."""
 
         # Set the first Kp value to a fill value
-        fill_val = self.testInst.meta.labels.fill_val
-        self.testInst['Kp'][0] = self.testInst.meta['Kp', fill_val]
+        fill_label = self.testInst.meta.labels.fill_val
+        fill_value = self.testInst.meta['Kp', fill_label]
+        self.testInst.data.at[self.testInst.index[0], 'Kp'] = fill_value
 
         # Calculate ap
         kp_ap.convert_3hr_kp_to_ap(self.testInst)
 
         # Recalculate Kp from ap
-        kp_out, kp_meta = kp_ap.convert_ap_to_kp(
-            self.testInst['3hr_ap'],
-            fill_val=self.testInst.meta['Kp', fill_val])
+        kp_out, kp_meta = kp_ap.convert_ap_to_kp(self.testInst['3hr_ap'],
+                                                 fill_val=fill_value)
 
         # Test non-fill ap values
         assert all(abs(kp_out[1:] - self.testInst.data['Kp'][1:]) < 1.0e-4)
 
         # Test the fill value in the data and metadata
         assert np.isnan(kp_out[0])
-        assert np.isnan(kp_meta['Kp'][fill_val])
+        assert np.isnan(kp_meta['Kp'][fill_label])
 
-        del fill_val, kp_out, kp_meta
         return
 
     @pytest.mark.parametrize("filter_kwargs,ngood", [
@@ -288,12 +293,16 @@ class TestSwKpCombine(object):
                         "start": self.test_day - dt.timedelta(days=30),
                         "stop": self.test_day + dt.timedelta(days=3),
                         "fill_val": -1}
+        self.load_kwargs = {}
+        if Version(pysat.__version__) > Version('3.0.1'):
+            self.load_kwargs['use_header'] = True
+
         return
 
     def teardown(self):
         """Clean up previous testing."""
         pysat.params.data['data_dirs'] = self.saved_path
-        del self.combine, self.test_day, self.saved_path
+        del self.combine, self.test_day, self.saved_path, self.load_kwargs
         return
 
     def test_combine_kp_none(self):
@@ -361,9 +370,12 @@ class TestSwKpCombine(object):
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
 
-        combo_in['standard_inst'].load(date=self.combine['start'])
-        combo_in['recent_inst'].load(date=self.test_day)
-        combo_in['forecast_inst'].load(date=self.test_day)
+        combo_in['standard_inst'].load(date=self.combine['start'],
+                                       **self.load_kwargs)
+        combo_in['recent_inst'].load(date=self.test_day,
+                                     **self.load_kwargs)
+        combo_in['forecast_inst'].load(date=self.test_day,
+                                       **self.load_kwargs)
         combo_in['stop'] = combo_in['forecast_inst'].index[-1]
 
         kp_inst = kp_ap.combine_kp(**combo_in)
@@ -461,7 +473,12 @@ class TestSWAp(object):
         """Create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10)
         self.test_time = pysat.instruments.pysat_testing._test_dates['']['']
-        self.testInst.load(date=self.test_time)
+
+        load_kwargs = {'date': self.test_time}
+        if Version(pysat.__version__) > Version('3.0.1'):
+            load_kwargs['use_header'] = True
+
+        self.testInst.load(**load_kwargs)
 
         # Create 3 hr Ap data
         self.testInst.data.index = pds.DatetimeIndex(data=[

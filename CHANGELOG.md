@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[0.0.5] - 2021-XX-XX
+[0.0.5] - 2022-06-03
 --------------------
 * Updated the docstrings to conform to pysat standards
 * Added docstring tests to Flake8 portion of CI testing

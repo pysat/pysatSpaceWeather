@@ -389,7 +389,7 @@ def list_files(tag, inst_id, data_path, format_str=None):
 
 
 def download(date_array, tag, inst_id, data_path, update_files=False):
-    """Fownload F107 index data from the appropriate repository.
+    """Download F107 index data from the appropriate repository.
 
     Parameters
     ----------

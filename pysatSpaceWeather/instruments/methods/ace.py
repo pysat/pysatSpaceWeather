@@ -356,7 +356,7 @@ def ace_swepam_hourly_omni_norm(as_inst, speed_key='sw_bulk_speed',
     Parameters
     ----------
     as_inst : pysat.Instrument
-        pysat Instrument object with ACE SWEPAM data
+        pysat Instrument object with ACE SWEPAM data.
     speed_key : str
         Data key for bulk solar wind speed data in km/s
         (default='sw_bulk_speed')

@@ -13,7 +13,6 @@ import warnings
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
 
 
-
 class TestACEMethods(object):
     """Test class for ACE methods."""
 

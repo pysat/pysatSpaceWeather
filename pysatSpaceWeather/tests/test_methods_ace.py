@@ -5,13 +5,13 @@
 # ----------------------------------------------------------------------------
 """Integration and unit test suite for ACE methods."""
 
+from packaging.version import Version
 import pysat
 import pytest
 import warnings
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
 
-pysat_version_minor = int(pysat.__version__.split('.')[1])
 
 
 class TestACEMethods(object):
@@ -61,7 +61,7 @@ class TestACEMethods(object):
         return
 
 
-@pytest.mark.skipif(pysat_version_minor < 1,
+@pytest.mark.skipif(Version(pysat.__version__) < Version('3.0.2'),
                     reason="Requires time routine available in pysat 3.0.2+")
 class TestACESWEPAMMethods(object):
     """Test class for ACE SWEPAM methods."""

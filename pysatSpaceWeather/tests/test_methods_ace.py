@@ -62,7 +62,7 @@ class TestACEMethods(object):
 
 
 @pytest.mark.skipif(pysat_version_minor < 1,
-                    reason="Requires time routine available in pysat 3.1+")
+                    reason="Requires time routine available in pysat 3.0.2+")
 class TestACESWEPAMMethods(object):
     """Test class for ACE SWEPAM methods."""
 

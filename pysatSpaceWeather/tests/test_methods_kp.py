@@ -35,7 +35,7 @@ class TestSWKp(object):
 
         # Create Kp data
         self.testInst.data.index = pds.DatetimeIndex(data=[
-            self.test_time + pds.DateOffset(hours=3 * i) for i in range(12)])
+            self.test_time + dt.timedelta(hours=3 * i) for i in range(12)])
         self.testInst['Kp'] = np.arange(0, 4, 1.0 / 3.0)
         self.testInst['ap_nan'] = np.full(shape=12, fill_value=np.nan)
         self.testInst['ap_inf'] = np.full(shape=12, fill_value=np.inf)

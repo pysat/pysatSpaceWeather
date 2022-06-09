@@ -6,9 +6,10 @@
 """Integration and unit test suite for ACE methods."""
 
 from packaging.version import Version
-import pysat
 import pytest
 import warnings
+
+import pysat
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
 

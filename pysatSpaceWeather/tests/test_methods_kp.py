@@ -98,7 +98,7 @@ class TestSWKp(object):
         with pytest.raises(ValueError) as verr:
             kp_ap.convert_3hr_kp_to_ap(self.testInst)
 
-        assert str(verr).find("variable name for Kp data is missing") >= 0
+        assert str(verr).find("Variable name for Kp data is missing") >= 0
         return
 
     def test_initialize_kp_metadata(self):

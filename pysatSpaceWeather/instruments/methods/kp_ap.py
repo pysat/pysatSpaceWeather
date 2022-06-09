@@ -25,7 +25,7 @@ def acknowledgements(name, tag):
     Parameters
     ----------
     name : str
-        Instrument name of space weather index, accepts kp or ap.
+        Instrument name of space weather index, accepts 'kp' or 'ap'.
     tag : str
         Instrument tag.
 
@@ -142,7 +142,7 @@ def convert_3hr_kp_to_ap(kp_inst, var_name='Kp'):
 
     # Test the input
     if var_name not in kp_inst.variables:
-        raise ValueError('variable name for Kp data is missing: {:}'.format(
+        raise ValueError('Variable name for Kp data is missing: {:}'.format(
             var_name))
 
     # Convert from Kp to ap

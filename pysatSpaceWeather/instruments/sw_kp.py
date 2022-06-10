@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Supports Kp index values. Downloads data from ftp.gfz-potsdam.de or SWPC.
+"""Supports Kp index values.
 
 Properties
 ----------
@@ -11,9 +11,13 @@ tag
     - '' Standard Kp data
     - 'forecast' Grab forecast data from SWPC (next 3 days)
     - 'recent' Grab last 30 days of Kp data from SWPC
+inst_id
+    ''
 
 Note
 ----
+Downloads data from ftp.gfz-potsdam.de or SWPC.
+
 Standard Kp files are stored by the first day of each month. When downloading
 use kp.download(start, stop, freq='MS') to only download days that could
 possibly have data.  'MS' gives a monthly start frequency.
@@ -24,15 +28,19 @@ for the current day. When loading forecast data, the date specified with the
 load command is the date the forecast was generated. The data loaded will span
 three days. To always ensure you are loading the most recent data, load
 the data with tomorrow's date.
+
+Recent data is also stored by the generation date from the SWPC. Each file
+contains 30 days of Kp measurements. The load date issued to pysat corresponds
+to the generation date.
+
+Examples
+--------
 ::
 
     kp = pysat.Instrument('sw', 'kp', tag='recent')
     kp.download()
     kp.load(date=kp.tomorrow())
 
-Recent data is also stored by the generation date from the SWPC. Each file
-contains 30 days of Kp measurements. The load date issued to pysat corresponds
-to the generation date.
 
 Warnings
 --------
@@ -60,8 +68,8 @@ import sys
 
 import pysat
 
-from pysatSpaceWeather.instruments.methods import kp_ap
 from pysatSpaceWeather.instruments.methods import general
+from pysatSpaceWeather.instruments.methods import kp_ap
 
 logger = pysat.logger
 
@@ -75,7 +83,7 @@ tags = {'': '',
         'recent': 'SWPC provided Kp for past 30 days'}
 inst_ids = {'': ['', 'forecast', 'recent']}
 
-# generate todays date to support loading forecast data
+# Generate todays date to support loading forecast data
 now = dt.datetime.utcnow()
 today = dt.datetime(now.year, now.month, now.day)
 
@@ -97,11 +105,7 @@ preprocess = general.preprocess
 
 
 def init(self):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    """
+    """Initialize the Instrument object with instrument specific values."""
 
     self.acknowledgements = kp_ap.acknowledgements(self.name, self.tag)
     self.references = kp_ap.references(self.name, self.tag)
@@ -110,12 +114,8 @@ def init(self):
 
 
 def clean(self):
-    """ Cleaning function for Space Weather indices
+    """Clean the Kp, not required for this index (empty function)."""
 
-    Note
-    ----
-    Kp doesn't require cleaning
-    """
     return
 
 
@@ -123,17 +123,17 @@ def clean(self):
 # Instrument functions
 
 
-def load(fnames, tag=None, inst_id=None):
-    """Load Kp index files
+def load(fnames, tag='', inst_id=''):
+    """Load Kp index files.
 
     Parameters
     ----------
     fnames : pandas.Series
         Series of filenames
-    tag : str or NoneType
-        tag or None (default=None)
-    inst_id : str or NoneType
-        satellite id or None (default=None)
+    tag : str
+        Instrument tag (default='')
+    inst_id : str
+        Instrument ID, not used. (default='')
 
     Returns
     -------
@@ -214,28 +214,34 @@ def load(fnames, tag=None, inst_id=None):
         # Combine data together
         data = pds.concat(all_data, axis=0, sort=True)
 
-        # Each column increments UT by three hours. Produce a single data
-        # series that has Kp value monotonically increasing in time with
-        # appropriate datetime indices
-        data_series = pds.Series(dtype='float64')
-        for i in np.arange(8):
-            tind = data.index + pds.DateOffset(hours=int(3 * i))
-            temp = pds.Series(data.iloc[:, i].values, index=tind)
-            data_series = data_series.append(temp)
-        data_series = data_series.sort_index()
-        data_series.index.name = 'time'
+        if len(data.index) > 0:
+            # Each column increments UT by three hours. Produce a single data
+            # series that has Kp value monotonically increasing in time with
+            # appropriate datetime indices
+            data_series = pds.Series(dtype='float64')
+            for i in np.arange(8):
+                tind = data.index + pds.DateOffset(hours=int(3 * i))
+                temp = pds.Series(data.iloc[:, i].values, index=tind)
+                data_series = pds.concat([data_series, temp])
 
-        # Kp comes in non-user friendly values like 2-, 2o, and 2+. Relate
-        # these to 1.667, 2.0, 2.333 for processing and user friendliness
-        first = np.array([float(str_val[0]) for str_val in data_series])
-        flag = np.array([str_val[1] for str_val in data_series])
+            data_series = data_series.sort_index()
+            data_series.index.name = 'time'
 
-        ind, = np.where(flag == '+')
-        first[ind] += 1.0 / 3.0
-        ind, = np.where(flag == '-')
-        first[ind] -= 1.0 / 3.0
+            # Kp comes in non-user friendly values like 2-, 2o, and 2+. Relate
+            # these to 1.667, 2.0, 2.333 for processing and user friendliness
+            first = np.array([float(str_val[0]) for str_val in data_series])
+            flag = np.array([str_val[1] for str_val in data_series])
 
-        result = pds.DataFrame(first, columns=['Kp'], index=data_series.index)
+            ind, = np.where(flag == '+')
+            first[ind] += 1.0 / 3.0
+            ind, = np.where(flag == '-')
+            first[ind] -= 1.0 / 3.0
+
+            result = pds.DataFrame(first, columns=['Kp'],
+                                   index=data_series.index)
+        else:
+            result = pds.DataFrame()
+
         fill_val = np.nan
     elif tag == 'forecast':
         # Load forecast data
@@ -243,6 +249,7 @@ def load(fnames, tag=None, inst_id=None):
         for fname in fnames:
             result = pds.read_csv(fname, index_col=0, parse_dates=True)
             all_data.append(result)
+
         result = pds.concat(all_data)
         fill_val = -1
     elif tag == 'recent':
@@ -251,6 +258,7 @@ def load(fnames, tag=None, inst_id=None):
         for fname in fnames:
             result = pds.read_csv(fname, index_col=0, parse_dates=True)
             all_data.append(result)
+
         result = pds.concat(all_data)
         fill_val = -1
 
@@ -261,27 +269,24 @@ def load(fnames, tag=None, inst_id=None):
     return result, meta
 
 
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
-    """Return a Pandas Series of every file for chosen satellite data
+def list_files(tag='', inst_id='', data_path='', format_str=None):
+    """List local files for the requested Instrument tag.
 
     Parameters
     -----------
-    tag : string or NoneType
-        Denotes type of file to load.
-        (default=None)
-    inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
-    format_str : string or NoneType
+    tag : str
+        Instrument tag, accepts any value from `tags`. (default='')
+    inst_id : str
+        Instrument ID, not used. (default='')
+    data_path : str
+        Path to data directory. (default='')
+    format_str : str or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 
     Returns
     -------
-    pysat.Files.from_os : pysat._files.Files
+    files : pysat._files.Files
         A class containing the verified available files
 
     Note
@@ -290,66 +295,54 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
 
     """
 
-    if data_path is not None:
-        if tag == '':
-            # Files are by month, going to add date to monthly filename for
-            # each day of the month. The load routine will load a month of
-            # data and use the appended date to select out appropriate data.
-            if format_str is None:
-                format_str = 'kp{year:2d}{month:02d}.tab'
-            out = pysat.Files.from_os(data_path=data_path,
-                                      format_str=format_str,
-                                      two_digit_year_break=99)
-            if not out.empty:
-                out.loc[out.index[-1] + pds.DateOffset(months=1)
-                        - pds.DateOffset(days=1)] = out.iloc[-1]
-                out = out.asfreq('D', 'pad')
-                out = out + '_' + out.index.strftime('%Y-%m-%d')
-            return out
-        elif tag == 'forecast':
-            format_str = 'kp_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
-            files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=format_str)
-            # Pad list of files data to include most recent file under tomorrow
-            if not files.empty:
-                pds_offset = pds.DateOffset(days=1)
-                files.loc[files.index[-1] + pds_offset] = files.values[-1]
-                files.loc[files.index[-1] + pds_offset] = files.values[-1]
-            return files
-        elif tag == 'recent':
-            format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
-            files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=format_str)
+    if tag == '':
+        # Files are by month, going to add date to monthly filename for
+        # each day of the month. The load routine will load a month of
+        # data and use the appended date to select out appropriate data.
+        if format_str is None:
+            format_str = 'kp{year:2d}{month:02d}.tab'
+        files = pysat.Files.from_os(data_path=data_path,
+                                    format_str=format_str,
+                                    two_digit_year_break=99)
+        if not files.empty:
+            files.loc[files.index[-1] + pds.DateOffset(months=1)
+                      - pds.DateOffset(days=1)] = files.iloc[-1]
+            files = files.asfreq('D', 'pad')
+            files = files + '_' + files.index.strftime('%Y-%m-%d')
 
-            # Pad list of files data to include most recent file under tomorrow
-            if not files.empty:
-                pds_offset = pds.DateOffset(days=1)
-                files.loc[files.index[-1] + pds_offset] = files.values[-1]
-                files.loc[files.index[-1] + pds_offset] = files.values[-1]
-            return files
-
-        else:
-            raise ValueError(' '.join(('Unrecognized tag name for Space',
-                                       'Weather Index Kp')))
     else:
-        raise ValueError(' '.join(('A data_path must be passed to the loading',
-                                   'routine for Kp')))
+        format_str = '_'.join(['kp', tag,
+                               '{year:04d}-{month:02d}-{day:02d}.txt'])
+        files = pysat.Files.from_os(data_path=data_path,
+                                    format_str=format_str)
+
+        # Pad list of files data to include most recent file under tomorrow
+        if not files.empty:
+            pds_offset = pds.DateOffset(days=1)
+            files.loc[files.index[-1] + pds_offset] = files.values[-1]
+            files.loc[files.index[-1] + pds_offset] = files.values[-1]
+
+    return files
 
 
 def download(date_array, tag, inst_id, data_path):
-    """Routine to download Kp index data
+    """Download the Kp index data from the appropriate repository.
 
     Parameters
-    -----------
-    tag : string or NoneType
-        Denotes type of file to load.  Accepted types are '' and 'forecast'.
-        (default=None)
-    inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
+    ----------
+    date_array : array-like or pandas.DatetimeIndex
+        Array-like or index of datetimes to be downloaded.
+    tag : str
+        Denotes type of file to load.
+    inst_id : str
+        Specifies the instrument identification, not used.
+    data_path : str
+        Path to data directory.
+
+    Raises
+    ------
+    Exception
+        Bare raise upon FTP failure, facilitating useful error messages.
 
     Note
     ----
@@ -405,6 +398,7 @@ def download(date_array, tag, inst_id, data_path):
     elif tag == 'forecast':
         logger.info(' '.join(('This routine can only download the current',
                               'forecast, not archived forecasts')))
+
         # Download webpage
         furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
         r = requests.get(furl)
@@ -434,6 +428,7 @@ def download(date_array, tag, inst_id, data_path):
             day1.append(int(raw[0:10]))
             day2.append(int(raw[10:20]))
             day3.append(int(raw[20:]))
+
         times = pds.date_range(forecast_date, periods=24, freq='3H')
         day = []
         for dd in [day1, day2, day3]:
@@ -453,14 +448,14 @@ def download(date_array, tag, inst_id, data_path):
         # Download webpage
         rurl = ''.join(('https://services.swpc.noaa.gov/text/',
                         'daily-geomagnetic-indices.txt'))
-        r = requests.get(rurl)
+        req = requests.get(rurl)
 
         # Parse text to get the date the prediction was generated
-        date_str = r.text.split(':Issued: ')[-1].split('\n')[0]
+        date_str = req.text.split(':Issued: ')[-1].split('\n')[0]
         dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
 
         # Data is the forecast value for the next three days
-        raw_data = r.text.split('#  Date ')[-1]
+        raw_data = req.text.split('#  Date ')[-1]
 
         # Keep only the middle bits that matter
         raw_data = raw_data.split('\n')[1:-1]

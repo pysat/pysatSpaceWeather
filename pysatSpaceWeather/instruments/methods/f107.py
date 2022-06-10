@@ -1,47 +1,58 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-.
-"""Provides default routines for solar wind and geospace indices
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+# ----------------------------------------------------------------------------
 
-"""
+"""Routines for the F10.7 solar index."""
 
 import datetime as dt
-import pandas as pds
 import numpy as np
+from packaging.version import Version
 
+import pandas as pds
 import pysat
 
 import pysatSpaceWeather as pysat_sw
 
 
-def acknowledgements(name, tag):
-    """Returns acknowledgements for space weather dataset
+def acknowledgements(tag):
+    """Define the acknowledgements for the F10.7 data.
 
     Parameters
     ----------
-    name : string
-        Name of space weather index, eg, dst, f107, kp
-    tag : string
+    tag : str
         Tag of the space waether index
+
+    Returns
+    -------
+    ackn : str
+        Acknowledgements string associated with the appropriate F10.7 tag.
 
     """
     lisird = 'NOAA radio flux obtained through LISIRD'
     swpc = ''.join(['Prepared by the U.S. Dept. of Commerce, NOAA, Space ',
                     'Weather Prediction Center'])
 
-    ackn = {'f107': {'historic': lisird, 'prelim': swpc,
-                     'daily': swpc, 'forecast': swpc, '45day': swpc}}
+    ackn = {'historic': lisird, 'prelim': swpc, 'daily': swpc,
+            'forecast': swpc, '45day': swpc}
 
-    return ackn[name][tag]
+    return ackn[tag]
 
 
-def references(name, tag):
-    """Returns references for space weather dataset
+def references(tag):
+    """Define the references for the F10.7 data.
 
     Parameters
     ----------
-    name : string
-        Name of space weather index, eg, dst, f107, kp
-    tag : string
-        Tag of the space weather index
+    tag : str
+        Instrument tag for the F10.7 data.
+
+    Returns
+    -------
+    refs : str
+        Reference string associated with the appropriate F10.7 tag.
 
     """
     noaa_desc = ''.join(['Dataset description: ',
@@ -56,17 +67,17 @@ def references(name, tag):
     swpc_desc = ''.join(['Dataset description: https://www.swpc.noaa.gov/',
                          'sites/default/files/images/u2/Usr_guide.pdf'])
 
-    refs = {'f107': {'historic': "\n".join([noaa_desc, orig_ref]),
-                     'prelim': "\n".join([swpc_desc, orig_ref]),
-                     'daily': "\n".join([swpc_desc, orig_ref]),
-                     'forecast': "\n".join([swpc_desc, orig_ref]),
-                     '45day': "\n".join([swpc_desc, orig_ref])}}
+    refs = {'historic': "\n".join([noaa_desc, orig_ref]),
+            'prelim': "\n".join([swpc_desc, orig_ref]),
+            'daily': "\n".join([swpc_desc, orig_ref]),
+            'forecast': "\n".join([swpc_desc, orig_ref]),
+            '45day': "\n".join([swpc_desc, orig_ref])}
 
-    return refs[name][tag]
+    return refs[tag]
 
 
 def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
-    """ Combine the output from the measured and forecasted F10.7 sources
+    """Combine the output from the measured and forecasted F10.7 sources.
 
     Parameters
     ----------
@@ -79,7 +90,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     start : dt.datetime or NoneType
         Starting time for combining data, or None to use earliest loaded
         date from the pysat Instruments (default=None)
-    stop : dt.datetime
+    stop : dt.datetime or NoneType
         Ending time for combining data, or None to use the latest loaded date
         from the pysat Instruments (default=None)
 
@@ -89,6 +100,12 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         Instrument object containing F10.7 observations for the desired period
         of time, merging the standard, 45day, and forecasted values based on
         their reliability
+
+    Raises
+    ------
+    ValueError
+        If appropriate time data is not supplied, or if the date range is badly
+        formed.
 
     Notes
     -----
@@ -142,11 +159,17 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         if inst_flag == 'standard':
             # Test to see if data loading is needed
             if not np.any(standard_inst.index == itime):
+                # Set the load kwargs, which vary by pysat version and tag
+                load_kwargs = {'date': itime}
+
+                if Version(pysat.__version__) > Version('3.0.1'):
+                    load_kwargs['use_header'] = True
+
                 if standard_inst.tag == 'daily':
                     # Add 30 days
-                    standard_inst.load(date=itime + pds.DateOffset(days=30))
-                else:
-                    standard_inst.load(date=itime)
+                    load_kwargs['date'] += dt.timedelta(days=30)
+
+                standard_inst.load(**load_kwargs)
 
             good_times = ((standard_inst.index >= itime)
                           & (standard_inst.index < stop))
@@ -183,7 +206,11 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
             # data
             for filename in files:
                 if filename is not None:
-                    forecast_inst.load(fname=filename)
+                    load_kwargs = {'fname': filename}
+                    if Version(pysat.__version__) > Version('3.0.1'):
+                        load_kwargs['use_header'] = True
+
+                    forecast_inst.load(**load_kwargs)
 
                 if notes.find("forecast") < 0:
                     notes += " the {:} source ({:} to ".format(inst_flag,
@@ -201,11 +228,14 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                 good_vals = forecast_inst['f107'][good_times] != fill_val
 
                 # Save desired data and cycle time
-                new_times = list(forecast_inst.index[good_times][good_vals])
-                f107_times.extend(new_times)
-                new_vals = list(forecast_inst['f107'][good_times][good_vals])
-                f107_values.extend(new_vals)
-                itime = f107_times[-1] + pds.DateOffset(days=1)
+                if len(good_vals) > 0:
+                    new_times = list(
+                        forecast_inst.index[good_times][good_vals])
+                    f107_times.extend(new_times)
+                    new_vals = list(
+                        forecast_inst['f107'][good_times][good_vals])
+                    f107_values.extend(new_vals)
+                    itime = f107_times[-1] + pds.DateOffset(days=1)
 
             notes += "{:})".format(itime.date())
 
@@ -266,8 +296,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
 
 def parse_45day_block(block_lines):
-    """ Parse the data blocks used in the 45-day Ap and F10.7 Flux Forecast
-    file
+    """Parse the data blocks used in the 45-day Ap and F10.7 Flux Forecast file.
 
     Parameters
     ----------
@@ -303,7 +332,7 @@ def parse_45day_block(block_lines):
 
 
 def rewrite_daily_file(year, outfile, lines):
-    """ Rewrite the SWPC Daily Solar Data files
+    """Rewrite the SWPC Daily Solar Data files.
 
     Parameters
     ----------
@@ -316,7 +345,7 @@ def rewrite_daily_file(year, outfile, lines):
 
     """
 
-    # get to the solar index data
+    # Get to the solar index data
     if year > 2000:
         raw_data = lines.split('#---------------------------------')[-1]
         raw_data = raw_data.split('\n')[1:-1]
@@ -329,21 +358,21 @@ def rewrite_daily_file(year, outfile, lines):
         istart = 7 if year < 2000 else 1
         raw_data = raw_data[istart:-1]
 
-    # parse the data
+    # Parse the data
     solar_times, data_dict = parse_daily_solar_data(raw_data, year, optical)
 
-    # collect into DataFrame
+    # Collect into DataFrame
     data = pds.DataFrame(data_dict, index=solar_times,
                          columns=data_dict.keys())
 
-    # write out as a file
+    # Write out as a file
     data.to_csv(outfile, header=True)
 
     return
 
 
 def parse_daily_solar_data(data_lines, year, optical):
-    """ Parse the data in the SWPC daily solar index file
+    """Parse the data in the SWPC daily solar index file.
 
     Parameters
     ----------
@@ -406,7 +435,7 @@ def parse_daily_solar_data(data_lines, year, optical):
 
 
 def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
-    """ Calculate the 81 day mean F10.7
+    """Calculate the 81 day mean F10.7.
 
     Parameters
     ----------
@@ -465,7 +494,7 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     freq = pysat.utils.time.calc_freq(f107_inst.index)
     if freq != "86400S":
         # Resample to the desired frequency
-        f107_fill = f107_fill.resample(freq).pad()
+        f107_fill = f107_fill.resample(freq).ffill()
 
         # Save the output in a list
         f107a = list(f107_fill[f107a_name])

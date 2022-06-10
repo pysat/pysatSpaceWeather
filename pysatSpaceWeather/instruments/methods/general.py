@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-.
-"""Provides default routines for the space weather instruments
-
-"""
+"""Provides routines that support general space weather instruments."""
 
 import numpy as np
 
 
 def preprocess(inst):
-    """Preprocess the meta data by replacing the file fill values with NaN
+    """Preprocess the meta data by replacing the file fill values with NaN.
 
     Parameters
     ----------
@@ -15,9 +13,11 @@ def preprocess(inst):
         pysat.Instrument object
 
     """
+
     # Replace all fill values with NaN
-    for col in inst.data.columns:
-        fill_val = inst.meta[col][inst.meta.labels.fill_val]
+    for col in inst.variables:
+        fill_val = inst.meta[col, inst.meta.labels.fill_val]
+
         # Ensure we are dealing with a float for future nan comparison
         if isinstance(fill_val, np.floating) or isinstance(fill_val, float):
             if ~np.isnan(fill_val):

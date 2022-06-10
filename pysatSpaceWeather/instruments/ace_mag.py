@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Supports ACE Magnetometer data
+"""Supports ACE Magnetometer data.
 
 Properties
 ----------
@@ -17,6 +17,8 @@ Note
 ----
 This is not the ACE scientific data set, which will be available at pysatNASA
 
+Examples
+--------
 The real-time data is stored by generation date, where each file contains the
 data for the current day.  If you leave download dates empty, though, it will
 grab today's file three times and assign dates from yesterday, today, and
@@ -42,6 +44,7 @@ import datetime as dt
 import functools
 import numpy as np
 
+from pysat.instruments.methods.general import load_csv_data
 from pysat import logger
 
 from pysatSpaceWeather.instruments.methods import ace as mm_ace
@@ -74,11 +77,7 @@ preprocess = general.preprocess
 
 
 def init(self):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    """
+    """Initialize the Instrument object with instrument specific values."""
 
     # Set the appropraite acknowledgements and references
     self.acknowledgements = mm_ace.acknowledgements()
@@ -90,7 +89,7 @@ def init(self):
 
 
 def clean(self):
-    """Routine to clean real-time ACE data using the status flag
+    """Clean real-time ACE data using the status flag.
 
     Note
     ----
@@ -115,17 +114,17 @@ download = functools.partial(mm_ace.download, name=name, now=now)
 list_files = functools.partial(mm_ace.list_files, name=name)
 
 
-def load(fnames, tag=None, inst_id=None):
-    """Load the ACE space weather prediction data
+def load(fnames, tag='', inst_id=''):
+    """Load the ACE space weather prediction data.
 
     Parameters
     ----------
     fnames : array-like
         Series, list, or array of filenames
-    tag : str or NoneType
-        tag or None (default=None)
-    inst_id : str or NoneType
-        ACE instrument or None (default=None)
+    tag : str
+        Instrument tag, not used. (default='')
+    inst_id : str
+        ACE instrument ID, not used. (default='')
 
     Returns
     -------
@@ -134,10 +133,9 @@ def load(fnames, tag=None, inst_id=None):
     meta : pysat.Meta
         Object containing metadata such as column names and units
 
-    Raises
-    ------
-    ValueError
-        When unknown inst_id is supplied.
+    See Also
+    --------
+    pysat.instruments.methods.general.load_csv_data
 
     Note
     ----
@@ -146,8 +144,8 @@ def load(fnames, tag=None, inst_id=None):
     """
 
     # Save each file to the output DataFrame
-    data = mm_ace.load_csv_data(fnames, read_csv_kwargs={'index_col': 0,
-                                                         'parse_dates': True})
+    data = load_csv_data(fnames, read_csv_kwargs={'index_col': 0,
+                                                  'parse_dates': True})
 
     # Assign the meta data
     meta, status_desc = mm_ace.common_metadata()

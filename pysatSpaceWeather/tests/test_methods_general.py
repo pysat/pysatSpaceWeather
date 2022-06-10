@@ -6,16 +6,15 @@
 """Integration and unit test suite for ACE methods."""
 
 import numpy as np
+from packaging.version import Version
 import pysat
 import pytest
 
 from pysatSpaceWeather.instruments.methods import general
 
-pysat_version_minor = int(pysat.__version__.split('.')[1])
 
-
-@pytest.mark.skipif(pysat_version_minor < 1,
-                    reason="Test setup requires pysat 3.1+")
+@pytest.mark.skipif(Version(pysat.__version__) < Version('3.0.2'),
+                    reason="Test setup requires pysat 3.0.2+")
 class TestGeneralMethods(object):
     """Test class for general methods."""
 

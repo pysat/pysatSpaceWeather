@@ -137,7 +137,7 @@ def clean(self):
 # Instrument functions
 
 
-def load(fnames, tag, inst_id):
+def load(fnames, tag='', inst_id=''):
     """Load F10.7 index files.
 
     Parameters
@@ -145,9 +145,9 @@ def load(fnames, tag, inst_id):
     fnames : pandas.Series
         Series of filenames.
     tag : str
-        Instrument tag.
+        Instrument tag. (default='')
     inst_id : str
-        Instrument ID, not used.
+        Instrument ID, not used. (default='')
 
     Returns
     -------
@@ -290,17 +290,17 @@ def load(fnames, tag, inst_id):
     return data, meta
 
 
-def list_files(tag, inst_id, data_path, format_str=None):
+def list_files(tag='', inst_id='', data_path='', format_str=None):
     """List local F10.7 data files.
 
     Parameters
     ----------
     tag : str
-        Instrument tag, accepts any value from `tags`.
+        Instrument tag, accepts any value from `tags`. (default='')
     inst_id : str
-        Instrument ID, not used.
+        Instrument ID, not used. (default='')
     data_path : str
-        Path to data directory.
+        Path to data directory. (default='')
     format_str : str or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
@@ -389,7 +389,7 @@ def list_files(tag, inst_id, data_path, format_str=None):
 
 
 def download(date_array, tag, inst_id, data_path, update_files=False):
-    """Fownload F107 index data from the appropriate repository.
+    """Download F107 index data from the appropriate repository.
 
     Parameters
     ----------

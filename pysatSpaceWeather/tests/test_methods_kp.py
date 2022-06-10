@@ -35,7 +35,7 @@ class TestSWKp(object):
 
         # Create Kp data
         self.testInst.data.index = pds.DatetimeIndex(data=[
-            self.test_time + pds.DateOffset(hours=3 * i) for i in range(12)])
+            self.test_time + dt.timedelta(hours=3 * i) for i in range(12)])
         self.testInst['Kp'] = np.arange(0, 4, 1.0 / 3.0)
         self.testInst['ap_nan'] = np.full(shape=12, fill_value=np.nan)
         self.testInst['ap_inf'] = np.full(shape=12, fill_value=np.inf)
@@ -98,7 +98,7 @@ class TestSWKp(object):
         with pytest.raises(ValueError) as verr:
             kp_ap.convert_3hr_kp_to_ap(self.testInst)
 
-        assert str(verr).find("variable name for Kp data is missing") >= 0
+        assert str(verr).find("Variable name for Kp data is missing") >= 0
         return
 
     def test_initialize_kp_metadata(self):

@@ -118,7 +118,7 @@ def clean(inst):
     return max_status
 
 
-def list_files(name, tag='', inst_id='', data_path=None, format_str=None):
+def list_files(name, tag='', inst_id='', data_path='', format_str=None):
     """List the local ACE data files.
 
     Parameters
@@ -154,7 +154,7 @@ def list_files(name, tag='', inst_id='', data_path=None, format_str=None):
     return files
 
 
-def download(date_array, name, tag='', inst_id='', data_path=None, now=None):
+def download(date_array, name, tag='', inst_id='', data_path='', now=None):
     """Download the requested ACE Space Weather data.
 
     Parameters
@@ -167,16 +167,11 @@ def download(date_array, name, tag='', inst_id='', data_path=None, now=None):
         ACE Instrument tag. (default='')
     inst_id : str
         ACE instrument ID. (default='')
-    data_path : str or NoneType
-        Path to data directory. Raises ValueError if None. (default=None)
+    data_path : str
+        Path to data directory. (default='')
     now : dt.datetime or NoneType
         Current universal time, if None this is determined for each
         download. (default=None)
-
-    Raises
-    ------
-    ValueError
-        If None is supplied through `data_path`.
 
     Note
     ----
@@ -188,9 +183,6 @@ def download(date_array, name, tag='', inst_id='', data_path=None, now=None):
     - File requested not available on server
 
     """
-    # Ensure a real data path has been provided
-    if data_path is None:
-        raise ValueError('No data path supplied')
 
     # Ensure now is up-to-date, if desired
     if now is None:
@@ -364,7 +356,7 @@ def ace_swepam_hourly_omni_norm(as_inst, speed_key='sw_bulk_speed',
     Parameters
     ----------
     as_inst : pysat.Instrument
-        pysat Instrument object with ACE SWEPAM data
+        pysat Instrument object with ACE SWEPAM data.
     speed_key : str
         Data key for bulk solar wind speed data in km/s
         (default='sw_bulk_speed')

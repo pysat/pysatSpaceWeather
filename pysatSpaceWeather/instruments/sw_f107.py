@@ -473,8 +473,9 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                     data.index = times
 
                     # Replace fill value with NaNs
-                    idx, = np.where(data['f107'] == -99999.0)
-                    data.iloc[idx, :] = np.nan
+                    for var in data.columns:
+                        idx, = np.where(data[var] == -99999.0)
+                        data.iloc[idx, :] = np.nan
 
                     # Create a local CSV file
                     data.to_csv(data_file, header=True)

@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 [0.0.6] - 2022-07-08
 --------------------
 * Updated `sw_f107` to reflect changes in the `historic` data file format
+* 
 
 [0.0.5] - 2022-06-10
 --------------------

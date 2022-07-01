@@ -3,6 +3,10 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.0.6] - 2022-0X-XX
+--------------------
+* Updated `sw_f107` to reflect changes in the `historic` data file format
+
 [0.0.5] - 2022-06-10
 --------------------
 * Updated the docstrings to conform to pysat standards

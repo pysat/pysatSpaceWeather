@@ -205,6 +205,18 @@ def load(fnames, tag='', inst_id=''):
                       meta.labels.fill_val: np.nan,
                       meta.labels.min_val: 0,
                       meta.labels.max_val: 400}
+    elif tag == 'historic':
+        meta['f107_observed'] = meta['f107']
+        meta['f107_observed'] = {
+            meta.labels.desc:
+                'Raw F10.7 cm radio flux in Solar Flux Units (SFU)'}
+        meta['f107_adjusted'] = meta['f107_observed']
+        meta['f107_adjusted'] = {
+            meta.labels.desc:
+            'F10.7 cm radio flux in Solar Flux Units (SFU) normalized to 1-AU'}
+        meta['f107'] = {
+            meta.labels.desc: meta['f107_adjusted', meta.labels.desc]}
+
     elif tag == 'daily' or tag == 'prelim':
         meta['ssn'] = {meta.labels.units: '',
                        meta.labels.name: 'Sunspot Number',
@@ -477,6 +489,10 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                         idx, = np.where(data[var] == -99999.0)
                         data.iloc[idx, :] = np.nan
 
+                    # Copy 'f107_adjusted` data to minimize disruption caused
+                    # by file format change, late June 2022
+                    data['f107'] = data['f107_adjusted']
+
                     # Create a local CSV file
                     data.to_csv(data_file, header=True)
     elif tag == 'prelim':
@@ -604,7 +620,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                               'forecast, not archived forecasts')))
         # Set the download webpage
         furl = ''.join(('https://services.swpc.noaa.gov/text/',
-                        '3-day-solar-geomag-predictions.txt'))
+                                '3-day-solar-geomag-predictions.txt'))
         req = requests.get(furl)
 
         # Parse text to get the date the prediction was generated

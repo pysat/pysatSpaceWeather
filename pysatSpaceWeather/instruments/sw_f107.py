@@ -624,7 +624,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                               'forecast, not archived forecasts')))
         # Set the download webpage
         furl = ''.join(('https://services.swpc.noaa.gov/text/',
-                                '3-day-solar-geomag-predictions.txt'))
+                        '3-day-solar-geomag-predictions.txt'))
         req = requests.get(furl)
 
         # Parse text to get the date the prediction was generated

@@ -205,6 +205,26 @@ def load(fnames, tag='', inst_id=''):
                       meta.labels.fill_val: np.nan,
                       meta.labels.min_val: 0,
                       meta.labels.max_val: 400}
+    elif tag == 'historic':
+
+        # LASP updated file format in June, 2022. Minimize impact downstream by
+        # continuing use of `f107` as primary data product.
+        if 'f107_adjusted' in data.columns:
+            data['f107'] = data['f107_adjusted']
+
+            # Add metadata
+            meta['f107_observed'] = meta['f107']
+            raw_str = 'Raw F10.7 cm radio flux in Solar Flux Units (SFU)'
+            meta['f107_observed'] = {meta.labels.desc: raw_str}
+
+            meta['f107_adjusted'] = meta['f107_observed']
+            norm_str = ''.join(['F10.7 cm radio flux in Solar Flux Units (SFU)',
+                                ' normalized to 1-AU'])
+            meta['f107_adjusted'] = {meta.labels.desc: norm_str}
+
+            meta['f107'] = {
+                meta.labels.desc: meta['f107_adjusted', meta.labels.desc]}
+
     elif tag == 'daily' or tag == 'prelim':
         meta['ssn'] = {meta.labels.units: '',
                        meta.labels.name: 'Sunspot Number',
@@ -473,8 +493,9 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                     data.index = times
 
                     # Replace fill value with NaNs
-                    idx, = np.where(data['f107'] == -99999.0)
-                    data.iloc[idx, :] = np.nan
+                    for var in data.columns:
+                        idx, = np.where(data[var] == -99999.0)
+                        data.iloc[idx, :] = np.nan
 
                     # Create a local CSV file
                     data.to_csv(data_file, header=True)

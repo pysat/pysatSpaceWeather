@@ -1,0 +1,76 @@
+Load F\ :sub:`10.7`\ from Multiple Sources
+==========================================
+
+As shown in the `previous example <>`_, :py:mod:`pysatSpaceWeather` has several
+sources that provide F\ :sub:`10.7`\ over different time periods.  It can be
+useful to combine these data sets into a single :py:class:`pysat.Instrument`
+object.  This may be done using the
+:py:func:`~pysatSpaceWeather.instruments.methods.f107.combine_f107` function.
+
+::
+
+
+   import pysat
+   import pysatSpaceWeather as py_sw
+
+   f107_hist = pysat.Instrument(inst_module=py_sw.instruments.sw_f107,
+                                tag='historic', update_files=True)
+   f107_prel = pysat.Instrument(inst_module=py_sw.instruments.sw_f107,
+                                tag='prelim', update_files=True)
+   f107_fore = pysat.Instrument(inst_module=py_sw.instruments.sw_f107,
+                                tag='45day', update_files=True)
+
+   # If needed, download the data
+   f107_hist.download(start=f107_hist.lasp_stime, stop=f107_hist.today(),
+                      freq='MS')
+   f107_prel.download(start=f107_hist.files.files.index[-1],
+                      stop=f107_prel.today())
+   f107_fore.download(start=f107_fore.today())
+
+   # Check the downloaded file range for the historic sources
+   print(f107_hist.files.files.index.min(), f107_hist.files.files.index.max(),
+         f107_prel.files.files.index.min(), f107_prel.files.files.index.max())
+
+
+This should yield XXX.  Now, combine the data in these
+:py:class:`pysat.Instruments` using the 
+:py:func:`~pysatSpaceWeather.instruments.methods.f107.combine_f107` function
+twice.
+
+::
+
+   # Combine the historic sources for all available times
+   f107 = py_sw.instruments.methods.f107.combine_f107(f107_hist, f107_prel)
+
+   # Combine the 45 day measurements and forecast
+   f107 = py_sw.instruments.methods.f107.combine_f107(f107, f107_fore)
+
+   # Check the combined Instrument index
+   print(f107.index[[0, -1]])
+
+
+This combined :py:class:`pysat.Instrument` can be used to plot the
+F\ :sub:`10.7`\ over time
+
+::
+
+
+   import matplotlib as mpl
+   import matplotlib.pyplot as plt
+   
+   fig = plt.figure()
+   ax = fig.add_subplot(111)
+
+   ax.plot(f107.index, f107['f107'], 'k.')
+   ax.xaxis.set_major_formatter(mpl.dates.DateFormatter('%Y'))
+   ax.xaxis.set_major_locator(mpl.dates.YearLocator(interval=3))
+   ax.set_xlabel('Universal Time (Year C.E.)')
+   ax.set_ylabel(r'F$_{10.7}$ (sfu)')
+
+   # If not running in interactive mode
+   plt.show()
+
+
+INCLUDE FIGURE HERE
+
+

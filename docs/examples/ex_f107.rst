@@ -1,14 +1,20 @@
+.. _exf107:
+
 Load F\ :sub:`10.7`\ from Multiple Sources
 ==========================================
 
-As shown in the `previous example <>`_, :py:mod:`pysatSpaceWeather` has several
-sources that provide F\ :sub:`10.7`\ over different time periods.  It can be
-useful to combine these data sets into a single :py:class:`pysat.Instrument`
-object.  This may be done using the
+As shown in `exinit`_, :py:mod:`pysatSpaceWeather` has several sources that
+provide F\ :sub:`10.7`\ over different time periods.  It can be useful to
+combine these data sets into a single :py:class:`pysat.Instrument` object.
+This may be done using the
 :py:func:`~pysatSpaceWeather.instruments.methods.f107.combine_f107` function.
 
 ::
 
+
+   import datetime as dt
+   import matplotlib as mpl
+   import matplotlib.pyplot as plt
 
    import pysat
    import pysatSpaceWeather as py_sw
@@ -27,18 +33,25 @@ object.  This may be done using the
                       stop=f107_prel.today())
    f107_fore.download(start=f107_fore.today())
 
-   # Check the downloaded file range for the historic sources
-   print(f107_hist.files.files.index.min(), f107_hist.files.files.index.max(),
-         f107_prel.files.files.index.min(), f107_prel.files.files.index.max())
+   # Check the downloaded file range for the historic source
+   print(f107_hist.files.files.index.min(), f107_hist.files.files.index.max())
 
 
-This should yield XXX.  Now, combine the data in these
-:py:class:`pysat.Instruments` using the 
+This should yield ``1947-02-01 00:00:00 2018-04-30 00:00:00``. Now, combine the
+data in these :py:class:`pysat.Instruments` using the 
 :py:func:`~pysatSpaceWeather.instruments.methods.f107.combine_f107` function
-twice.
+twice, after loading the available data
 
 ::
 
+   # Load all the data
+   f107_hist.load(date=f107_hist.lasp_stime,
+                  end_date=f107_hist.files.files.index.max() +
+		  dt.timedelta(days=1))
+   f107_prel.load(fname=f107_prel.files.files[0],
+                  stop_fname=f107_prel.files.files[-1])
+   f107_fore.load(date=f107_fore.today())
+   
    # Combine the historic sources for all available times
    f107 = py_sw.instruments.methods.f107.combine_f107(f107_hist, f107_prel)
 
@@ -46,24 +59,23 @@ twice.
    f107 = py_sw.instruments.methods.f107.combine_f107(f107, f107_fore)
 
    # Check the combined Instrument index
-   print(f107.index[[0, -1]])
+   print(f107.index[0], f107.index[-1])
 
 
-This combined :py:class:`pysat.Instrument` can be used to plot the
-F\ :sub:`10.7`\ over time
+This print statement yields ``1947-02-14 00:00:00 2022-10-07 00:00:00``.
+The combined :py:class:`pysat.Instrument` varialbe, :py:var:`f107` can be used
+to plot the F\ :sub:`10.7`\ over time.
 
 ::
 
 
-   import matplotlib as mpl
-   import matplotlib.pyplot as plt
-   
    fig = plt.figure()
    ax = fig.add_subplot(111)
 
-   ax.plot(f107.index, f107['f107'], 'k.')
+   ax.plot(f107.index, f107['f107'], 'k.', ms=1)
    ax.xaxis.set_major_formatter(mpl.dates.DateFormatter('%Y'))
-   ax.xaxis.set_major_locator(mpl.dates.YearLocator(interval=3))
+   ax.xaxis.set_major_locator(mpl.dates.YearLocator(11))
+   ax.set_xlim(f107.index[0], f107.index[-1])
    ax.set_xlabel('Universal Time (Year C.E.)')
    ax.set_ylabel(r'F$_{10.7}$ (sfu)')
 
@@ -71,6 +83,6 @@ F\ :sub:`10.7`\ over time
    plt.show()
 
 
-INCLUDE FIGURE HERE
-
+.. image:: ../figures/ex_f107_all.png
+   :align: center
 

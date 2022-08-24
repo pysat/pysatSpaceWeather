@@ -210,7 +210,18 @@ def load(fnames, tag='', inst_id=''):
         # LASP updated file format in June, 2022. Minimize impact downstream by
         # continuing use of `f107` as primary data product.
         if 'f107_adjusted' in data.columns:
-            data['f107'] = data['f107_adjusted']
+            # There may be a mix of old and new data formats.
+            if 'f107' in data.columns:
+                # Only fill NaN in the `f107` and `f107_adjusted` columns
+                # for consistency across both data sets
+                data.loc[np.isnan(data['f107']), 'f107'] = data.loc[
+                    np.isnan(data['f107']), 'f107_adjusted']
+
+                data.loc[np.isnan(data['f107_adjusted']),
+                         'f107_adjusted'] = data.loc[
+                             np.isnan(data['f107_adjusted']), 'f107']
+            else:
+                data['f107'] = data['f107_adjusted']
 
             # Add metadata
             meta['f107_observed'] = meta['f107']

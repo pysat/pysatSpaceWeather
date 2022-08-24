@@ -3,7 +3,7 @@
 Load Kp from Multiple Sources
 =============================
 
-Following from the previous F\ :sub:`10.7`\ example, `exf107`_,
+Following from the previous F\ :sub:`10.7`\ example, :ref:`exf107`,
 :py:mod:`pysatSpaceWeather` has a routine to combine several sources of Kp over
 different time periods. This may be done using the
 :py:func:`~pysatSpaceWeather.instruments.methods.kp_ap.combine_kp` function.

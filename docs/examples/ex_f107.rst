@@ -3,7 +3,7 @@
 Load F\ :sub:`10.7`\ from Multiple Sources
 ==========================================
 
-As shown in `exinit`_, :py:mod:`pysatSpaceWeather` has several sources that
+As shown in :ref:`exinit`, :py:mod:`pysatSpaceWeather` has several sources that
 provide F\ :sub:`10.7`\ over different time periods.  It can be useful to
 combine these data sets into a single :py:class:`pysat.Instrument` object.
 This may be done using the

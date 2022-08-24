@@ -63,7 +63,7 @@ twice, after loading the available data
 
 
 This print statement yields ``1947-02-14 00:00:00 2022-10-07 00:00:00``.
-The combined :py:class:`pysat.Instrument` varialbe, :py:var:`f107` can be used
+The combined :py:class:`pysat.Instrument` varialbe, ``f107`` can be used
 to plot the F\ :sub:`10.7`\ over time.
 
 ::

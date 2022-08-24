@@ -6,3 +6,5 @@ tools
 
 .. toctree::
    examples/ex_init.rst
+   examples/ex_f107.rst
+   examples/ex_kp.rst

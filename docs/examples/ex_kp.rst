@@ -87,6 +87,8 @@ The :py:func:`~pysatSpaceWeather.instruments.methods.kp_ap.convert_3hr_kp_to_ap`
 converts Kp to ap, as shown below.
 
 ::
+
+   
    py_sw.instruments.methods.kp_ap.convert_3hr_kp_to_ap(kp)
 
    print("Max: {:.1f} -> {:d}, Min: {:.1f} -> {:d}".format(

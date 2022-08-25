@@ -8,3 +8,4 @@ tools
    examples/ex_init.rst
    examples/ex_f107.rst
    examples/ex_kp.rst
+   examples/ex_ace.rst

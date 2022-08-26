@@ -27,7 +27,7 @@ This may be done using the
                                 tag='45day', update_files=True)
 
    # If needed, download the data
-   f107_hist.download(start=f107_hist.lasp_stime, stop=f107_hist.today(),
+   f107_hist.download(start=f107_hist.lasp_stime, stop=dt.datetime(2018, 4, 1),
                       freq='MS')
    f107_prel.download(start=f107_hist.files.files.index[-1],
                       stop=f107_prel.today())

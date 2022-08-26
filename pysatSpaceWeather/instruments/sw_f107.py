@@ -105,6 +105,8 @@ _test_dates = {'': {'historic': dt.datetime(2009, 1, 1),
 
 # Other tags assumed to be True
 _test_download_travis = {'': {'prelim': False}}
+# Remove after release of pysat 3.0.4
+_password_req = {'': {'prelim': True}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods

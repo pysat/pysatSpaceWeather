@@ -57,6 +57,8 @@ _test_dates = {'': {'noaa': dt.datetime(2007, 1, 1), 'lasp': today}}
 
 # Other tags assumed to be True
 _test_download_travis = {'': {'noaa': False}}
+# Remove after release of pysat 3.0.4
+_password_req = {'': {'noaa': True}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods

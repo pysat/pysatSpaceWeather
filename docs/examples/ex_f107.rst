@@ -62,7 +62,8 @@ twice, after loading the available data
    print(f107.index[0], f107.index[-1])
 
 
-This print statement yields ``1947-02-14 00:00:00 2022-10-07 00:00:00``.
+This print statement yields ``1947-02-14 00:00:00 2022-10-07 00:00:00``, where
+the end date is roughly 45 days in the future to account for the forecasted data.
 The combined :py:class:`pysat.Instrument` varialbe, ``f107`` can be used
 to plot the F\ :sub:`10.7`\ over time.
 

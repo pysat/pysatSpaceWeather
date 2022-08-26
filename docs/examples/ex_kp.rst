@@ -42,7 +42,7 @@ different time periods. This may be done using the
    print(kp.index[0], kp.index[-1])
 
 
-This yeilds ``1999-01-01 00:00:00 2022-08-23 21:00:00``, where the last date is
+This yields ``1999-01-01 00:00:00 2022-08-23 21:00:00``, where the last date is
 your current date (not the date that I created this example).  Now, we can take
 the combined :py:class:`pysat.Instrument` can be used to plot the Kp over time.
 

@@ -11,7 +11,6 @@ import numpy as np
 import os
 import pandas as pds
 import requests
-import warnings
 
 import pysat
 

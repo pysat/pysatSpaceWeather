@@ -7,7 +7,6 @@
 
 from packaging.version import Version
 import pytest
-import warnings
 
 import pysat
 

@@ -382,6 +382,10 @@ def ace_swepam_hourly_omni_norm(as_inst, speed_key='sw_bulk_speed',
     yt = np.array([pysat.utils.time.datetime_to_dec_year(itime) - 1998.0
                    for itime in as_inst.index])
 
+    # The normalization depends on the year
+    yt_dens = (yt >= 2019.0) & (yt <= 2021.0)
+    yt_temp = (yt >= 2019.0) & (yt <= 2020.0)
+
     # Get the masks for the different velocity limits
     ilow = as_inst[speed_key] < 395
     imid = (as_inst[speed_key] >= 395) & (as_inst[speed_key] <= 405)
@@ -395,8 +399,16 @@ def ace_swepam_hourly_omni_norm(as_inst, speed_key='sw_bulk_speed',
                      - 6.72 * yt[imid]) / 10.0
     norm_n[ihigh] *= (0.761 + 0.0210 * yt[ihigh])
 
+    # Overwrite the calculation for the year where velocity isn't important
+    norm_n[yt_dens] = np.power(10.0, -0.010 + 1.006
+                               * np.log10(as_inst[dens_key][yt_dens]))
+
     # Normalize the temperature
-    norm_t = np.power(10.0, -0.069 + 1.024 * np.log10(as_inst[temp_key]))
+    norm_t = np.array(as_inst[temp_key])
+    norm_t[~yt_temp] = np.power(10.0,
+                                -0.069 + 1.024 * np.log10(norm_t[~yt_temp]))
+    norm_t[yt_temp] = np.power(10.0,
+                               0.266 + 0.947 * np.log10(norm_t[yt_temp]))
 
     # Update the instrument data
     as_inst['sw_proton_dens_norm'] = pds.Series(norm_n, index=as_inst.index)

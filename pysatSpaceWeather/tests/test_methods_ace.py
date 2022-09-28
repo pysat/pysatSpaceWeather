@@ -7,7 +7,6 @@
 
 from packaging.version import Version
 import pytest
-import warnings
 
 import pysat
 
@@ -46,18 +45,6 @@ class TestACEMethods(object):
             mm_ace.references('ace')
 
         assert str(kerr.value).find('unknown ACE instrument') >= 0
-        return
-
-    def test_load_csv_data_dep_warning(self):
-        """Test `load_csv_data` raises a DeprecationWarning."""
-
-        with warnings.catch_warnings(record=True) as war:
-            mm_ace.load_csv_data([])
-
-        assert len(war) == 1
-        assert war[0].category == DeprecationWarning
-        assert str(war[0].message).find(
-            "Moved to pysat.instruments.methods.general.load_csv_data") >= 0
         return
 
 

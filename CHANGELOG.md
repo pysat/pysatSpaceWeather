@@ -3,6 +3,10 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.1.0] - 2022-XX-XX
+--------------------
+* Updated the GitHub action version numbers
+
 [0.0.7] - 2022-09-15
 --------------------
 * Updated `sw_f107` to allow reading old and new `historic` data file format

@@ -16,28 +16,29 @@ jobs:
         numpy_ver: [latest]
         include:
           - python-version: "3.8"
-            numpy_ver: "1.19"
+            numpy_ver: "1.20"
             os: ubuntu-latest
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }} with numpy ${{ matrix.numpy_ver }}
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+
+    - name: Install NEP29 dependencies
+      if: ${{ matrix.numpy_ver != 'latest'}}
+      run: |
+        pip install --no-binary :numpy: numpy==${{ matrix.numpy_ver }}
+        pip install "xarray<2022.06"
 
     - name: Install standard dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r test_requirements.txt
-
-    - name: Install NEP29 dependencies
-      if: ${{ matrix.numpy_ver != 'latest'}}
-      run: |
-        pip install --no-binary :numpy: numpy==${{ matrix.numpy_ver }}
 
     - name: Set up pysat
       run: |

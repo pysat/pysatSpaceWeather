@@ -18,13 +18,13 @@ from pysatSpaceWeather.instruments.methods import general
 class TestGeneralMethods(object):
     """Test class for general methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         del self.testInst
         return

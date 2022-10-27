@@ -21,7 +21,7 @@ from pysatSpaceWeather.instruments import sw_kp
 class TestSWKp(object):
     """Test class for Kp methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
@@ -50,7 +50,7 @@ class TestSWKp(object):
         self.testMeta = pysat.Meta()
         return
 
-    def teardown(self):
+    def setup_teardown(self):
         """Clean up previous testing setup."""
         del self.testInst, self.testMeta, self.test_time
         return
@@ -274,7 +274,7 @@ class TestSWKp(object):
 class TestSwKpCombine(object):
     """Tests for the `combine_kp` method."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         # Switch to test_data directory
         self.saved_path = pysat.params['data_dirs']
@@ -302,7 +302,7 @@ class TestSwKpCombine(object):
 
         return
 
-    def teardown(self):
+    def setup_teardown(self):
         """Clean up previous testing."""
         pysat.params.data['data_dirs'] = self.saved_path
         del self.combine, self.test_day, self.saved_path, self.load_kwargs
@@ -472,7 +472,7 @@ class TestSwKpCombine(object):
 class TestSWAp(object):
     """Test class for Ap methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                          use_header=True)
@@ -499,7 +499,7 @@ class TestSWAp(object):
             self.testInst.meta.labels.notes: 'test ap'}
         return
 
-    def teardown(self):
+    def setup_teardown(self):
         """Clean up previous testing."""
         del self.testInst, self.test_time
         return

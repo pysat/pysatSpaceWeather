@@ -16,12 +16,12 @@ from pysatSpaceWeather.instruments.methods import ace as mm_ace
 class TestACEMethods(object):
     """Test class for ACE methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         self.out = None
         return
 
-    def teardown(self):
+    def setup_teardown(self):
         """Clean up previous testing setup."""
         del self.out
         return
@@ -53,7 +53,7 @@ class TestACEMethods(object):
 class TestACESWEPAMMethods(object):
     """Test class for ACE SWEPAM methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
@@ -61,7 +61,7 @@ class TestACESWEPAMMethods(object):
         self.omni_keys = ['sw_proton_dens_norm', 'sw_ion_temp_norm']
         return
 
-    def teardown(self):
+    def setup_teardown(self):
         """Clean up previous testing setup."""
         del self.testInst
         return

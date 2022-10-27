@@ -104,7 +104,7 @@ _test_dates = {'': {'historic': dt.datetime(2009, 1, 1),
                     '45day': tomorrow}}
 
 # Other tags assumed to be True
-_test_download_travis = {'': {'prelim': False}}
+_test_download_ci = {'': {'prelim': False}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods

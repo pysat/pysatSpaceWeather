@@ -55,7 +55,7 @@ class TestACESWEPAMMethods(object):
 
     def setup(self):
         """Create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing')
+        self.testInst = pysat.Instrument('pysat', 'testing', use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
 
         self.omni_keys = ['sw_proton_dens_norm', 'sw_ion_temp_norm']

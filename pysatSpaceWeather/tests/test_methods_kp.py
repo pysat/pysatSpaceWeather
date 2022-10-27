@@ -24,7 +24,8 @@ class TestSWKp(object):
     def setup(self):
         """Create a clean testing setup."""
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12)
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
+                                         use_header=True)
         self.test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
         load_kwargs = {'date': self.test_time}
@@ -283,13 +284,15 @@ class TestSwKpCombine(object):
         self.test_day = dt.datetime(2019, 3, 18)
         self.combine = {"standard_inst": pysat.Instrument(inst_module=sw_kp,
                                                           tag="",
-                                                          update_files=True),
+                                                          update_files=True,
+                                                          use_header=True),
                         "recent_inst": pysat.Instrument(inst_module=sw_kp,
                                                         tag="recent",
-                                                        update_files=True),
+                                                        update_files=True,
+                                                        use_header=True),
                         "forecast_inst":
-                        pysat.Instrument(inst_module=sw_kp,
-                                         tag="forecast", update_files=True),
+                        pysat.Instrument(inst_module=sw_kp, tag="forecast",
+                                         update_files=True, use_header=True),
                         "start": self.test_day - dt.timedelta(days=30),
                         "stop": self.test_day + dt.timedelta(days=3),
                         "fill_val": -1}
@@ -471,7 +474,8 @@ class TestSWAp(object):
 
     def setup(self):
         """Create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10)
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
+                                         use_header=True)
         self.test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
         load_kwargs = {'date': self.test_time}

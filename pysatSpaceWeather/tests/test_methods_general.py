@@ -20,7 +20,7 @@ class TestGeneralMethods(object):
 
     def setup(self):
         """Create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing')
+        self.testInst = pysat.Instrument('pysat', 'testing', use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
         return
 

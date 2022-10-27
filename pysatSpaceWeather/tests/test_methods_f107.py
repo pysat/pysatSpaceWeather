@@ -31,7 +31,7 @@ class TestSWF107(object):
                                                   for i in range(160)])
         return
 
-    def setup_teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         del self.testInst
         return
@@ -142,7 +142,7 @@ class TestSWF107Combine(object):
 
         return
 
-    def setup_teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         pysat.params.data['data_dirs'] = self.saved_path
         del self.combine_inst, self.test_day, self.combine_times

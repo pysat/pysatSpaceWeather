@@ -21,7 +21,7 @@ class TestACEMethods(object):
         self.out = None
         return
 
-    def setup_teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         del self.out
         return
@@ -61,7 +61,7 @@ class TestACESWEPAMMethods(object):
         self.omni_keys = ['sw_proton_dens_norm', 'sw_ion_temp_norm']
         return
 
-    def setup_teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         del self.testInst
         return

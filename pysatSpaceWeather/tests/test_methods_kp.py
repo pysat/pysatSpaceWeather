@@ -50,7 +50,7 @@ class TestSWKp(object):
         self.testMeta = pysat.Meta()
         return
 
-    def setup_teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         del self.testInst, self.testMeta, self.test_time
         return
@@ -302,7 +302,7 @@ class TestSwKpCombine(object):
 
         return
 
-    def setup_teardown(self):
+    def teardown_method(self):
         """Clean up previous testing."""
         pysat.params.data['data_dirs'] = self.saved_path
         del self.combine, self.test_day, self.saved_path, self.load_kwargs
@@ -499,7 +499,7 @@ class TestSWAp(object):
             self.testInst.meta.labels.notes: 'test ap'}
         return
 
-    def setup_teardown(self):
+    def teardown_method(self):
         """Clean up previous testing."""
         del self.testInst, self.test_time
         return

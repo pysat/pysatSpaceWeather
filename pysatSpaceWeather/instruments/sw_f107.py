@@ -375,7 +375,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             orig_files = out_files.sort_index().copy()
             new_files = list()
 
-            for orig in orig_files.iteritems():
+            for orig in orig_files.items():
                 # Version determines each file's valid length
                 version = int(orig[1].split("_v")[1][0])
                 doff = pds.DateOffset(years=1) if version == 2 \

@@ -1,79 +1,30 @@
-#!/usr/bin/env python
-# Full license can be found in License.md
-# Full author list can be found in .zenodo.json file
-# DOI:10.5281/zenodo.3986138
-# ----------------------------------------------------------------------------
-"""Standard pysat tests for pysatSpaceWeather Instruments."""
+"""Unit and Integration Tests for each instrument module.
 
-import tempfile
+Note
+----
+Imports test methods from pysat.tests.instrument_test_class
 
-import pytest
-
-# Import the test classes from pysat
-import pysat
-from pysat.tests.instrument_test_class import InstTestClass
-from pysat.utils import generate_instrument_list
+"""
 
 # Make sure to import your instrument library here
 import pysatSpaceWeather
 
-# Developers for instrument libraries should update the following line to
-# point to their own library package
-# e.g., instruments = generate_instrument_list(inst_loc=mypackage.instruments)
-instruments = generate_instrument_list(inst_loc=pysatSpaceWeather.instruments)
-
-# The following lines apply the custom instrument lists to each type of test
-method_list = [func for func in dir(InstTestClass)
-               if callable(getattr(InstTestClass, func))]
-
-# Search tests for iteration via pytestmark, update instrument list
-for method in method_list:
-    if hasattr(getattr(InstTestClass, method), 'pytestmark'):
-        # Get list of names of pytestmarks
-        Nargs = len(getattr(InstTestClass, method).pytestmark)
-        names = [getattr(InstTestClass, method).pytestmark[j].name
-                 for j in range(0, Nargs)]
-        # Add instruments from your library
-        if 'all_inst' in names:
-            mark = pytest.mark.parametrize("inst_name", instruments['names'])
-            getattr(InstTestClass, method).pytestmark.append(mark)
-        elif 'download' in names:
-            mark = pytest.mark.parametrize("inst_dict", instruments['download'])
-            getattr(InstTestClass, method).pytestmark.append(mark)
-        elif 'no_download' in names:
-            mark = pytest.mark.parametrize("inst_dict",
-                                           instruments['no_download'])
-            getattr(InstTestClass, method).pytestmark.append(mark)
+# Import the test classes from pysat
+from pysat.tests.classes import cls_instrument_library as clslib
 
 
-class TestInstruments(InstTestClass):
-    """Test class for pysatSpaceWeather Instruments."""
+# Tell the standard tests which instruments to run each test on.
+# Need to return instrument list for custom tests.
+instruments = clslib.InstLibTests.initialize_test_package(
+    clslib.InstLibTests, inst_loc=pysatSpaceWeather.instruments)
 
-    def setup_class(self):
-        """Create a clean the testing setup."""
-        # Make sure to use a temporary directory so that the user's setup is
-        # not altered
-        self.tempdir = tempfile.TemporaryDirectory()
-        self.saved_path = pysat.params['data_dirs']
-        pysat.params.data['data_dirs'] = [self.tempdir.name]
 
-        # Developers for instrument libraries should update the following line
-        # to point to their own subpackage location, e.g.,
-        # self.inst_loc = mypackage.instruments
-        self.inst_loc = pysatSpaceWeather.instruments
-        return
+class TestInstruments(clslib.InstLibTests):
+    """Main class for instrument tests.
 
-    def teardown_class(self):
-        """Clean up previous testing setup."""
-        pysat.params.data['data_dirs'] = self.saved_path
-        self.tempdir.cleanup()
-        del self.inst_loc, self.saved_path, self.tempdir
-        return
+    Note
+    ----
+    All standard tests, setup, and teardown inherited from the core pysat
+    instrument test class.
 
-    def setup_method(self):
-        """Create a clean testing setup."""
-        return
-
-    def teardown_method(self):
-        """Clean up previous testing setup."""
-        return
+    """

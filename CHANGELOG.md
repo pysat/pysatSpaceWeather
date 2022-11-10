@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated syntax for pysat instrument testing suite
   * Remove deprecated pytest syntax (backwards support for nose)
   * Removed deprecated pandas syntax (iteritems)
+  * Added Github action workflow using the latest pysat RC
 
 [0.0.7] - 2022-09-15
 --------------------

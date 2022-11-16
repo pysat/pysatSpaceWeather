@@ -237,6 +237,10 @@ def load(fnames, tag='', inst_id=''):
                 meta.labels.desc: meta['f107_adjusted', meta.labels.desc]}
 
     elif tag == 'daily' or tag == 'prelim':
+        # Update the allowed types for the fill value
+        meta.labels.label_type['fill_val'] = (float, int, np.float64,
+                                              np.int64, str)
+
         meta['ssn'] = {meta.labels.units: '',
                        meta.labels.name: 'Sunspot Number',
                        meta.labels.notes: '',

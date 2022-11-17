@@ -512,7 +512,10 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                         # Create a local CSV file
                         data.to_csv(data_file, header=True)
                 else:
-                    pysat.logger.info("Data not downloaded. Check your dates.")
+                    pysat.logger.info("".join(["Data not downloaded for ",
+                                               dl_date.strftime("%d %b %Y"),
+                                               ", date may be out of range ",
+                                               "for the database."]))
 
     elif tag == 'prelim':
         ftp = ftplib.FTP('ftp.swpc.noaa.gov')  # Connect to host, default port

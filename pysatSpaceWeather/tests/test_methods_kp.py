@@ -419,9 +419,9 @@ class TestSwKpCombine(object):
         # Load a test instrument
         test_inst = pysat.Instrument()
         test_inst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0 / 3.0)},
-                                      index=[dt.datetime(2009, 1, 1)
-                                             + pds.DateOffset(hours=3 * i)
-                                             for i in range(12)])
+                                       index=[dt.datetime(2009, 1, 1)
+                                              + pds.DateOffset(hours=3 * i)
+                                              for i in range(12)])
         test_inst.meta = pysat.Meta()
         test_inst.meta['Kp'] = {test_inst.meta.labels.fill_val: np.nan}
 
@@ -565,7 +565,7 @@ class TestSWAp(object):
     def setup_method(self):
         """Create a clean testing setup."""
         self.test_inst = pysat.Instrument('pysat', 'testing', num_samples=10,
-                                         use_header=True)
+                                          use_header=True)
         test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
         load_kwargs = {'date': test_time}

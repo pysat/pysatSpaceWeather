@@ -377,7 +377,7 @@ class TestSwKpCombine(object):
         pysat.params.data['data_dirs'] = [pysat_sw.test_data_path]
 
         # Set combination testing input
-        self.test_day = dt.datetime.utcnow()
+        test_day = dt.datetime(2019, 3, 18)
         self.combine = {"standard_inst": pysat.Instrument(inst_module=sw_kp,
                                                           tag="def",
                                                           update_files=True,
@@ -389,10 +389,10 @@ class TestSwKpCombine(object):
                         "forecast_inst":
                         pysat.Instrument(inst_module=sw_kp, tag="forecast",
                                          update_files=True, use_header=True),
-                        "start": self.test_day - dt.timedelta(days=30),
-                        "stop": self.test_day + dt.timedelta(days=3),
+                        "start": test_day - dt.timedelta(days=30),
+                        "stop": test_day + dt.timedelta(days=3),
                         "fill_val": -1}
-        self.load_kwargs = {}
+        self.load_kwargs = {"date": test_day}
         if Version(pysat.__version__) > Version('3.0.1'):
             self.load_kwargs['use_header'] = True
 
@@ -401,7 +401,7 @@ class TestSwKpCombine(object):
     def teardown_method(self):
         """Clean up previous testing."""
         pysat.params.data['data_dirs'] = self.saved_path
-        del self.combine, self.test_day, self.saved_path, self.load_kwargs
+        del self.combine, self.saved_path, self.load_kwargs
         return
 
     def test_combine_kp_none(self):
@@ -417,21 +417,19 @@ class TestSwKpCombine(object):
         """Test combine_kp raises ValueError with only one instrument."""
 
         # Load a test instrument
-        testInst = pysat.Instrument()
-        testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0 / 3.0)},
+        test_inst = pysat.Instrument()
+        test_inst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0 / 3.0)},
                                       index=[dt.datetime(2009, 1, 1)
                                              + pds.DateOffset(hours=3 * i)
                                              for i in range(12)])
-        testInst.meta = pysat.Meta()
-        testInst.meta['Kp'] = {testInst.meta.labels.fill_val: np.nan}
+        test_inst.meta = pysat.Meta()
+        test_inst.meta['Kp'] = {test_inst.meta.labels.fill_val: np.nan}
 
-        combo_in = {"standard_inst": testInst}
         with pytest.raises(ValueError) as verr:
-            kp_ap.combine_kp(combo_in)
+            kp_ap.combine_kp(standard_inst=test_inst)
 
         assert str(verr).find("need at two Kp Instrument objects to") >= 0
 
-        del combo_in, testInst
         return
 
     def test_combine_kp_no_time(self):
@@ -469,17 +467,13 @@ class TestSwKpCombine(object):
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
 
-        combo_in['standard_inst'].load(date=self.combine['start'],
-                                       **self.load_kwargs)
-        combo_in['recent_inst'].load(date=self.test_day,
-                                     **self.load_kwargs)
-        combo_in['forecast_inst'].load(date=self.test_day,
-                                       **self.load_kwargs)
-        combo_in['stop'] = combo_in['forecast_inst'].index[-1]
+        for ikey in combo_in.keys():
+            combo_in[ikey].load(**self.load_kwargs)
 
         kp_inst = kp_ap.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
+
         # kp_inst contains times up to 21:00:00, coombine['stop'] is midnight
         assert kp_inst.index[-1].date() <= self.combine['stop'].date()
         assert len(kp_inst.data.columns) == 1
@@ -504,8 +498,6 @@ class TestSwKpCombine(object):
         # Fill value is defined by combine
         assert(kp_inst.meta['Kp'][kp_inst.meta.labels.fill_val]
                == self.combine['fill_val'])
-
-        # NOTE FAILS HERE BECAUSE NO DATA IS ACTUALLY AVAILABLE TO TEST!!
         assert (kp_inst['Kp'] != self.combine['fill_val']).all()
 
         del kp_inst
@@ -572,7 +564,7 @@ class TestSWAp(object):
 
     def setup_method(self):
         """Create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
+        self.test_inst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                          use_header=True)
         test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
@@ -580,60 +572,60 @@ class TestSWAp(object):
         if Version(pysat.__version__) > Version('3.0.1'):
             load_kwargs['use_header'] = True
 
-        self.testInst.load(**load_kwargs)
+        self.test_inst.load(**load_kwargs)
 
         # Create 3 hr Ap data
-        self.testInst.data.index = pds.DatetimeIndex(data=[
+        self.test_inst.data.index = pds.DatetimeIndex(data=[
             test_time + pds.DateOffset(hours=3 * i) for i in range(10)])
-        self.testInst['3hr_ap'] = np.array([0, 2, 3, 4, 5, 6, 7, 9, 12, 15])
-        self.testInst.meta['3hr_ap'] = {
-            self.testInst.meta.labels.units: '',
-            self.testInst.meta.labels.name: 'ap',
-            self.testInst.meta.labels.desc:
+        self.test_inst['3hr_ap'] = np.array([0, 2, 3, 4, 5, 6, 7, 9, 12, 15])
+        self.test_inst.meta['3hr_ap'] = {
+            self.test_inst.meta.labels.units: '',
+            self.test_inst.meta.labels.name: 'ap',
+            self.test_inst.meta.labels.desc:
             "3-hour ap (equivalent range) index",
-            self.testInst.meta.labels.min_val: 0,
-            self.testInst.meta.labels.max_val: 400,
-            self.testInst.meta.labels.fill_val: np.nan,
-            self.testInst.meta.labels.notes: 'test ap'}
+            self.test_inst.meta.labels.min_val: 0,
+            self.test_inst.meta.labels.max_val: 400,
+            self.test_inst.meta.labels.fill_val: np.nan,
+            self.test_inst.meta.labels.notes: 'test ap'}
         return
 
     def teardown_method(self):
         """Clean up previous testing."""
-        del self.testInst
+        del self.test_inst
         return
 
     def test_calc_daily_Ap(self):
         """Test daily Ap calculation."""
 
-        kp_ap.calc_daily_Ap(self.testInst)
+        kp_ap.calc_daily_Ap(self.test_inst)
 
-        assert 'Ap' in self.testInst.data.columns
-        assert 'Ap' in self.testInst.meta.keys()
+        assert 'Ap' in self.test_inst.data.columns
+        assert 'Ap' in self.test_inst.meta.keys()
 
         # Test unfilled values (full days)
-        assert np.all(self.testInst['Ap'][:8].min() == 4.5)
+        assert np.all(self.test_inst['Ap'][:8].min() == 4.5)
 
         # Test fill values (partial days)
-        assert np.all(np.isnan(self.testInst['Ap'][8:]))
+        assert np.all(np.isnan(self.test_inst['Ap'][8:]))
         return
 
     def test_calc_daily_Ap_w_running(self):
         """Test daily Ap calculation with running mean."""
 
-        kp_ap.calc_daily_Ap(self.testInst, running_name="running_ap")
+        kp_ap.calc_daily_Ap(self.test_inst, running_name="running_ap")
 
-        assert 'Ap' in self.testInst.data.columns
-        assert 'Ap' in self.testInst.meta.keys()
-        assert 'running_ap' in self.testInst.data.columns
-        assert 'running_ap' in self.testInst.meta.keys()
+        assert 'Ap' in self.test_inst.data.columns
+        assert 'Ap' in self.test_inst.meta.keys()
+        assert 'running_ap' in self.test_inst.data.columns
+        assert 'running_ap' in self.test_inst.meta.keys()
 
         # Test unfilled values (full days)
-        assert np.all(self.testInst['Ap'][:8].min() == 4.5)
-        assert np.all(self.testInst['running_ap'][6:].min() == 4.5)
+        assert np.all(self.test_inst['Ap'][:8].min() == 4.5)
+        assert np.all(self.test_inst['running_ap'][6:].min() == 4.5)
 
         # Test fill values (partial days)
-        assert np.all(np.isnan(self.testInst['Ap'][8:]))
-        assert np.all(np.isnan(self.testInst['running_ap'][:6]))
+        assert np.all(np.isnan(self.test_inst['Ap'][8:]))
+        assert np.all(np.isnan(self.test_inst['running_ap'][:6]))
         return
 
     @pytest.mark.parametrize("inargs,vmsg", [
@@ -652,7 +644,7 @@ class TestSWAp(object):
         """
 
         with pytest.raises(ValueError) as verr:
-            kp_ap.calc_daily_Ap(self.testInst, *inargs)
+            kp_ap.calc_daily_Ap(self.test_inst, *inargs)
 
         assert str(verr).find(vmsg) >= 0
         return

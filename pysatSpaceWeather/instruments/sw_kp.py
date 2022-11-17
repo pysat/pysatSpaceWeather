@@ -289,7 +289,7 @@ def load(fnames, tag='', inst_id=''):
 
             # Select the desired times and add to data list
             all_data.append(pds.DataFrame(temp[fdate:max(unique_fnames[fname])
-                                               + dt.timedelta(days=1)]))
+                                               + dt.timedelta(seconds=86399)]))
 
         # Combine data together
         if len(all_data) > 0:

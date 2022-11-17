@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------------
 """Standard pysat tests for pysatSpaceWeather Instruments."""
 
+import logging
 import tempfile
 
 import pytest
@@ -76,4 +77,37 @@ class TestInstruments(InstTestClass):
 
     def teardown_method(self):
         """Clean up previous testing setup."""
+        return
+
+
+class TestSWInstrumentLogging(object):
+    """Test logging messages raised under instrument-specific conditions."""
+
+    def setup_method(self):
+        """Create a clean the testing setup."""
+
+        self.inst_kwargs = [
+            {'inst_module': pysatSpaceWeather.instruments.sw_f107,
+             'tag': 'historic'}]
+
+    def teardown_method(self):
+        """Clean up previous testing setup."""
+
+        del self.inst_kwargs
+        return
+
+    def test_historic_download_past_limit(self, caplog):
+        """Test message raised if loading times not in the database."""
+
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            inst = pysat.Instrument(**self.inst_kwargs[0])
+            inst.download(start=inst.today())
+
+        # Test the warning
+        captured = caplog.text
+        assert captured.find('date may be out of range for the database.') >= 0
+
+        # Test the file was not downloaded
+        assert inst.today() not in inst.files.files.index
+
         return

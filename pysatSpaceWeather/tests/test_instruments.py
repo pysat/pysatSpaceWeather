@@ -7,6 +7,7 @@ Imports test methods from pysat.tests.instrument_test_class
 """
 
 import datetime as dt
+import logging
 import warnings
 
 # Make sure to import your instrument library here

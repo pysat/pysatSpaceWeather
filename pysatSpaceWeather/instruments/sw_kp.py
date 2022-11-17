@@ -493,60 +493,69 @@ def download(date_array, tag, inst_id, data_path):
                 furl = ''.join([burl, fname])
                 req = requests.get(furl)
 
-                # Split the file text into lines
-                lines = req.text.split('\n')[:-1]
+                if req.ok:
+                    # Split the file text into lines
+                    lines = req.text.split('\n')[:-1]
 
-                # Remove the header
-                while lines[0].find('#') == 0:
-                    lines.pop(0)
+                    # Remove the header
+                    while lines[0].find('#') == 0:
+                        lines.pop(0)
 
-                # Process the data lines
-                ddict = {dkey: list() for dkey in data_cols}
-                times = list()
-                for line in lines:
-                    ldate = dt.datetime.strptime(' '.join([
-                        "{:02d}".format(int(dd)) for dd in
-                        [line[:2], line[2:4], line[4:6]]]), "%y %m %d")
-                    bsr_num = int(line[6:10])
-                    bsr_day = int(line[10:12])
-                    kp_ones = 0.0 if line[28:30] == '  ' else float(line[28:30])
-                    sum_kp = kp_ones + kp_translate[line[30]]
-                    daily_ap = int(line[55:58])
-                    cp = float(line[58:61])
-                    c9 = int(line[61])
-
-                    for i, hour in enumerate(hours):
-                        # Set the time for this hour and day
-                        times.append(ldate + dt.timedelta(hours=int(hour)))
-
-                        # Set the daily values for this hour
-                        ddict['Bartels_solar_rotation_num'].append(bsr_num)
-                        ddict['day_within_Bartels_rotation'].append(bsr_day)
-                        ddict['daily_Kp_sum'].append(sum_kp)
-                        ddict['daily_Ap'].append(daily_ap)
-                        ddict['Cp'].append(cp)
-                        ddict['C9'].append(c9)
-
-                        # Get the hourly-specific values
-                        ikp = i * 2
-                        kp_ones = line[12 + ikp]
-                        if kp_ones == ' ':
+                    # Process the data lines
+                    ddict = {dkey: list() for dkey in data_cols}
+                    times = list()
+                    for line in lines:
+                        ldate = dt.datetime.strptime(' '.join([
+                            "{:02d}".format(int(dd)) for dd in
+                            [line[:2], line[2:4], line[4:6]]]), "%y %m %d")
+                        bsr_num = int(line[6:10])
+                        bsr_day = int(line[10:12])
+                        if line[28:30] == '  ':
                             kp_ones = 0.0
-                        ddict['Kp'].append(float(kp_ones)
-                                           + kp_translate[line[13 + ikp]])
-                        iap = i * 3
-                        ddict['ap'].append(int(line[31 + iap:34 + iap]))
+                        else:
+                            float(line[28:30])
+                        sum_kp = kp_ones + kp_translate[line[30]]
+                        daily_ap = int(line[55:58])
+                        cp = float(line[58:61])
+                        c9 = int(line[61])
 
-                # Put data into nicer DataFrame
-                data = pds.DataFrame(ddict, index=times, columns=data_cols)
+                        for i, hour in enumerate(hours):
+                            # Set the time for this hour and day
+                            times.append(ldate + dt.timedelta(hours=int(hour)))
 
-                # Write out as a CSV file
-                saved_fname = os.path.join(data_path, fname).replace(
-                    '.wdc', '.txt')
-                data.to_csv(saved_fname, header=True)
+                            # Set the daily values for this hour
+                            ddict['Bartels_solar_rotation_num'].append(bsr_num)
+                            ddict['day_within_Bartels_rotation'].append(bsr_day)
+                            ddict['daily_Kp_sum'].append(sum_kp)
+                            ddict['daily_Ap'].append(daily_ap)
+                            ddict['Cp'].append(cp)
+                            ddict['C9'].append(c9)
 
-                # Record the filename so we don't download it twice
-                dnames.append(fname)
+                            # Get the hourly-specific values
+                            ikp = i * 2
+                            kp_ones = line[12 + ikp]
+                            if kp_ones == ' ':
+                                kp_ones = 0.0
+                            ddict['Kp'].append(float(kp_ones)
+                                               + kp_translate[line[13 + ikp]])
+                            iap = i * 3
+                            ddict['ap'].append(int(line[31 + iap:34 + iap]))
+
+                    # Put data into nicer DataFrame
+                    data = pds.DataFrame(ddict, index=times, columns=data_cols)
+
+                    # Write out as a CSV file
+                    saved_fname = os.path.join(data_path, fname).replace(
+                        '.wdc', '.txt')
+                    data.to_csv(saved_fname, header=True)
+
+                    # Record the filename so we don't download it twice
+                    dnames.append(fname)
+                else:
+                    pysat.logger.info("".join(["Data not downloaded for ",
+                                               dl_date.strftime("%d %b %Y"),
+                                               ", date may be out of range ",
+                                               "for the database."]))
 
     elif tag == 'forecast':
         logger.info(' '.join(('This routine can only download the current',
@@ -556,44 +565,48 @@ def download(date_array, tag, inst_id, data_path):
         furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
         req = requests.get(furl)
 
-        # Parse text to get the date the prediction was generated
-        date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
-        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
+        if req.ok:
+            # Parse text to get the date the prediction was generated
+            date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
+            dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
 
-        # Data is the forecast value for the next three days
-        raw_data = req.text.split('NOAA Kp index forecast ')[-1]
+            # Data is the forecast value for the next three days
+            raw_data = req.text.split('NOAA Kp index forecast ')[-1]
 
-        # Get date of the forecasts
-        date_str = raw_data[0:6] + ' ' + str(dl_date.year)
-        forecast_date = dt.datetime.strptime(date_str, '%d %b %Y')
+            # Get date of the forecasts
+            date_str = raw_data[0:6] + ' ' + str(dl_date.year)
+            forecast_date = dt.datetime.strptime(date_str, '%d %b %Y')
 
-        # Strings we will use to parse the downloaded text
-        lines = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT',
-                 '15-18UT', '18-21UT', '21-00UT']
+            # Strings we will use to parse the downloaded text
+            lines = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT',
+                     '15-18UT', '18-21UT', '21-00UT']
 
-        # Storage for daily forecasts.
-        # Get values for each day, then combine together
-        day1 = []
-        day2 = []
-        day3 = []
-        for line in lines:
-            raw = raw_data.split(line)[-1].split('\n')[0]
-            cols = raw.split()
-            day1.append(float(cols[-3]))
-            day2.append(float(cols[-2]))
-            day3.append(float(cols[-1]))
+            # Storage for daily forecasts.
+            # Get values for each day, then combine together
+            day1 = []
+            day2 = []
+            day3 = []
+            for line in lines:
+                raw = raw_data.split(line)[-1].split('\n')[0]
+                cols = raw.split()
+                day1.append(float(cols[-3]))
+                day2.append(float(cols[-2]))
+                day3.append(float(cols[-1]))
 
-        times = pds.date_range(forecast_date, periods=24, freq='3H')
-        day = []
-        for dd in [day1, day2, day3]:
-            day.extend(dd)
+            times = pds.date_range(forecast_date, periods=24, freq='3H')
+            day = []
+            for dd in [day1, day2, day3]:
+                day.extend(dd)
 
-        # Put data into nicer DataFrame
-        data = pds.DataFrame(day, index=times, columns=['Kp'])
+            # Put data into nicer DataFrame
+            data = pds.DataFrame(day, index=times, columns=['Kp'])
 
-        # Write out as a file
-        data_file = 'kp_forecast_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-        data.to_csv(os.path.join(data_path, data_file), header=True)
+            # Write out as a file
+            data_file = 'kp_forecast_{:s}.txt'.format(dl_date.strftime(
+                '%Y-%m-%d'))
+            data.to_csv(os.path.join(data_path, data_file), header=True)
+        else:
+            pysat.logger.info("Unable to download Kp forecast.")
 
     elif tag == 'recent':
         logger.info(' '.join(('This routine can only download the current',
@@ -604,50 +617,54 @@ def download(date_array, tag, inst_id, data_path):
                         'daily-geomagnetic-indices.txt'))
         req = requests.get(rurl)
 
-        # Parse text to get the date the prediction was generated
-        date_str = req.text.split(':Issued: ')[-1].split('\n')[0]
-        dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
+        if req.ok:
+            # Parse text to get the date the prediction was generated
+            date_str = req.text.split(':Issued: ')[-1].split('\n')[0]
+            dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
 
-        # Data is the forecast value for the next three days
-        raw_data = req.text.split('#  Date ')[-1]
+            # Data is the forecast value for the next three days
+            raw_data = req.text.split('#  Date ')[-1]
 
-        # Keep only the middle bits that matter
-        raw_data = raw_data.split('\n')[1:-1]
+            # Keep only the middle bits that matter
+            raw_data = raw_data.split('\n')[1:-1]
 
-        # Hold times from the file
-        kp_time = []
+            # Hold times from the file
+            kp_time = []
 
-        # Holds Kp value for each station
-        sub_kps = [[], [], []]
+            # Holds Kp value for each station
+            sub_kps = [[], [], []]
 
-        # Iterate through file lines and parse out the info we want
-        for line in raw_data:
-            kp_time.append(dt.datetime.strptime(line[0:10], '%Y %m %d'))
+            # Iterate through file lines and parse out the info we want
+            for line in raw_data:
+                kp_time.append(dt.datetime.strptime(line[0:10], '%Y %m %d'))
 
-            # Pick out Kp values for each of the three columns. The columns
-            # used to all have integer values, but now some have floats.
-            sub_lines = [line[17:33], line[40:56], line[63:]]
-            for i, sub_line in enumerate(sub_lines):
-                split_sub = sub_line.split()
-                for ihr in np.arange(8):
-                    if sub_line.find('.') < 0:
-                        # These are integer values
-                        sub_kps[i].append(
-                            int(sub_line[(ihr * 2):((ihr + 1) * 2)]))
-                    else:
-                        # These are float values
-                        sub_kps[i].append(float(split_sub[ihr]))
+                # Pick out Kp values for each of the three columns. The columns
+                # used to all have integer values, but now some have floats.
+                sub_lines = [line[17:33], line[40:56], line[63:]]
+                for i, sub_line in enumerate(sub_lines):
+                    split_sub = sub_line.split()
+                    for ihr in np.arange(8):
+                        if sub_line.find('.') < 0:
+                            # These are integer values
+                            sub_kps[i].append(
+                                int(sub_line[(ihr * 2):((ihr + 1) * 2)]))
+                        else:
+                            # These are float values
+                            sub_kps[i].append(float(split_sub[ihr]))
 
-        # Create times on 3 hour cadence
-        times = pds.date_range(kp_time[0], periods=(8 * 30), freq='3H')
+            # Create times on 3 hour cadence
+            times = pds.date_range(kp_time[0], periods=(8 * 30), freq='3H')
 
-        # Put into DataFrame
-        data = pds.DataFrame({'mid_lat_Kp': sub_kps[0],
-                              'high_lat_Kp': sub_kps[1],
-                              'Kp': sub_kps[2]}, index=times)
+            # Put into DataFrame
+            data = pds.DataFrame({'mid_lat_Kp': sub_kps[0],
+                                  'high_lat_Kp': sub_kps[1],
+                                  'Kp': sub_kps[2]}, index=times)
 
-        # Write out as a file
-        data_file = 'kp_recent_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-        data.to_csv(os.path.join(data_path, data_file), header=True)
+            # Write out as a file
+            data_file = 'kp_recent_{:s}.txt'.format(
+                dl_date.strftime('%Y-%m-%d'))
+            data.to_csv(os.path.join(data_path, data_file), header=True)
+        else:
+            pysat.logger.info("Unable to download Kp recent file.")
 
     return

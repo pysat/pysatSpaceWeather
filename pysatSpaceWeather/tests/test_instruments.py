@@ -42,7 +42,8 @@ class TestLocalDeprecation(object):
         """Set up the unit test environment for each method."""
 
         warnings.simplefilter("always", DeprecationWarning)
-        self.in_kwargs = {"platform": 'sw', "name": 'kp', 'tag': ''}
+        self.in_kwargs = {"inst_module": pysatSpaceWeather.instruments.sw_kp,
+                          'tag': ''}
         self.ref_time = dt.datetime(2001, 1, 1)
         self.warn_msgs = []
         self.war = ""

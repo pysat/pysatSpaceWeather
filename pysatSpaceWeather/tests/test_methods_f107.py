@@ -21,7 +21,7 @@ from pysatSpaceWeather.instruments import sw_f107
 class TestSWF107(object):
     """Test class for F10.7 methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         # Load a test instrument
         self.testInst = pysat.Instrument()
@@ -31,7 +31,7 @@ class TestSWF107(object):
                                                   for i in range(160)])
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         del self.testInst
         return
@@ -123,7 +123,7 @@ class TestSWF107(object):
 class TestSWF107Combine(object):
     """Test class for the `combine_f107` method."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         # Switch to test_data directory
         self.saved_path = pysat.params['data_dirs']
@@ -142,7 +142,7 @@ class TestSWF107Combine(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         pysat.params.data['data_dirs'] = self.saved_path
         del self.combine_inst, self.test_day, self.combine_times

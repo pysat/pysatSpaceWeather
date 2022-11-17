@@ -22,7 +22,7 @@ been successfully completed.
 ::
 
     f107 = pysat.Instrument('sw', 'f107', tag='historic')
-    f107.download(start=f107.lasp_stime, stop=f107.today(), freq='MS')
+    f107.download(start=f107.lasp_stime, stop=f107.today())
     f107.load(date=f107.lasp_stime, end_date=f107.today())
 
 
@@ -104,7 +104,7 @@ _test_dates = {'': {'historic': dt.datetime(2009, 1, 1),
                     '45day': tomorrow}}
 
 # Other tags assumed to be True
-_test_download_travis = {'': {'prelim': False}}
+_test_download_ci = {'': {'prelim': False}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods
@@ -375,7 +375,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             orig_files = out_files.sort_index().copy()
             new_files = list()
 
-            for orig in orig_files.iteritems():
+            for orig in orig_files.items():
                 # Version determines each file's valid length
                 version = int(orig[1].split("_v")[1][0])
                 doff = pds.DateOffset(years=1) if version == 2 \
@@ -455,8 +455,6 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     if tag == 'historic':
         # Test the date array, updating it if necessary
         if date_array.freq != 'MS':
-            warnings.warn(''.join(['Historic F10.7 downloads should be invoked',
-                                   " with the `freq='MS'` option."]))
             date_array = pysat.utils.time.create_date_range(
                 dt.datetime(date_array[0].year, date_array[0].month, 1),
                 date_array[-1], freq='MS')

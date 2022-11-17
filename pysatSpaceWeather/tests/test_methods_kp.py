@@ -21,10 +21,11 @@ from pysatSpaceWeather.instruments import sw_kp
 class TestSWKp(object):
     """Test class for Kp methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12)
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
+                                         use_header=True)
         self.test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
         load_kwargs = {'date': self.test_time}
@@ -49,7 +50,7 @@ class TestSWKp(object):
         self.testMeta = pysat.Meta()
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         del self.testInst, self.testMeta, self.test_time
         return
@@ -273,7 +274,7 @@ class TestSWKp(object):
 class TestSwKpCombine(object):
     """Tests for the `combine_kp` method."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         # Switch to test_data directory
         self.saved_path = pysat.params['data_dirs']
@@ -283,13 +284,15 @@ class TestSwKpCombine(object):
         self.test_day = dt.datetime(2019, 3, 18)
         self.combine = {"standard_inst": pysat.Instrument(inst_module=sw_kp,
                                                           tag="",
-                                                          update_files=True),
+                                                          update_files=True,
+                                                          use_header=True),
                         "recent_inst": pysat.Instrument(inst_module=sw_kp,
                                                         tag="recent",
-                                                        update_files=True),
+                                                        update_files=True,
+                                                        use_header=True),
                         "forecast_inst":
-                        pysat.Instrument(inst_module=sw_kp,
-                                         tag="forecast", update_files=True),
+                        pysat.Instrument(inst_module=sw_kp, tag="forecast",
+                                         update_files=True, use_header=True),
                         "start": self.test_day - dt.timedelta(days=30),
                         "stop": self.test_day + dt.timedelta(days=3),
                         "fill_val": -1}
@@ -299,7 +302,7 @@ class TestSwKpCombine(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up previous testing."""
         pysat.params.data['data_dirs'] = self.saved_path
         del self.combine, self.test_day, self.saved_path, self.load_kwargs
@@ -469,9 +472,10 @@ class TestSwKpCombine(object):
 class TestSWAp(object):
     """Test class for Ap methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10)
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
+                                         use_header=True)
         self.test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
         load_kwargs = {'date': self.test_time}
@@ -495,7 +499,7 @@ class TestSWAp(object):
             self.testInst.meta.labels.notes: 'test ap'}
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up previous testing."""
         del self.testInst, self.test_time
         return

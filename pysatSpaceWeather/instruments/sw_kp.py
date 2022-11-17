@@ -96,7 +96,7 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'recent': today}}
 
 # Other tags assumed to be True
-_test_download_travis = {'': {'': False}}
+_test_download_ci = {'': {'': False}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods

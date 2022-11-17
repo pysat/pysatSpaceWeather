@@ -18,7 +18,7 @@ used as an example.
 
    f107 = pysat.Instrument(inst_module=py_sw.instruments.sw_f107,
                            tag='historic', update_files=True)
-   f107.download(start=f107.lasp_stime, stop=f107.today(), freq='MS')
+   f107.download(start=f107.lasp_stime, stop=f107.today())
    f107.load()
    print(f107)
 

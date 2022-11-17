@@ -8,6 +8,7 @@ Imports test methods from pysat.tests.instrument_test_class
 
 import datetime as dt
 import logging
+import pytest
 import warnings
 
 # Make sure to import your instrument library here
@@ -79,4 +80,46 @@ class TestLocalDeprecation(object):
 
         # Evaluate the warning output
         self.eval_warnings()
+        return
+
+
+class TestSWInstrumentLogging(object):
+    """Test logging messages raised under instrument-specific conditions."""
+
+    def setup_method(self):
+        """Create a clean the testing setup."""
+
+        self.inst_kwargs = [
+            {'inst_module': pysatSpaceWeather.instruments.sw_kp}]
+
+    def teardown_method(self):
+        """Clean up previous testing setup."""
+
+        del self.inst_kwargs
+        return
+
+    @pytest.mark.parametrize("tag", ["def", "now"])
+    def test_missing_kp_file(self, tag, caplog):
+        """Test message raised if loading times not in the database.
+
+        Parameters
+        ----------
+        tag: str
+            Kp Instrument tag
+
+        """
+        inst = pysat.Instrument(tag=tag, **self.inst_kwargs[0])
+        future_time = inst.today() + dt.timedelta(weeks=500)
+
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            inst.download(start=future_time)
+
+        # Test the warning
+        captured = caplog.text
+        assert captured.find(
+            'Unable to download') >= 0, "Unexpected text: {:}".format(captured)
+
+        # Test the file was not downloaded
+        assert future_time not in inst.files.files.index
+
         return

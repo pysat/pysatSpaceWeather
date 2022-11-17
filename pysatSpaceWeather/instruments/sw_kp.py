@@ -72,8 +72,6 @@ import pysat
 from pysatSpaceWeather.instruments.methods import general
 from pysatSpaceWeather.instruments.methods import kp_ap
 
-logger = pysat.logger
-
 # ----------------------------------------------------------------------------
 # Instrument attributes
 
@@ -113,7 +111,7 @@ def init(self):
 
     self.acknowledgements = kp_ap.acknowledgements(self.name, self.tag)
     self.references = kp_ap.references(self.name, self.tag)
-    logger.info(self.acknowledgements)
+    pysat.logger.info(self.acknowledgements)
     return
 
 
@@ -200,7 +198,7 @@ def load(fnames, tag='', inst_id=''):
                 temp = fin.readlines()
 
             if len(temp) == 0:
-                logger.warn('Empty file: {:}'.format(fname))
+                pysat.logger.warn('Empty file: {:}'.format(fname))
                 continue
 
             # This file has a different format if it is historic or a file that
@@ -284,7 +282,7 @@ def load(fnames, tag='', inst_id=''):
             temp = pds.read_csv(fname, index_col=0, parse_dates=True)
 
             if temp.empty:
-                logger.warn('Empty file: {:}'.format(fname))
+                pysat.logger.warn('Empty file: {:}'.format(fname))
                 continue
 
             # Select the desired times and add to data list
@@ -488,8 +486,8 @@ def download(date_array, tag, inst_id, data_path):
         for dl_date in date_array:
             fname = 'Kp_{:s}{:04d}.wdc'.format(tag, dl_date.year)
             if fname not in dnames:
-                logger.info(' '.join(('Downloading file for',
-                                      dl_date.strftime('%Y'))))
+                pysat.logger.info(' '.join(('Downloading file for',
+                                            dl_date.strftime('%Y'))))
                 furl = ''.join([burl, fname])
                 req = requests.get(furl)
 
@@ -552,119 +550,112 @@ def download(date_array, tag, inst_id, data_path):
                     # Record the filename so we don't download it twice
                     dnames.append(fname)
                 else:
-                    pysat.logger.info("".join(["Data not downloaded for ",
+                    pysat.logger.info("".join(["Unable to download data for ",
                                                dl_date.strftime("%d %b %Y"),
                                                ", date may be out of range ",
                                                "for the database."]))
 
     elif tag == 'forecast':
-        logger.info(' '.join(('This routine can only download the current',
-                              'forecast, not archived forecasts')))
+        pysat.logger.info(' '.join(('This routine can only download the ',
+                                    'current forecast, not archived ',
+                                    'forecasts')))
 
         # Download webpage
         furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
         req = requests.get(furl)
 
-        if req.ok:
-            # Parse text to get the date the prediction was generated
-            date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
-            dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
+        # Parse text to get the date the prediction was generated
+        date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
+        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
 
-            # Data is the forecast value for the next three days
-            raw_data = req.text.split('NOAA Kp index forecast ')[-1]
+        # Data is the forecast value for the next three days
+        raw_data = req.text.split('NOAA Kp index forecast ')[-1]
 
-            # Get date of the forecasts
-            date_str = raw_data[0:6] + ' ' + str(dl_date.year)
-            forecast_date = dt.datetime.strptime(date_str, '%d %b %Y')
+        # Get date of the forecasts
+        date_str = raw_data[0:6] + ' ' + str(dl_date.year)
+        forecast_date = dt.datetime.strptime(date_str, '%d %b %Y')
 
-            # Strings we will use to parse the downloaded text
-            lines = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT',
-                     '15-18UT', '18-21UT', '21-00UT']
+        # Strings we will use to parse the downloaded text
+        lines = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT',
+                 '15-18UT', '18-21UT', '21-00UT']
 
-            # Storage for daily forecasts.
-            # Get values for each day, then combine together
-            day1 = []
-            day2 = []
-            day3 = []
-            for line in lines:
-                raw = raw_data.split(line)[-1].split('\n')[0]
-                cols = raw.split()
-                day1.append(float(cols[-3]))
-                day2.append(float(cols[-2]))
-                day3.append(float(cols[-1]))
+        # Storage for daily forecasts.
+        # Get values for each day, then combine together
+        day1 = []
+        day2 = []
+        day3 = []
+        for line in lines:
+            raw = raw_data.split(line)[-1].split('\n')[0]
+            cols = raw.split()
+            day1.append(float(cols[-3]))
+            day2.append(float(cols[-2]))
+            day3.append(float(cols[-1]))
 
-            times = pds.date_range(forecast_date, periods=24, freq='3H')
-            day = []
-            for dd in [day1, day2, day3]:
-                day.extend(dd)
+        times = pds.date_range(forecast_date, periods=24, freq='3H')
+        day = []
+        for dd in [day1, day2, day3]:
+            day.extend(dd)
 
-            # Put data into nicer DataFrame
-            data = pds.DataFrame(day, index=times, columns=['Kp'])
+        # Put data into nicer DataFrame
+        data = pds.DataFrame(day, index=times, columns=['Kp'])
 
-            # Write out as a file
-            data_file = 'kp_forecast_{:s}.txt'.format(dl_date.strftime(
-                '%Y-%m-%d'))
-            data.to_csv(os.path.join(data_path, data_file), header=True)
-        else:
-            pysat.logger.info("Unable to download Kp forecast.")
+        # Write out as a file
+        data_file = 'kp_forecast_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
+        data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'recent':
-        logger.info(' '.join(('This routine can only download the current',
-                              'webpage, not archived forecasts')))
+        pysat.logger.info(' '.join(('This routine can only download the ',
+                                    'current webpage, not archived forecasts')))
 
         # Download webpage
         rurl = ''.join(('https://services.swpc.noaa.gov/text/',
                         'daily-geomagnetic-indices.txt'))
         req = requests.get(rurl)
 
-        if req.ok:
-            # Parse text to get the date the prediction was generated
-            date_str = req.text.split(':Issued: ')[-1].split('\n')[0]
-            dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
+        # Parse text to get the date the prediction was generated
+        date_str = req.text.split(':Issued: ')[-1].split('\n')[0]
+        dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
 
-            # Data is the forecast value for the next three days
-            raw_data = req.text.split('#  Date ')[-1]
+        # Data is the forecast value for the next three days
+        raw_data = req.text.split('#  Date ')[-1]
 
-            # Keep only the middle bits that matter
-            raw_data = raw_data.split('\n')[1:-1]
+        # Keep only the middle bits that matter
+        raw_data = raw_data.split('\n')[1:-1]
 
-            # Hold times from the file
-            kp_time = []
+        # Hold times from the file
+        kp_time = []
 
-            # Holds Kp value for each station
-            sub_kps = [[], [], []]
+        # Holds Kp value for each station
+        sub_kps = [[], [], []]
 
-            # Iterate through file lines and parse out the info we want
-            for line in raw_data:
-                kp_time.append(dt.datetime.strptime(line[0:10], '%Y %m %d'))
+        # Iterate through file lines and parse out the info we want
+        for line in raw_data:
+            kp_time.append(dt.datetime.strptime(line[0:10], '%Y %m %d'))
 
-                # Pick out Kp values for each of the three columns. The columns
-                # used to all have integer values, but now some have floats.
-                sub_lines = [line[17:33], line[40:56], line[63:]]
-                for i, sub_line in enumerate(sub_lines):
-                    split_sub = sub_line.split()
-                    for ihr in np.arange(8):
-                        if sub_line.find('.') < 0:
-                            # These are integer values
-                            sub_kps[i].append(
-                                int(sub_line[(ihr * 2):((ihr + 1) * 2)]))
-                        else:
-                            # These are float values
-                            sub_kps[i].append(float(split_sub[ihr]))
+            # Pick out Kp values for each of the three columns. The columns
+            # used to all have integer values, but now some have floats.
+            sub_lines = [line[17:33], line[40:56], line[63:]]
+            for i, sub_line in enumerate(sub_lines):
+                split_sub = sub_line.split()
+                for ihr in np.arange(8):
+                    if sub_line.find('.') < 0:
+                        # These are integer values
+                        sub_kps[i].append(
+                            int(sub_line[(ihr * 2):((ihr + 1) * 2)]))
+                    else:
+                        # These are float values
+                        sub_kps[i].append(float(split_sub[ihr]))
 
-            # Create times on 3 hour cadence
-            times = pds.date_range(kp_time[0], periods=(8 * 30), freq='3H')
+        # Create times on 3 hour cadence
+        times = pds.date_range(kp_time[0], periods=(8 * 30), freq='3H')
 
-            # Put into DataFrame
-            data = pds.DataFrame({'mid_lat_Kp': sub_kps[0],
-                                  'high_lat_Kp': sub_kps[1],
-                                  'Kp': sub_kps[2]}, index=times)
+        # Put into DataFrame
+        data = pds.DataFrame({'mid_lat_Kp': sub_kps[0],
+                              'high_lat_Kp': sub_kps[1],
+                              'Kp': sub_kps[2]}, index=times)
 
-            # Write out as a file
-            data_file = 'kp_recent_{:s}.txt'.format(
-                dl_date.strftime('%Y-%m-%d'))
-            data.to_csv(os.path.join(data_path, data_file), header=True)
-        else:
-            pysat.logger.info("Unable to download Kp recent file.")
+        # Write out as a file
+        data_file = 'kp_recent_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
+        data.to_csv(os.path.join(data_path, data_file), header=True)
 
     return

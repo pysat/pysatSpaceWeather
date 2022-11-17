@@ -92,6 +92,104 @@ def references(name, tag):
     return refs[name][tag]
 
 
+def gfz_kp_ap_cp_download(tag):
+    """Download Kp, ap, and Cp data from GFZ.
+
+    Parameters
+    ----------
+    tag : str
+        String specifying the database, expects 'def' (definitive) or 'now'
+        (nowcast)
+
+    """
+    # Set the page for the definitive or nowcast Kp
+    burl = ''.join(['https://datapub.gfz-potsdam.de/download/10.5880.Kp.0001',
+                    '/Kp_', 'nowcast' if tag == 'now' else 'definitive', '/'])
+    data_cols = ['Bartels_solar_rotation_num', 'day_within_Bartels_rotation',
+                 'Kp', 'daily_Kp_sum', 'ap', 'daily_Ap', 'Cp', 'C9']
+    hours = np.arange(0, 24, 3)
+    kp_translate = {'0': 0.0, '3': 1.0 / 3.0, '7': 2.0 / 3.0}
+    dnames = list()
+
+    inst_cols = {'sw_kp': [0, 1, 2, 3], 'gfz_cp': [0, 1, 6, 7],
+                 'sw_ap': [0, 1, 4, 5]}
+
+    # HERE
+
+        for dl_date in date_array:
+            fname = 'Kp_{:s}{:04d}.wdc'.format(tag, dl_date.year)
+            if fname not in dnames:
+                pysat.logger.info(' '.join(('Downloading file for',
+                                            dl_date.strftime('%Y'))))
+                furl = ''.join([burl, fname])
+                req = requests.get(furl)
+
+                if req.ok:
+                    # Split the file text into lines
+                    lines = req.text.split('\n')[:-1]
+
+                    # Remove the header
+                    while lines[0].find('#') == 0:
+                        lines.pop(0)
+
+                    # Process the data lines
+                    ddict = {dkey: list() for dkey in data_cols}
+                    times = list()
+                    for line in lines:
+                        ldate = dt.datetime.strptime(' '.join([
+                            "{:02d}".format(int(dd)) for dd in
+                            [line[:2], line[2:4], line[4:6]]]), "%y %m %d")
+                        bsr_num = int(line[6:10])
+                        bsr_day = int(line[10:12])
+                        if line[28:30] == '  ':
+                            kp_ones = 0.0
+                        else:
+                            kp_ones = float(line[28:30])
+                        sum_kp = kp_ones + kp_translate[line[30]]
+                        daily_ap = int(line[55:58])
+                        cp = float(line[58:61])
+                        c9 = int(line[61])
+
+                        for i, hour in enumerate(hours):
+                            # Set the time for this hour and day
+                            times.append(ldate + dt.timedelta(hours=int(hour)))
+
+                            # Set the daily values for this hour
+                            ddict['Bartels_solar_rotation_num'].append(bsr_num)
+                            ddict['day_within_Bartels_rotation'].append(bsr_day)
+                            ddict['daily_Kp_sum'].append(sum_kp)
+                            ddict['daily_Ap'].append(daily_ap)
+                            ddict['Cp'].append(cp)
+                            ddict['C9'].append(c9)
+
+                            # Get the hourly-specific values
+                            ikp = i * 2
+                            kp_ones = line[12 + ikp]
+                            if kp_ones == ' ':
+                                kp_ones = 0.0
+                            ddict['Kp'].append(float(kp_ones)
+                                               + kp_translate[line[13 + ikp]])
+                            iap = i * 3
+                            ddict['ap'].append(int(line[31 + iap:34 + iap]))
+
+                    # Put data into nicer DataFrame
+                    data = pds.DataFrame(ddict, index=times, columns=data_cols)
+
+                    # Write out as a CSV file
+                    saved_fname = os.path.join(data_path, fname).replace(
+                        '.wdc', '.txt')
+                    data.to_csv(saved_fname, header=True)
+
+                    # Record the filename so we don't download it twice
+                    dnames.append(fname)
+                else:
+                    pysat.logger.info("".join(["Unable to download data for ",
+                                               dl_date.strftime("%d %b %Y"),
+                                               ", date may be out of range ",
+                                               "for the database."]))
+
+
+
 def initialize_kp_metadata(meta, data_key, fill_val=-1):
     """Initialize the Kp meta data using our knowledge of the index.
 

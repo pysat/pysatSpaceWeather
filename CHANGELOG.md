@@ -11,6 +11,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Remove deprecated pytest syntax (backwards support for nose)
   * Removed deprecated pandas syntax (iteritems)
   * Added Github action workflow using the latest pysat RC
+  * Added new tags for the sw_kp instrument's GFZ data, 'def' and 'now', to
+    replace ''
 
 [0.0.7] - 2022-09-15
 --------------------

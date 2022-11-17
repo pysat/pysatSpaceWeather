@@ -511,7 +511,7 @@ def download(date_array, tag, inst_id, data_path):
                         if line[28:30] == '  ':
                             kp_ones = 0.0
                         else:
-                            float(line[28:30])
+                            kp_ones = float(line[28:30])
                         sum_kp = kp_ones + kp_translate[line[30]]
                         daily_ap = int(line[55:58])
                         cp = float(line[58:61])

@@ -18,11 +18,15 @@ inst_id
 
 Note
 ----
-Downloads data from ftp.gfz-potsdam.de or SWPC.
+Downloads data from ftp.gfz-potsdam.de or SWPC. These files also contain ap
+data (with the GFZ data additionally containing Cp data), and so the additional
+data files will be saved to the appropriate data directories to avoid multiple
+downloads.
 
-Standard Kp files are stored by the first day of each month. When downloading
-use kp.download(start, stop, freq='MS') to only download days that could
-possibly have data.  'MS' gives a monthly start frequency.
+The historic definitive and nowcast Kp files are stored in yearly files, with
+the current year being updated remotely on a regular basis.  If you are using
+historic data for the current year, we recommend re-downloading it before
+performing your data processing.
 
 The forecast data is stored by generation date, where each file contains the
 forecast for the next three days. Forecast data downloads are only supported
@@ -262,8 +266,6 @@ def load(fnames, tag='', inst_id=''):
         # files, and we need to return data daily.  The daily date is
         # attached to filename.  Parse off the last date, load month of data,
         # and downselect to the desired day
-        data = pds.DataFrame()
-
         unique_fnames = dict()
         for filename in fnames:
             fname = filename[0:-11]
@@ -408,29 +410,11 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             files = files.asfreq('D', 'pad')
             files = files + '_' + files.index.strftime('%Y-%m-%d')
     elif tag in ['def', 'now']:
-        if format_str is None:
-            format_str = ''.join(['Kp_{:s}'.format(tag), '{year:04d}.txt'])
-
-        # Files are stored by year, going to add a date to the yearly
-        # filename for each month and day of month.  The load routine will load
-        # the year and use the append date to select out approriate data.
-        files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
-        if not files.empty:
-            files.loc[files.index[-1] + pds.DateOffset(years=1)
-                      - pds.DateOffset(days=1)] = files.iloc[-1]
-            files = files.asfreq('D', 'pad')
-            files = files + '_' + files.index.strftime('%Y-%m-%d')
+        files = kp_ap.gfz_kp_ap_cp_list_files(name, tag, inst_id, data_path,
+                                              format_str=format_str)
     else:
-        if format_str is None:
-            format_str = '_'.join(['kp', tag,
-                                   '{year:04d}-{month:02d}-{day:02d}.txt'])
-        files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
-
-        # Pad list of files data to include most recent file under tomorrow
-        if not files.empty:
-            pds_offset = pds.DateOffset(days=1)
-            files.loc[files.index[-1] + pds_offset] = files.values[-1]
-            files.loc[files.index[-1] + pds_offset] = files.values[-1]
+        files = kp_ap.swpc_list_files(name, tag, inst_id, data_path,
+                                      format_str=format_str)
 
     return files
 
@@ -472,7 +456,8 @@ def download(date_array, tag, inst_id, data_path):
                                "supported by GFZ."]),
                       DeprecationWarning, stacklevel=2)
     elif tag in ['def', 'now']:
-        # HERE
+        kp_ap.gfz_kp_ap_cp_download(platform, name, tag, inst_id, date_array,
+                                    data_path)
     elif tag == 'forecast':
         pysat.logger.info(' '.join(('This routine can only download the ',
                                     'current forecast, not archived ',
@@ -522,58 +507,6 @@ def download(date_array, tag, inst_id, data_path):
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'recent':
-        pysat.logger.info(' '.join(('This routine can only download the ',
-                                    'current webpage, not archived forecasts')))
-
-        # Download webpage
-        rurl = ''.join(('https://services.swpc.noaa.gov/text/',
-                        'daily-geomagnetic-indices.txt'))
-        req = requests.get(rurl)
-
-        # Parse text to get the date the prediction was generated
-        date_str = req.text.split(':Issued: ')[-1].split('\n')[0]
-        dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
-
-        # Data is the forecast value for the next three days
-        raw_data = req.text.split('#  Date ')[-1]
-
-        # Keep only the middle bits that matter
-        raw_data = raw_data.split('\n')[1:-1]
-
-        # Hold times from the file
-        kp_time = []
-
-        # Holds Kp value for each station
-        sub_kps = [[], [], []]
-
-        # Iterate through file lines and parse out the info we want
-        for line in raw_data:
-            kp_time.append(dt.datetime.strptime(line[0:10], '%Y %m %d'))
-
-            # Pick out Kp values for each of the three columns. The columns
-            # used to all have integer values, but now some have floats.
-            sub_lines = [line[17:33], line[40:56], line[63:]]
-            for i, sub_line in enumerate(sub_lines):
-                split_sub = sub_line.split()
-                for ihr in np.arange(8):
-                    if sub_line.find('.') < 0:
-                        # These are integer values
-                        sub_kps[i].append(
-                            int(sub_line[(ihr * 2):((ihr + 1) * 2)]))
-                    else:
-                        # These are float values
-                        sub_kps[i].append(float(split_sub[ihr]))
-
-        # Create times on 3 hour cadence
-        times = pds.date_range(kp_time[0], periods=(8 * 30), freq='3H')
-
-        # Put into DataFrame
-        data = pds.DataFrame({'mid_lat_Kp': sub_kps[0],
-                              'high_lat_Kp': sub_kps[1],
-                              'Kp': sub_kps[2]}, index=times)
-
-        # Write out as a file
-        data_file = 'kp_recent_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-        data.to_csv(os.path.join(data_path, data_file), header=True)
+        kp_ap.swpc_kp_ap_recent_download(name, date_array, data_path)
 
     return

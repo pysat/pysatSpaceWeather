@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0] - 2022-XX-XX
 --------------------
+* Bugs
+   * Fixed F10.7 prelim and daily metadata to allow the fill value to keep the
+     same type as the data
 * Maintenance
   * Updated the GitHub action version numbers
   * Updated syntax for pysat instrument testing suite

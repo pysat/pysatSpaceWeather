@@ -33,7 +33,6 @@ class TestInstruments(clslib.InstLibTests):
     ----
     All standard tests, setup, and teardown inherited from the core pysat
     instrument test class.
-
     """
 
 
@@ -90,6 +89,8 @@ class TestSWInstrumentLogging(object):
         """Create a clean the testing setup."""
 
         self.inst_kwargs = [
+            {'inst_module': pysatSpaceWeather.instruments.sw_f107,
+             'tag': 'historic'},
             {'inst_module': pysatSpaceWeather.instruments.sw_kp}]
 
     def teardown_method(self):
@@ -97,6 +98,20 @@ class TestSWInstrumentLogging(object):
 
         del self.inst_kwargs
         return
+
+    def test_historic_download_past_limit(self, caplog):
+        """Test message raised if loading times not in the database."""
+
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            inst = pysat.Instrument(**self.inst_kwargs[0])
+            inst.download(start=inst.today())
+
+        # Test the warning
+        captured = caplog.text
+        assert captured.find('date may be out of range for the database.') >= 0
+
+        # Test the file was not downloaded
+        assert inst.today() not in inst.files.files.index
 
     @pytest.mark.parametrize("tag", ["def", "now"])
     def test_missing_kp_file(self, tag, caplog):
@@ -108,7 +123,7 @@ class TestSWInstrumentLogging(object):
             Kp Instrument tag
 
         """
-        inst = pysat.Instrument(tag=tag, **self.inst_kwargs[0])
+        inst = pysat.Instrument(tag=tag, **self.inst_kwargs[1])
         future_time = inst.today() + dt.timedelta(weeks=500)
 
         with caplog.at_level(logging.INFO, logger='pysat'):

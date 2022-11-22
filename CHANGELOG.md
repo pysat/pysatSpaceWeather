@@ -21,6 +21,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Updated `sw_f107` to allow reading old and new `historic` data file format
 * Added exampled to the documentation for F10.7 and Kp methods
+* Captured JSON error in historic F10.7 downloads and wrapped it with a logger
+  message informing the user that their date may not be in the database
 * Removed warning for not using the deprecated `freq` kwarg
 * Removed deprecated function `load_csv_data`
 

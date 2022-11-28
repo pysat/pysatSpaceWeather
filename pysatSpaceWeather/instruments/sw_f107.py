@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Supports F10.7 index values. Downloads data from LASP and the SWPC.
+"""Supports F10.7 index values.
 
 Properties
 ----------
@@ -56,13 +56,11 @@ available from the pyast.Instrument object is not appropriate for '45day' data.
 """
 
 import datetime as dt
-import ftplib
 import json
 import numpy as np
 import os
 import pandas as pds
 import requests
-import sys
 import warnings
 
 import pysat
@@ -224,88 +222,6 @@ def load(fnames, tag='', inst_id=''):
 
             meta['f107'] = {
                 meta.labels.desc: meta['f107_adjusted', meta.labels.desc]}
-
-    elif tag == 'daily' or tag == 'prelim':
-        meta['ssn'] = {meta.labels.units: '',
-                       meta.labels.name: 'Sunspot Number',
-                       meta.labels.notes: '',
-                       meta.labels.desc: 'SESC Sunspot Number',
-                       meta.labels.fill_val: -999,
-                       meta.labels.min_val: 0,
-                       meta.labels.max_val: np.inf}
-        meta['ss_area'] = {meta.labels.units: '10$^-6$ Solar Hemisphere',
-                           meta.labels.name: 'Sunspot Area',
-                           meta.labels.notes: '',
-                           meta.labels.desc:
-                           ''.join(['Sunspot Area in Millionths of the ',
-                                    'Visible Hemisphere']),
-                           meta.labels.fill_val: -999,
-                           meta.labels.min_val: 0,
-                           meta.labels.max_val: 1.0e6}
-        meta['new_reg'] = {meta.labels.units: '',
-                           meta.labels.name: 'New Regions',
-                           meta.labels.notes: '',
-                           meta.labels.desc: 'New active solar regions',
-                           meta.labels.fill_val: -999,
-                           meta.labels.min_val: 0,
-                           meta.labels.max_val: np.inf}
-        meta['smf'] = {meta.labels.units: 'G',
-                       meta.labels.name: 'Solar Mean Field',
-                       meta.labels.notes: '',
-                       meta.labels.desc: 'Standford Solar Mean Field',
-                       meta.labels.fill_val: -999,
-                       meta.labels.min_val: 0,
-                       meta.labels.max_val: np.inf}
-        meta['goes_bgd_flux'] = {meta.labels.units: 'W/m^2',
-                                 meta.labels.name: 'X-ray Background Flux',
-                                 meta.labels.notes: '',
-                                 meta.labels.desc:
-                                 'GOES15 X-ray Background Flux',
-                                 meta.labels.fill_val: '*',
-                                 meta.labels.min_val: -np.inf,
-                                 meta.labels.max_val: np.inf}
-        meta['c_flare'] = {meta.labels.units: '',
-                           meta.labels.name: 'C X-Ray Flares',
-                           meta.labels.notes: '',
-                           meta.labels.desc: 'C-class X-Ray Flares',
-                           meta.labels.fill_val: -1,
-                           meta.labels.min_val: 0,
-                           meta.labels.max_val: 9}
-        meta['m_flare'] = {meta.labels.units: '',
-                           meta.labels.name: 'M X-Ray Flares',
-                           meta.labels.notes: '',
-                           meta.labels.desc: 'M-class X-Ray Flares',
-                           meta.labels.fill_val: -1,
-                           meta.labels.min_val: 0,
-                           meta.labels.max_val: 9}
-        meta['x_flare'] = {meta.labels.units: '',
-                           meta.labels.name: 'X X-Ray Flares',
-                           meta.labels.notes: '',
-                           meta.labels.desc: 'X-class X-Ray Flares',
-                           meta.labels.fill_val: -1,
-                           meta.labels.min_val: 0,
-                           meta.labels.max_val: 9}
-        meta['o1_flare'] = {meta.labels.units: '',
-                            meta.labels.name: '1 Optical Flares',
-                            meta.labels.notes: '',
-                            meta.labels.desc: '1-class Optical Flares',
-                            meta.labels.fill_val: -1,
-                            meta.labels.min_val: 0,
-                            meta.labels.max_val: 9}
-        meta['o2_flare'] = {meta.labels.units: '',
-                            meta.labels.name: '2 Optical Flares',
-                            meta.labels.notes: '',
-                            meta.labels.desc: '2-class Optical Flares',
-                            meta.labels.fill_val: -1,
-                            meta.labels.min_val: 0,
-                            meta.labels.max_val: 9}
-        meta['o3_flare'] = {meta.labels.units: '',
-                            meta.labels.name: '3 Optical Flares',
-                            meta.labels.notes: '',
-                            meta.labels.desc: '3-class Optical Flares',
-                            meta.labels.fill_val: -1,
-                            meta.labels.min_val: 0,
-                            meta.labels.max_val: 9}
 
     return data, meta
 
@@ -490,124 +406,15 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                     # Create a local CSV file
                     data.to_csv(data_file, header=True)
     elif tag == 'prelim':
-        ftp = ftplib.FTP('ftp.swpc.noaa.gov')  # Connect to host, default port
-        ftp.login()  # User anonymous, passwd anonymous
-        ftp.cwd('/pub/indices/old_indices')
-
-        bad_fname = list()
-
         # Get the local files, to ensure that the version 1 files are
         # downloaded again if more data has been added
         local_files = list_files(tag, inst_id, data_path)
 
-        # To avoid downloading multiple files, cycle dates based on file length
-        dl_date = date_array[0]
-        while dl_date <= date_array[-1]:
-            # The file name changes, depending on how recent the requested
-            # data is
-            qnum = (dl_date.month - 1) // 3 + 1  # Integer floor division
-            qmonth = (qnum - 1) * 3 + 1
-            quar = 'Q{:d}_'.format(qnum)
-            fnames = ['{:04d}{:s}DSD.txt'.format(dl_date.year, ss)
-                      for ss in ['_', quar]]
-            versions = ["01_v2", "{:02d}_v1".format(qmonth)]
-            vend = [dt.datetime(dl_date.year, 12, 31),
-                    dt.datetime(dl_date.year, qmonth, 1)
-                    + pds.DateOffset(months=3) - pds.DateOffset(days=1)]
-            downloaded = False
-            rewritten = False
-
-            # Attempt the download(s)
-            for iname, fname in enumerate(fnames):
-                # Test to see if we already tried this filename
-                if fname in bad_fname:
-                    continue
-
-                local_fname = fname
-                saved_fname = os.path.join(data_path, local_fname)
-                ofile = '_'.join(['f107', 'prelim',
-                                  '{:04d}'.format(dl_date.year),
-                                  '{:s}.txt'.format(versions[iname])])
-                outfile = os.path.join(data_path, ofile)
-
-                if os.path.isfile(outfile):
-                    downloaded = True
-
-                    # Check the date to see if this should be rewritten
-                    checkfile = os.path.split(outfile)[-1]
-                    has_file = local_files == checkfile
-                    if np.any(has_file):
-                        if has_file[has_file].index[-1] < vend[iname]:
-                            # This file will be updated again, but only attempt
-                            # to do so if enough time has passed from the
-                            # last time it was downloaded
-                            yesterday = today - pds.DateOffset(days=1)
-                            if has_file[has_file].index[-1] < yesterday:
-                                rewritten = True
-                else:
-                    # The file does not exist, if it can be downloaded, it
-                    # should be 'rewritten'
-                    rewritten = True
-
-                # Attempt to download if the file does not exist or if the
-                # file has been updated
-                if rewritten or not downloaded:
-                    try:
-                        sys.stdout.flush()
-                        ftp.retrbinary('RETR ' + fname,
-                                       open(saved_fname, 'wb').write)
-                        downloaded = True
-                        pysat.logger.info(' '.join(('Downloaded file for ',
-                                                    dl_date.strftime('%x'))))
-
-                    except ftplib.error_perm as exception:
-                        # Could not fetch, so cannot rewrite
-                        rewritten = False
-
-                        # Test for an error
-                        if str(exception.args[0]).split(" ", 1)[0] != '550':
-                            raise IOError(exception)
-                        else:
-                            # file isn't actually there, try the next name
-                            os.remove(saved_fname)
-
-                            # Save this so we don't try again
-                            # Because there are two possible filenames for
-                            # each time, it's ok if one isn't there.  We just
-                            # don't want to keep looking for it.
-                            bad_fname.append(fname)
-
-                # If the first file worked, don't try again
-                if downloaded:
-                    break
-
-            if not downloaded:
-                pysat.logger.info(' '.join(('File not available for',
-                                            dl_date.strftime('%x'))))
-            elif rewritten:
-                with open(saved_fname, 'r') as fprelim:
-                    lines = fprelim.read()
-
-                methods.f107.rewrite_daily_file(dl_date.year, outfile, lines)
-                os.remove(saved_fname)
-
-            # Cycle to the next date
-            dl_date = vend[iname] + pds.DateOffset(days=1)
-
-        # Close connection after downloading all dates
-        ftp.close()
+        methods.swpc.old_indices_dsd_download(name, date_array, data_path,
+                                              local_files, today)
 
     elif tag == 'daily':
-        pysat.logger.info('This routine only downloads the latest 30 day file')
-
-        # Set the download webpage
-        furl = 'https://services.swpc.noaa.gov/text/daily-solar-indices.txt'
-        req = requests.get(furl)
-
-        # Save the output
-        data_file = 'f107_daily_{:s}.txt'.format(today.strftime('%Y-%m-%d'))
-        outfile = os.path.join(data_path, data_file)
-        methods.f107.rewrite_daily_file(today.year, outfile, req.text)
+        methods.f107.daily_dsd_download(name, today, data_path)
 
     elif tag == 'forecast':
         methods.swpc.solar_geomag_predictions_download(name, date_array,

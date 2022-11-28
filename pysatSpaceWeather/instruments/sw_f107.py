@@ -61,15 +61,13 @@ import json
 import numpy as np
 import os
 import pandas as pds
-import pysat
 import requests
 import sys
 import warnings
 
-from pysatSpaceWeather.instruments.methods import f107 as mm_f107
-from pysatSpaceWeather.instruments.methods import general
+import pysat
 
-logger = pysat.logger
+from pysatSpaceWeather.instruments import methods
 
 # ----------------------------------------------------------------------------
 # Instrument attributes
@@ -109,16 +107,16 @@ _test_download_ci = {'': {'prelim': False}}
 # ----------------------------------------------------------------------------
 # Instrument methods
 
-preprocess = general.preprocess
+preprocess = methods.general.preprocess
 
 
 def init(self):
     """Initialize the Instrument object with instrument specific values."""
 
     # Set the required Instrument attributes
-    self.acknowledgements = mm_f107.acknowledgements(self.tag)
-    self.references = mm_f107.references(self.tag)
-    logger.info(self.acknowledgements)
+    self.acknowledgements = methods.f107.acknowledgements(self.tag)
+    self.references = methods.f107.references(self.tag)
+    pysat.logger.info(self.acknowledgements)
 
     # Define the historic F10.7 starting time
     if self.tag == 'historic':
@@ -197,16 +195,7 @@ def load(fnames, tag='', inst_id=''):
                     meta.labels.min_val: 0,
                     meta.labels.max_val: np.inf}
 
-    if tag == '45day':
-        meta['ap'] = {meta.labels.units: '',
-                      meta.labels.name: 'Daily Ap index',
-                      meta.labels.notes: '',
-                      meta.labels.desc: 'Daily average of 3-h ap indices',
-                      meta.labels.fill_val: np.nan,
-                      meta.labels.min_val: 0,
-                      meta.labels.max_val: 400}
-    elif tag == 'historic':
-
+    if tag == 'historic':
         # LASP updated file format in June, 2022. Minimize impact downstream by
         # continuing use of `f107` as primary data product.
         if 'f107_adjusted' in data.columns:
@@ -405,16 +394,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             out_files = out_files + '_' + out_files.index.strftime('%Y-%m-%d')
 
     elif tag in ['daily', 'forecast', '45day']:
-        format_str = ''.join(['f107_', tag,
-                              '_{year:04d}-{month:02d}-{day:02d}.txt'])
-        out_files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=format_str)
-
-        # Pad list of files data to include most recent file under tomorrow
-        if not out_files.empty:
-            pds_off = pds.DateOffset(days=1)
-            out_files.loc[out_files.index[-1] + pds_off] = out_files.values[-1]
-            out_files.loc[out_files.index[-1] + pds_off] = out_files.values[-1]
+        methods.swpc.list_files(name, tag, inst_id, data_path,
+                                format_str=format_str)
 
     return out_files
 
@@ -576,8 +557,8 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                         ftp.retrbinary('RETR ' + fname,
                                        open(saved_fname, 'wb').write)
                         downloaded = True
-                        logger.info(' '.join(('Downloaded file for ',
-                                              dl_date.strftime('%x'))))
+                        pysat.logger.info(' '.join(('Downloaded file for ',
+                                                    dl_date.strftime('%x'))))
 
                     except ftplib.error_perm as exception:
                         # Could not fetch, so cannot rewrite
@@ -601,13 +582,13 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                     break
 
             if not downloaded:
-                logger.info(' '.join(('File not available for',
-                                      dl_date.strftime('%x'))))
+                pysat.logger.info(' '.join(('File not available for',
+                                            dl_date.strftime('%x'))))
             elif rewritten:
                 with open(saved_fname, 'r') as fprelim:
                     lines = fprelim.read()
 
-                mm_f107.rewrite_daily_file(dl_date.year, outfile, lines)
+                methods.f107.rewrite_daily_file(dl_date.year, outfile, lines)
                 os.remove(saved_fname)
 
             # Cycle to the next date
@@ -617,7 +598,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         ftp.close()
 
     elif tag == 'daily':
-        logger.info('This routine can only download the latest 30 day file')
+        pysat.logger.info('This routine only downloads the latest 30 day file')
 
         # Set the download webpage
         furl = 'https://services.swpc.noaa.gov/text/daily-solar-indices.txt'
@@ -626,77 +607,12 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         # Save the output
         data_file = 'f107_daily_{:s}.txt'.format(today.strftime('%Y-%m-%d'))
         outfile = os.path.join(data_path, data_file)
-        mm_f107.rewrite_daily_file(today.year, outfile, req.text)
+        methods.f107.rewrite_daily_file(today.year, outfile, req.text)
 
     elif tag == 'forecast':
-        logger.info(' '.join(('This routine can only download the current',
-                              'forecast, not archived forecasts')))
-        # Set the download webpage
-        furl = ''.join(('https://services.swpc.noaa.gov/text/',
-                        '3-day-solar-geomag-predictions.txt'))
-        req = requests.get(furl)
-
-        # Parse text to get the date the prediction was generated
-        date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
-        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
-
-        # Get starting date of the forecasts
-        raw_data = req.text.split(':Prediction_dates:')[-1]
-        forecast_date = dt.datetime.strptime(raw_data[3:14], '%Y %b %d')
-
-        # Set the times for output data
-        times = pds.date_range(forecast_date, periods=3, freq='1D')
-
-        # String data is the forecast value for the next three days
-        raw_data = req.text.split('10cm_flux:')[-1]
-        raw_data = raw_data.split('\n')[1]
-        val1 = int(raw_data[24:27])
-        val2 = int(raw_data[38:41])
-        val3 = int(raw_data[52:])
-
-        # Put data into nicer DataFrame
-        data = pds.DataFrame([val1, val2, val3], index=times, columns=['f107'])
-
-        # Write out as a file
-        data_file = 'f107_forecast_{:s}.txt'.format(
-            dl_date.strftime('%Y-%m-%d'))
-        data.to_csv(os.path.join(data_path, data_file), header=True)
-
+        methods.swpc.solar_geomag_predictions_download(name, date_array,
+                                                       data_path)
     elif tag == '45day':
-        logger.info(' '.join(('This routine can only download the current',
-                              'forecast, not archived forecasts')))
-
-        # Set the download webpage
-        furl = 'https://services.swpc.noaa.gov/text/45-day-ap-forecast.txt'
-        req = requests.get(furl)
-
-        # Parse text to get the date the prediction was generated
-        date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
-        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
-
-        # Get to the forecast data
-        raw_data = req.text.split('45-DAY AP FORECAST')[-1]
-
-        # Grab AP part
-        raw_ap = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[0]
-        raw_ap = raw_ap.split('\n')[1:-1]
-
-        # Get the F107
-        raw_f107 = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[-1]
-        raw_f107 = raw_f107.split('\n')[1:-4]
-
-        # Parse the AP data
-        ap_times, ap = mm_f107.parse_45day_block(raw_ap)
-
-        # Parse the F10.7 data
-        f107_times, f107 = mm_f107.parse_45day_block(raw_f107)
-
-        # Collect into DataFrame
-        data = pds.DataFrame(f107, index=f107_times, columns=['f107'])
-        data['ap'] = ap
-
-        # Write out as a file
-        data_file = 'f107_45day_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-        data.to_csv(os.path.join(data_path, data_file), header=True)
+        methods.swpc.recent_ap_f107_download(name, date_array, data_path)
 
     return

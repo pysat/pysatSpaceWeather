@@ -11,8 +11,9 @@ tag
     - '' Deprecated, mixed definitive and nowcast Kp data from GFZ
     - 'def' Definitive Kp data from GFZ
     - 'now' Nowcast Kp data from GFZ
-    - 'forecast' Grab forecast data from SWPC (next 3 days)
-    - 'recent' Grab last 30 days of Kp data from SWPC
+    - 'prediction' Predictions from SWPC for the next 3 days
+    - 'forecast' Forecast data from SWPC (next 3 days)
+    - 'recent' The last 30 days of Kp data from SWPC
 inst_id
     ''
 
@@ -50,10 +51,10 @@ Examples
 
 Warnings
 --------
-The 'forecast' and 'recent' tags load Kp data for a specific period of time.
-Loading multiple files, loading multiple days, the data padding feature, and
-multi_file_day feature available from the pyast.Instrument object is not
-appropriate for these tags data.
+The 'forecast', 'prediction', and 'recent' tags load Kp data for a specific
+period of time. Loading multiple files, loading multiple days, the data padding
+feature, and multi_file_day feature available from the pyast.Instrument object
+is not appropriate for these tags data.
 
 This material is based upon work supported by the
 National Science Foundation under Grant Number 1259508.
@@ -66,15 +67,12 @@ of the National Science Foundation.
 
 import datetime as dt
 import numpy as np
-import os
 import pandas as pds
-import requests
 import warnings
 
 import pysat
 
-from pysatSpaceWeather.instruments.methods import general
-from pysatSpaceWeather.instruments.methods import kp_ap
+from pysatSpaceWeather.instruments import methods
 
 # ----------------------------------------------------------------------------
 # Instrument attributes
@@ -84,6 +82,7 @@ name = 'kp'
 tags = {'': 'Deprecated, mixed definitive and nowcast Kp data from GFZ',
         'def': 'Definitive Kp data from GFZ',
         'now': 'Nowcast Kp data from GFZ',
+        'prediction': 'SWPC Predictions for the next three days',
         'forecast': 'SWPC Forecast data next (3 days)',
         'recent': 'SWPC provided Kp for past 30 days'}
 inst_ids = {'': list(tags.keys())}
@@ -99,6 +98,7 @@ today = dt.datetime(now.year, now.month, now.day)
 _test_dates = {'': {'def': dt.datetime(2009, 1, 1),
                     'now': dt.datetime(2020, 1, 1),
                     'forecast': today + dt.timedelta(days=1),
+                    'prediction': today + dt.timedelta(days=1),
                     'recent': today}}
 
 # Other tags assumed to be True
@@ -107,14 +107,14 @@ _test_download_ci = {'': {'': False}}
 # ----------------------------------------------------------------------------
 # Instrument methods
 
-preprocess = general.preprocess
+preprocess = methods.general.preprocess
 
 
 def init(self):
     """Initialize the Instrument object with instrument specific values."""
 
-    self.acknowledgements = kp_ap.acknowledgements(self.name, self.tag)
-    self.references = kp_ap.references(self.name, self.tag)
+    self.acknowledgements = methods.kp_ap.acknowledgements(self.name, self.tag)
+    self.references = methods.kp_ap.references(self.name, self.tag)
     pysat.logger.info(self.acknowledgements)
     return
 
@@ -143,7 +143,7 @@ def load(fnames, tag='', inst_id=''):
 
     Returns
     -------
-    data : pandas.DataFrame
+    result : pandas.DataFrame
         Object containing satellite data
     meta : pysat.Meta
         Object containing metadata such as column names and units
@@ -266,40 +266,10 @@ def load(fnames, tag='', inst_id=''):
         # files, and we need to return data daily.  The daily date is
         # attached to filename.  Parse off the last date, load month of data,
         # and downselect to the desired day
-        unique_fnames = dict()
-        for filename in fnames:
-            fname = filename[0:-11]
-            fdate = dt.datetime.strptime(filename[-10:], '%Y-%m-%d')
-            if fname not in unique_fnames.keys():
-                unique_fnames[fname] = [fdate]
-            else:
-                unique_fnames[fname].append(fdate)
-
-        # Load the desired filenames
-        all_data = []
-        for fname in unique_fnames.keys():
-            # The daily date is attached to the filename.  Parse off the last
-            # date, load the year of data, downselect to the desired day
-            fdate = min(unique_fnames[fname])
-            temp = pds.read_csv(fname, index_col=0, parse_dates=True)
-
-            if temp.empty:
-                pysat.logger.warn('Empty file: {:}'.format(fname))
-                continue
-
-            # Select the desired times and add to data list
-            all_data.append(pds.DataFrame(temp[fdate:max(unique_fnames[fname])
-                                               + dt.timedelta(seconds=86399)]))
-
-        # Combine data together
-        if len(all_data) > 0:
-            result = pds.concat(all_data, axis=0, sort=True)
-        else:
-            result = pds.DataFrame()
-
+        result = methods.gfz.load_def_now(fnames)
         fill_val = np.nan
     else:
-        # Load the forecast or recent data
+        # Load the prediction, forecast or recent data
         all_data = []
         for fname in fnames:
             result = pds.read_csv(fname, index_col=0, parse_dates=True)
@@ -309,50 +279,15 @@ def load(fnames, tag='', inst_id=''):
         fill_val = -1
 
     # Initalize the meta data
-    if tag in ['', 'forecast', 'recent']:
+    if tag in ['', 'forecast', 'recent', 'prediction']:
         for kk in result.keys():
-            kp_ap.initialize_kp_metadata(meta, kk, fill_val)
+            methods.kp_ap.initialize_kp_metadata(meta, kk, fill_val)
     else:
         for kk in result.keys():
             if kk.find('Kp') >= 0:
-                kp_ap.initialize_kp_metadata(meta, kk, fill_val)
-            elif kk.lower().find('ap') >= 0:
-                kp_ap.initialize_ap_metadata(meta, kk, fill_val)
-
-        meta['Bartels_solar_rotation_num'] = {
-            meta.labels.units: '',
-            meta.labels.name: 'Bartels solar rotation number',
-            meta.labels.desc: ''.join(['A sequence of 27-day intervals counted',
-                                       ' from February 8, 1832']),
-            meta.labels.min_val: 1,
-            meta.labels.max_val: np.inf,
-            meta.labels.fill_val: -1}
-        meta['day_within_Bartels_rotation'] = {
-            meta.labels.units: 'days',
-            meta.labels.name: 'Bartels solar rotation number',
-            meta.labels.desc: ''.join(['Number of day within the Bartels solar',
-                                       ' rotation']),
-            meta.labels.min_val: 1,
-            meta.labels.max_val: 27,
-            meta.labels.fill_val: -1}
-        meta['Cp'] = {
-            meta.labels.units: '',
-            meta.labels.name: 'Cp index',
-            meta.labels.desc: ''.join(['the daily planetary character figure, ',
-                                       'a qualitative estimate of the overall ',
-                                       'level of geomagnetic activity for ',
-                                       'this day determined from the sum of ',
-                                       'the eight ap amplitudes']),
-            meta.labels.min_val: 0.0,
-            meta.labels.max_val: 2.5,
-            meta.labels.fill_val: np.nan}
-        meta['C9'] = {
-            meta.labels.units: '',
-            meta.labels.name: 'C9 index',
-            meta.labels.desc: ''.join(['the contracted scale for Cp']),
-            meta.labels.min_val: 0,
-            meta.labels.max_val: 9,
-            meta.labels.fill_val: -1}
+                methods.kp_ap.initialize_kp_metadata(meta, kk, fill_val)
+            elif kk.find('Bartels') >= 0:
+                methods.kp_ap.itialize_bartel_metadata(meta, kk)
 
     return result, meta
 
@@ -410,11 +345,11 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             files = files.asfreq('D', 'pad')
             files = files + '_' + files.index.strftime('%Y-%m-%d')
     elif tag in ['def', 'now']:
-        files = kp_ap.gfz_kp_ap_cp_list_files(name, tag, inst_id, data_path,
-                                              format_str=format_str)
+        files = methods.gfz.kp_ap_cp_list_files(name, tag, inst_id, data_path,
+                                                format_str=format_str)
     else:
-        files = kp_ap.swpc_list_files(name, tag, inst_id, data_path,
-                                      format_str=format_str)
+        files = methods.swpc.list_files(name, tag, inst_id, data_path,
+                                        format_str=format_str)
 
     return files
 
@@ -456,57 +391,14 @@ def download(date_array, tag, inst_id, data_path):
                                "supported by GFZ."]),
                       DeprecationWarning, stacklevel=2)
     elif tag in ['def', 'now']:
-        kp_ap.gfz_kp_ap_cp_download(platform, name, tag, inst_id, date_array,
-                                    data_path)
+        methods.gfz.kp_ap_cp_download(platform, name, tag, inst_id, date_array,
+                                      data_path)
     elif tag == 'forecast':
-        pysat.logger.info(' '.join(('This routine can only download the ',
-                                    'current forecast, not archived ',
-                                    'forecasts')))
-
-        # Download webpage
-        furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
-        req = requests.get(furl)
-
-        # Parse text to get the date the prediction was generated
-        date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
-        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
-
-        # Data is the forecast value for the next three days
-        raw_data = req.text.split('NOAA Kp index forecast ')[-1]
-
-        # Get date of the forecasts
-        date_str = raw_data[0:6] + ' ' + str(dl_date.year)
-        forecast_date = dt.datetime.strptime(date_str, '%d %b %Y')
-
-        # Strings we will use to parse the downloaded text
-        lines = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT',
-                 '15-18UT', '18-21UT', '21-00UT']
-
-        # Storage for daily forecasts.
-        # Get values for each day, then combine together
-        day1 = []
-        day2 = []
-        day3 = []
-        for line in lines:
-            raw = raw_data.split(line)[-1].split('\n')[0]
-            cols = raw.split()
-            day1.append(float(cols[-3]))
-            day2.append(float(cols[-2]))
-            day3.append(float(cols[-1]))
-
-        times = pds.date_range(forecast_date, periods=24, freq='3H')
-        day = []
-        for dd in [day1, day2, day3]:
-            day.extend(dd)
-
-        # Put data into nicer DataFrame
-        data = pds.DataFrame(day, index=times, columns=['Kp'])
-
-        # Write out as a file
-        data_file = 'kp_forecast_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-        data.to_csv(os.path.join(data_path, data_file), header=True)
-
+        methods.swpc.geomag_forecast_download(name, date_array, data_path)
     elif tag == 'recent':
-        kp_ap.swpc_kp_ap_recent_download(name, date_array, data_path)
+        methods.swpc.kp_ap_recent_download(name, date_array, data_path)
+    elif tag == 'prediction':
+        methods.swpc.solar_geomag_predictions_download(name, date_array,
+                                                       data_path)
 
     return

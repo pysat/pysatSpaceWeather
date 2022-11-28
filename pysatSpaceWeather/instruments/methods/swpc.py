@@ -7,15 +7,16 @@
 """Provides routines that support SWPC space weather instruments."""
 
 import datetime as dt
+import ftplib
 import numpy as np
 import os
 import pandas as pds
 import requests
+import sys
 
 import pysat
 
 from pysatSpaceWeather.instruments.methods import general
-from pysatSpaceWeather.instruments.methods import f107 as mm_f107
 
 # ----------------------------------------------------------------------------
 # Define the module variables
@@ -28,6 +29,295 @@ forecast_warning = ''.join(['This routine can only download the current ',
 
 # ----------------------------------------------------------------------------
 # Define the module functions
+
+def daily_dsd_download(name, today, data_path):
+    """Download the daily NOAA Daily Solar Data indices.
+
+    Parameters
+    ----------
+    name : str
+        Instrument name, expects one of 'f107', 'flare', 'ssn', or 'sbfield'.
+    today : dt.datetime
+        Datetime for current day
+    data_path : str
+        Path to data directory.
+
+    Note
+    ----
+    Note that the download path for the complementary Instrument will use
+    the standard pysat data paths
+
+    """
+    pysat.logger.info('This routine only downloads the latest 30 day file')
+
+    # Set the download webpage
+    furl = 'https://services.swpc.noaa.gov/text/daily-solar-indices.txt'
+    req = requests.get(furl)
+
+    # Get the file paths and output names
+    file_paths = {data_name: data_path if name == data_name else
+                  general.get_instrument_data_path('sw_{:s}'.format(data_name),
+                                                   tag='daily')
+                  for data_name in ['f107', 'flare', 'ssn', 'sbfield']}
+    outfiles = {
+        data_name: os.path.join(file_paths[data_name], '_'.join([
+            data_name, 'daily', '{:04d}'.format(today.year),
+            '{:s}.txt'.format(today.strftime('%Y-%m-%d'))]))
+        for data_name in file_paths.keys()}
+
+    # Save the output
+    rewrite_daily_solar_data_file(today.year, outfiles, req.text)
+
+    return
+
+
+def old_indices_dsd_download(name, date_array, data_path, local_files, today):
+    """Download the old NOAA Daily Solar Data indices.
+
+    Parameters
+    ----------
+    name : str
+        Instrument name, expects one of 'f107', 'flare', 'ssn', or 'sbfield'.
+    date_array : array-like or pandas.DatetimeIndex
+        Array-like or index of datetimes to be downloaded.
+    data_path : str
+        Path to data directory.
+    local_files : pds.Series
+        A Series containing the local filenames indexed by time.
+    today : dt.datetime
+        Datetime for current day
+
+    Note
+    ----
+    Note that the download path for the complementary Instrument will use
+    the standard pysat data paths
+
+    """
+    # Get the file paths
+    file_paths = {data_name: data_path if name == data_name else
+                  general.get_instrument_data_path('sw_{:s}'.format(data_name),
+                                                   tag='prelim')
+                  for data_name in ['f107', 'flare', 'ssn', 'sbfield']}
+
+    # Connect to the host, default port
+    ftp = ftplib.FTP('ftp.swpc.noaa.gov')
+    ftp.login()  # User anonymous, passwd anonymous
+    ftp.cwd('/pub/indices/old_indices')
+
+    bad_fname = list()
+
+    # To avoid downloading multiple files, cycle dates based on file length
+    dl_date = date_array[0]
+    while dl_date <= date_array[-1]:
+        # The file name changes, depending on how recent the requested data is
+        qnum = (dl_date.month - 1) // 3 + 1  # Integer floor division
+        qmonth = (qnum - 1) * 3 + 1
+        quar = 'Q{:d}_'.format(qnum)
+        fnames = ['{:04d}{:s}DSD.txt'.format(dl_date.year, ss)
+                  for ss in ['_', quar]]
+        versions = ["01_v2", "{:02d}_v1".format(qmonth)]
+        vend = [dt.datetime(dl_date.year, 12, 31),
+                dt.datetime(dl_date.year, qmonth, 1)
+                + pds.DateOffset(months=3) - pds.DateOffset(days=1)]
+        downloaded = False
+        rewritten = False
+
+        # Attempt the download(s)
+        for iname, fname in enumerate(fnames):
+            # Test to see if we already tried this filename
+            if fname in bad_fname:
+                continue
+
+            local_fname = fname
+            saved_fname = os.path.join(data_path, local_fname)
+            outfiles = {
+                data_name: os.path.join(file_paths[data_name], '_'.join(
+                    [data_name, 'prelim', '{:04d}'.format(dl_date.year),
+                     '{:s}.txt'.format(versions[iname])]))
+                for data_name in file_paths.keys()}
+
+            if os.path.isfile(outfiles[name]):
+                downloaded = True
+
+                # Check the date to see if this should be rewritten
+                checkfile = os.path.split(outfiles[name])[-1]
+                has_file = local_files == checkfile
+                if np.any(has_file):
+                    if has_file[has_file].index[-1] < vend[iname]:
+                        # This file will be updated again, but only attempt to
+                        # do so if enough time has passed from the last time it
+                        # was downloaded
+                        yesterday = today - pds.DateOffset(days=1)
+                        if has_file[has_file].index[-1] < yesterday:
+                            rewritten = True
+            else:
+                # The file does not exist, if it can be downloaded, it
+                # should be 'rewritten'
+                rewritten = True
+
+            # Attempt to download if the file does not exist or if the
+            # file has been updated
+            if rewritten or not downloaded:
+                try:
+                    sys.stdout.flush()
+                    ftp.retrbinary('RETR ' + fname,
+                                   open(saved_fname, 'wb').write)
+                    downloaded = True
+                    pysat.logger.info(' '.join(('Downloaded file for ',
+                                                dl_date.strftime('%x'))))
+
+                except ftplib.error_perm as exception:
+                    # Could not fetch, so cannot rewrite
+                    rewritten = False
+
+                    # Test for an error
+                    if str(exception.args[0]).split(" ", 1)[0] != '550':
+                        raise IOError(exception)
+                    else:
+                        # file isn't actually there, try the next name
+                        os.remove(saved_fname)
+
+                        # Save this so we don't try again. Because there are two
+                        # possible filenames for each time, it's ok if one isn't
+                        # there.  We just don't want to keep looking for it.
+                        bad_fname.append(fname)
+
+            # If the first file worked, don't try again
+            if downloaded:
+                break
+
+        if not downloaded:
+            pysat.logger.info(' '.join(('File not available for',
+                                        dl_date.strftime('%x'))))
+        elif rewritten:
+            with open(saved_fname, 'r') as fprelim:
+                lines = fprelim.read()
+
+            rewrite_daily_solar_data_file(dl_date.year, outfiles, lines)
+            os.remove(saved_fname)
+
+        # Cycle to the next date
+        dl_date = vend[iname] + pds.DateOffset(days=1)
+
+    # Close connection after downloading all dates
+    ftp.close()
+    return
+
+
+def rewrite_daily_solar_data_file(year, outfiles, lines):
+    """Rewrite the SWPC Daily Solar Data files.
+
+    Parameters
+    ----------
+    year : int
+        Year of data file (format changes based on date)
+    outfiles : dict
+        Output filenames for all relevant Instruments
+    lines : str
+        String containing all output data (result of 'read')
+
+    """
+
+    # Get to the solar index data
+    if year > 2000:
+        raw_data = lines.split('#---------------------------------')[-1]
+        raw_data = raw_data.split('\n')[1:-1]
+        optical = True
+    else:
+        raw_data = lines.split('# ')[-1]
+        raw_data = raw_data.split('\n')
+        optical = False if raw_data[0].find('Not Available') or year == 1994 \
+            else True
+        istart = 7 if year < 2000 else 1
+        raw_data = raw_data[istart:-1]
+
+    # Parse the data
+    solar_times, data_dict = parse_daily_solar_data(raw_data, year, optical)
+
+    # Separate data by Instrument name
+    data_cols = {'f107': ['f107'],
+                 'flare': ['goes_bgd_flux', 'c_flare', 'm_flare', 'x_flare',
+                           'o1_flare', 'o2_flare', 'o3_flare', 'o1_flare',
+                           'o2_flare', 'o3_flare', 'c_flare', 'm_flare',
+                           'x_flare'],
+                 'ssn': ['ssn', 'ss_area', 'new_reg'],
+                 'sbfield': ['smf']}
+
+    for data_name in data_cols.keys():
+        name_dict = {dkey: data_dict[dkey] for dkey in data_dict.keys()
+                     if dkey in data_cols[data_name]}
+
+        # Collect into DataFrame
+        data = pds.DataFrame(name_dict, index=solar_times)
+
+        # Write out as a file
+        data.to_csv(outfiles[data_name], header=True)
+
+    return
+
+
+def parse_daily_solar_data(data_lines, year, optical):
+    """Parse the data in the SWPC daily solar index file.
+
+    Parameters
+    ----------
+    data_lines : list
+        List of lines containing data
+    year : list
+        Year of file
+    optical : boolean
+        Flag denoting whether or not optical data is available
+
+    Returns
+    -------
+    dates : list
+        List of dates for each date/data pair in this block
+    values : dict
+        Dict of lists of values, where each key is the value name
+
+    """
+
+    # Initialize the output
+    dates = list()
+    val_keys = ['f107', 'ssn', 'ss_area', 'new_reg', 'smf', 'goes_bgd_flux',
+                'c_flare', 'm_flare', 'x_flare', 'o1_flare', 'o2_flare',
+                'o3_flare']
+    optical_keys = ['o1_flare', 'o2_flare', 'o3_flare']
+    xray_keys = ['c_flare', 'm_flare', 'x_flare']
+    values = {kk: list() for kk in val_keys}
+
+    # Cycle through each line in this file
+    for line in data_lines:
+        # Split the line on whitespace
+        split_line = line.split()
+
+        # Format the date
+        dfmt = "%Y %m %d" if year > 1996 else "%d %b %y"
+        dates.append(dt.datetime.strptime(" ".join(split_line[0:3]), dfmt))
+
+        # Format the data values
+        j = 0
+        for i, kk in enumerate(val_keys):
+            if year == 1994 and kk == 'new_reg':
+                # New regions only in files after 1994
+                val = -999
+            elif((year == 1994 and kk in xray_keys)
+                 or (not optical and kk in optical_keys)):
+                # X-ray flares in files after 1994, optical flares come later
+                val = -1
+            else:
+                val = split_line[j + 3]
+                j += 1
+
+            if kk != 'goes_bgd_flux':
+                if val == "*":
+                    val = -999 if i < 5 else -1
+                else:
+                    val = int(val)
+            values[kk].append(val)
+
+    return dates, values
+
 
 def solar_geomag_predictions_download(name, date_array, data_path):
     """Download the 3-day solar-geomagnetic predictions from SWPC.
@@ -441,11 +731,11 @@ def recent_ap_f107_download(name, date_array, data_path):
     raw_f107 = raw_f107.split('\n')[1:-4]
 
     # Parse the Ap data
-    ap_times, ap = mm_f107.parse_45day_block(raw_ap)
+    ap_times, ap = parse_45day_block(raw_ap)
     ap_data = pds.DataFrame(ap, index=ap_times, columns=['daily_Ap'])
 
     # Parse the F10.7 data
-    f107_times, f107 = mm_f107.parse_45day_block(raw_f107)
+    f107_times, f107 = parse_45day_block(raw_f107)
     f107_data = pds.DataFrame(f107, index=f107_times, columns=['f107'])
 
     # Get the data directories
@@ -465,6 +755,42 @@ def recent_ap_f107_download(name, date_array, data_path):
     f107_data.to_csv(os.path.join(f107_path, f107_file), header=True)
 
     return
+
+
+def parse_45day_block(block_lines):
+    """Parse the data blocks used in the 45-day Ap and F10.7 Flux Forecast file.
+
+    Parameters
+    ----------
+    block_lines : list
+        List of lines containing data in this data block
+
+    Returns
+    -------
+    dates : list
+        List of dates for each date/data pair in this block
+    values : list
+        List of values for each date/data pair in this block
+
+    """
+
+    # Initialize the output
+    dates = list()
+    values = list()
+
+    # Cycle through each line in this block
+    for line in block_lines:
+        # Split the line on whitespace
+        split_line = line.split()
+
+        # Format the dates
+        dates.extend([dt.datetime.strptime(tt, "%d%b%y")
+                      for tt in split_line[::2]])
+
+        # Format the data values
+        values.extend([int(vv) for vv in split_line[1::2]])
+
+    return dates, values
 
 
 def list_files(name, tag, inst_id, data_path, format_str=None):

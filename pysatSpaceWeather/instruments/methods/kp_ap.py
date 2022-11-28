@@ -4,7 +4,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
 # ----------------------------------------------------------------------------
-"""Provides routines to support the geomagnetic indeces, Kp and Ap."""
+"""Provides routines to support the geomagnetic indices, Kp and Ap."""
 
 import datetime as dt
 import numpy as np
@@ -14,6 +14,8 @@ import pandas as pds
 import pysat
 
 import pysatSpaceWeather as pysat_sw
+from pysatSpaceWeather.instruments.methods import gfz
+from pysatSpaceWeather.instruments.methods import swpc
 
 
 # --------------------------------------------------------------------------
@@ -30,15 +32,13 @@ def acknowledgements(name, tag):
         Instrument tag.
 
     """
-    swpc = ''.join(['Prepared by the U.S. Dept. of Commerce, NOAA, Space ',
-                    'Weather Prediction Center'])
-    gfz = ''.join(['CC BY 4.0, The Kp index was introduced by Bartels (1949) ',
-                   'and is produced by Geomagnetic Observatory Niemegk, GFZ ',
-                   'German Research Centre for Geosciences.  Please cite the',
-                   " references in the 'references' attribute"])
 
     ackn = {'kp': {'': 'Provided by GFZ German Research Centre for Geosciences',
-                   'forecast': swpc, 'recent': swpc, 'def': gfz, 'now': gfz}}
+                   'forecast': swpc.ackn, 'recent': swpc.ackn, 'def': gfz.ackn,
+                   'now': gfz.ackn},
+            'ap': {'forecast': swpc.ackn, 'recent': swpc.ackn,
+                   '45day': swpc.ackn, 'def': gfz.ackn, 'now': gfz.ackn},
+            'cp': {'def': gfz.ackn, 'now': gfz.ackn}}
 
     return ackn[name][tag]
 
@@ -76,307 +76,15 @@ def references(name, tag):
                                    "K-derived planetary indices: description ",
                                    "and availability, Rev. Geophys. 29, 3, ",
                                    "415-432, 1991."])])
-    gfz_refs = '\n'.join([''.join(["Matzka, J., Bronkalla, O., Tornow, K., ",
-                                   "Elger, K. and Stolle, C., 2021. ",
-                                   "Geomagnetic Kp index. V. 1.0. GFZ Data ",
-                                   "Services, doi:10.5880/Kp.0001"]),
-                          ''.join(["Matzka, J., Stolle, C., Yamazaki, Y., ",
-                                   "Bronkalla, O. and Morschhauser, A., 2021. ",
-                                   "The geomagnetic Kp index and derived ",
-                                   "indices of geomagnetic activity. Space ",
-                                   "Weather,doi:10.1029/2020SW002641"])])
 
     refs = {'kp': {'': gen_refs, 'forecast': gen_refs, 'recent': gen_refs,
-                   'def': gfz_refs, 'now': gfz_refs}}
+                   'def': gfz.geoind_refs, 'now': gfz.geoind_refs},
+            'ap': {'recent': gen_refs, 'forecast': gen_refs, '45day': gen_refs,
+                   'def': gfz.geoind_refs, 'now': gfz.geoind_refs},
+            'cp': {'def': gfz.geoind_refs, 'now': gfz.geoind_refs}}
 
     return refs[name][tag]
 
-
-def gfz_kp_ap_cp_download(platform, name, tag, inst_id, date_array, data_path):
-    """Download Kp, ap, and Cp data from GFZ.
-
-    Parameters
-    ----------
-    platform : str
-        Instrument platform.
-    name : str
-        Instrument name.
-    tag : str
-        String specifying the database, expects 'def' (definitive) or 'now'
-        (nowcast)
-    inst_id : str
-        Specifies the instrument identification, not used.
-    date_array : array-like or pandas.DatetimeIndex
-        Array-like or index of datetimes to be downloaded.
-    data_path : str
-        Path to data directory.
-
-    """
-    # Set the page for the definitive or nowcast Kp
-    burl = ''.join(['https://datapub.gfz-potsdam.de/download/10.5880.Kp.0001',
-                    '/Kp_', 'nowcast' if tag == 'now' else 'definitive', '/'])
-    data_cols = ['Bartels_solar_rotation_num', 'day_within_Bartels_rotation',
-                 'Kp', 'daily_Kp_sum', 'ap', 'daily_Ap', 'Cp', 'C9']
-    hours = np.arange(0, 24, 3)
-    kp_translate = {'0': 0.0, '3': 1.0 / 3.0, '7': 2.0 / 3.0}
-    dnames = list()
-
-    inst_cols = {'sw_kp': [0, 1, 2, 3], 'gfz_cp': [0, 1, 6, 7],
-                 'sw_ap': [0, 1, 4, 5]}
-    
-    # Construct the Instrument module name from the platform and name
-    inst_mod_name = '_'.join([platform, name])
-    if inst_mod_name not in inst_cols.keys():
-        raise ValueError('Unknown Instrument module {:}, expected {:}'.format(
-            inst_mod_name, inst_cols.keys()))
-
-    data_paths = {inst_mod: data_path if inst_mod == inst_mod_name else
-                  get_instrument_data_path(inst_mod)
-                  for inst_mod in inst_cols.keys()}
-
-    # Cycle through all the times
-    for dl_date in date_array:
-        fname = 'Kp_{:s}{:04d}.wdc'.format(tag, dl_date.year)
-        if fname not in dnames:
-            pysat.logger.info(' '.join(('Downloading file for',
-                                        dl_date.strftime('%Y'))))
-            furl = ''.join([burl, fname])
-            req = requests.get(furl)
-
-            if req.ok:
-                # Split the file text into lines
-                lines = req.text.split('\n')[:-1]
-
-                # Remove the header
-                while lines[0].find('#') == 0:
-                    lines.pop(0)
-
-                # Process the data lines
-                ddict = {dkey: list() for dkey in data_cols}
-                times = list()
-                for line in lines:
-                    ldate = dt.datetime.strptime(' '.join([
-                        "{:02d}".format(int(dd)) for dd in
-                        [line[:2], line[2:4], line[4:6]]]), "%y %m %d")
-                    bsr_num = int(line[6:10])
-                    bsr_day = int(line[10:12])
-                    if line[28:30] == '  ':
-                        kp_ones = 0.0
-                    else:
-                        kp_ones = float(line[28:30])
-                    sum_kp = kp_ones + kp_translate[line[30]]
-                    daily_ap = int(line[55:58])
-                    cp = float(line[58:61])
-                    c9 = int(line[61])
-
-                    for i, hour in enumerate(hours):
-                        # Set the time for this hour and day
-                        times.append(ldate + dt.timedelta(hours=int(hour)))
-
-                        # Set the daily values for this hour
-                        ddict['Bartels_solar_rotation_num'].append(bsr_num)
-                        ddict['day_within_Bartels_rotation'].append(bsr_day)
-                        ddict['daily_Kp_sum'].append(sum_kp)
-                        ddict['daily_Ap'].append(daily_ap)
-                        ddict['Cp'].append(cp)
-                        ddict['C9'].append(c9)
-
-                        # Get the hourly-specific values
-                        ikp = i * 2
-                        kp_ones = line[12 + ikp]
-                        if kp_ones == ' ':
-                            kp_ones = 0.0
-                        ddict['Kp'].append(float(kp_ones)
-                                           + kp_translate[line[13 + ikp]])
-                        iap = i * 3
-                        ddict['ap'].append(int(line[31 + iap:34 + iap]))
-
-                # Put data into nicer DataFrames
-                for inst_mod in inst_cols.keys():
-                    sel_cols = data_cols[inst_cols[inst_mod]]
-                    sel_dict = {col: ddict[col] for col in sel_cols}
-                    data = pds.DataFrame(sel_dict, index=times,
-                                         columns=sel_cols)
-
-                    # Write out as a CSV file
-                    sfname = fname.replace('Kp', inst_mod.split('_')[-1])
-                    saved_fname = os.path.join(data_paths[inst_mod],
-                                               sfname).replace('.wdc', '.txt')
-                    data.to_csv(saved_fname, header=True)
-
-                # Record the filename so we don't download it twice
-                dnames.append(fname)
-            else:
-                pysat.logger.info("".join(["Unable to download data for ",
-                                           dl_date.strftime("%d %b %Y"),
-                                           ", date may be out of range for ",
-                                           "the database."]))
-    return
-
-
-def swpc_kp_ap_recent_download(name, date_array, data_path):
-    """Download recent Kp and ap data from SWPC.
-
-    Parameters
-    ----------
-    name : str
-        Instrument name, expects 'kp' or 'ap'.
-    date_array : array-like or pandas.DatetimeIndex
-        Array-like or index of datetimes to be downloaded.
-    data_path : str
-        Path to data directory.
-
-    """
-    pysat.logger.info(' '.join(('This routine can only download the ',
-                                'current webpage, not archived forecasts')))
-
-    # Download webpage
-    rurl = ''.join(('https://services.swpc.noaa.gov/text/',
-                    'daily-geomagnetic-indices.txt'))
-    req = requests.get(rurl)
-
-    # Parse text to get the date the prediction was generated
-    date_str = req.text.split(':Issued: ')[-1].split('\n')[0]
-    dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
-
-    # Data is the forecast value for the next three days
-    raw_data = req.text.split('#  Date ')[-1]
-
-    # Keep only the middle bits that matter
-    raw_data = raw_data.split('\n')[1:-1]
-
-    # Hold times from the file
-    times = []
-
-    # Holds Kp and Ap values for each station
-    sub_kps = [[], [], []]
-    sub_aps = [[], [], []]
-
-    # Iterate through file lines and parse out the info we want
-    for line in raw_data:
-        times.append(dt.datetime.strptime(line[0:10], '%Y %m %d'))
-
-        # Pick out Kp values for each of the three columns. The columns
-        # used to all have integer values, but now some have floats.
-        kp_sub_lines = [line[17:33], line[40:56], line[63:]]
-        ap_sub_lines = [line[10:17], line[33:40], line[56:63]]
-        for i, sub_line in enumerate(kp_sub_lines):
-            # Process the Kp data, which has 3-hour values
-            split_sub = sub_line.split()
-            for ihr in np.arange(8):
-                if sub_line.find('.') < 0:
-                    # These are integer values
-                    sub_kps[i].append(
-                        int(sub_line[(ihr * 2):((ihr + 1) * 2)]))
-                else:
-                    # These are float values
-                    sub_kps[i].append(float(split_sub[ihr]))
-
-            # Process the Ap data, which has daily values
-            sub_aps[i].append(int(ap_sub_lines[i]))
-
-    # Create times on 3 hour cadence
-    kp_times = pds.date_range(times[0], periods=(8 * 30), freq='3H')
-
-    # Put Kp data into DataFrame
-    data = pds.DataFrame({'mid_lat_Kp': sub_kps[0], 'high_lat_Kp': sub_kps[1],
-                          'Kp': sub_kps[2]}, index=kp_times)
-
-    # Write Kp out as a file
-    data_file = 'kp_recent_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-    kp_path = data_path if name == 'kp' else get_instrument_data_path('sw_kp')
-    data.to_csv(os.path.join(kp_path, data_file), header=True)
-
-    # Put Ap data into a DataFrame
-    data = pds.DataFrame({'mid_lat_Ap': sub_aps[0], 'high_lat_Ap': sub_aps[1],
-                          'daily_Ap': sub_kps[2]}, index=times)
-
-    # Write Kp out as a file
-    data_file = 'ap_recent_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-    ap_path = data_path if name == 'ap' else get_instrument_data_path('sw_ap')
-    data.to_csv(os.path.join(ap_path, data_file), header=True)
-
-    return
-
-
-def gfz_kp_ap_cp_list_files(name, tag, inst_id, data_path, format_str=None):
-    """List local files for Kp, ap, or Cp data obtained from GFZ.
-
-    Parameters
-    ----------
-    name : str
-        Instrument name.
-    tag : str
-        String specifying the database, expects 'def' (definitive) or 'now'
-        (nowcast)
-    inst_id : str
-        Specifies the instrument identification, not used.
-    data_path : str
-        Path to data directory.
-    format_str : str or NoneType
-        User specified file format.  If None is specified, the default
-        formats associated with the supplied tags are used. (default=None)
-
-    Returns
-    -------
-    files : pysat._files.Files
-        A class containing the verified available files
-
-    """
-
-    if format_str is None:
-        format_str = ''.join(['_'.join([name, tag]), '{year:04d}.txt'])
-
-    # Files are stored by year, going to add a date to the yearly filename for
-    # each month and day of month.  The load routine will load the year and use
-    # the append date to select out approriate data.
-    files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
-    if not files.empty:
-        files.loc[files.index[-1] + pds.DateOffset(years=1)
-                  - pds.DateOffset(days=1)] = files.iloc[-1]
-        files = files.asfreq('D', 'pad')
-        files = files + '_' + files.index.strftime('%Y-%m-%d')
-
-    return files
-
-
-def swpc_list_files(name, tag, inst_id, data_path, format_str=None):
-    """List local files for Kp or ap data obtained from SWPC.
-
-    Parameters
-    ----------
-    name : str
-        Instrument name.
-    tag : str
-        String specifying the database, expects 'def' (definitive) or 'now'
-        (nowcast)
-    inst_id : str
-        Specifies the instrument identification, not used.
-    data_path : str
-        Path to data directory.
-    format_str : str or NoneType
-        User specified file format.  If None is specified, the default
-        formats associated with the supplied tags are used. (default=None)
-
-    Returns
-    -------
-    files : pysat._files.Files
-        A class containing the verified available files
-
-    """
-
-    if format_str is None:
-        format_str = '_'.join([name, tag,
-                               '{year:04d}-{month:02d}-{day:02d}.txt'])
-    files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
-
-    # Pad list of files data to include most recent file under tomorrow
-    if not files.empty:
-        pds_offset = pds.DateOffset(days=1)
-        files.loc[files.index[-1] + pds_offset] = files.values[-1]
-        files.loc[files.index[-1] + pds_offset] = files.values[-1]
-
-    return files
 
 def initialize_kp_metadata(meta, data_key, fill_val=-1):
     """Initialize the Kp meta data using our knowledge of the index.
@@ -421,6 +129,43 @@ def initialize_ap_metadata(meta, data_key, fill_val=-1):
                       meta.labels.desc: "ap (equivalent range) index",
                       meta.labels.min_val: 0,
                       meta.labels.max_val: 400,
+                      meta.labels.fill_val: fill_val}
+
+    return
+
+
+def initialize_bartel_metadata(meta, data_key, fill_val=-1):
+    """Initialize the Bartel rotation meta data using our knowledge of the data.
+
+    Parameters
+    ----------
+    meta : pysat._meta.Meta
+        Pysat Metadata
+    data_key : str
+        String denoting the data key
+    fill_val : int or float
+        File-specific fill value (default=-1)
+
+    """
+
+    if data_key.find('solar_rotation_num') >= 0:
+        units = ''
+        bname = 'Bartels solar rotation number'
+        desc = 'A sequence of 27-day intervals counted from February 8, 1832'
+        max_val = np.inf
+    elif data_key.find('day_within') >= 0:
+        units = 'day'
+        bname = 'Days within Bartels solar rotation'
+        desc = 'Number of day within the Bartels solar rotation',
+        max_val = 27
+    else:
+        raise ValueError('unknown data key: {:}'.format(data_key))
+
+    meta[data_key] = {meta.labels.units: units,
+                      meta.labels.name: bname,
+                      meta.labels.desc: desc,
+                      meta.labels.min_val: 1,
+                      meta.labels.max_val: max_val,
                       meta.labels.fill_val: fill_val}
 
     return

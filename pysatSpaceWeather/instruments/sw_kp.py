@@ -259,6 +259,15 @@ def load(fnames, tag='', inst_id=''):
 
         fill_val = np.nan
     elif tag in ['def', 'now']:
+        # This tag loads more than just Kp data, and the behaviour will be
+        # deprecated in v0.1.0
+        warnings.warn("".join(["Upcoming structural changes will prevent ",
+                               "Instruments from loading multiple data sets ",
+                               "in one Instrument. In version 0.1.0+ the Ap ",
+                               "and Cp data will be accessable from the ",
+                               "`sw_ap` and `sw_cp` Instruments."]),
+                      DeprecationWarning, stacklevel=2)
+
         # Load the definitive or nowcast data. The Kp data stored in yearly
         # files, and we need to return data daily.  The daily date is
         # attached to filename.  Parse off the last date, load month of data,

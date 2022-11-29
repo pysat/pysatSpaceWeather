@@ -243,7 +243,8 @@ def load(fnames, tag='', inst_id=''):
 
             # Kp comes in non-user friendly values like 2-, 2o, and 2+. Relate
             # these to 1.667, 2.0, 2.333 for processing and user friendliness
-            first = np.array([np.float64(str_val[0]) for str_val in data_series])
+            first = np.array([np.float64(str_val[0])
+                              for str_val in data_series])
             flag = np.array([str_val[1] for str_val in data_series])
 
             ind, = np.where(flag == '+')
@@ -519,7 +520,8 @@ def download(date_array, tag, inst_id, data_path):
 
                         for i, hour in enumerate(hours):
                             # Set the time for this hour and day
-                            times.append(ldate + dt.timedelta(hours=np.int64(hour)))
+                            times.append(ldate + dt.timedelta(
+                                hours=np.int64(hour)))
 
                             # Set the daily values for this hour
                             ddict['Bartels_solar_rotation_num'].append(bsr_num)
@@ -537,7 +539,8 @@ def download(date_array, tag, inst_id, data_path):
                             ddict['Kp'].append(np.float64(kp_ones)
                                                + kp_translate[line[13 + ikp]])
                             iap = i * 3
-                            ddict['ap'].append(np.int64(line[31 + iap:34 + iap]))
+                            ddict['ap'].append(np.int64(
+                                line[31 + iap:34 + iap]))
 
                     # Put data into nicer DataFrame
                     data = pds.DataFrame(ddict, index=times, columns=data_cols)

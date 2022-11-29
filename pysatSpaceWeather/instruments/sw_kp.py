@@ -234,7 +234,7 @@ def load(fnames, tag='', inst_id=''):
             # appropriate datetime indices
             data_series = pds.Series(dtype='float64')
             for i in np.arange(8):
-                tind = data.index + pds.DateOffset(hours=np.int64(3 * i))
+                tind = data.index + pds.DateOffset(hours=int(3 * i))
                 temp = pds.Series(data.iloc[:, i].values, index=tind)
                 data_series = pds.concat([data_series, temp])
 
@@ -505,7 +505,7 @@ def download(date_array, tag, inst_id, data_path):
                     times = list()
                     for line in lines:
                         ldate = dt.datetime.strptime(' '.join([
-                            "{:02d}".format(np.int64(dd)) for dd in
+                            "{:02d}".format(int(dd)) for dd in
                             [line[:2], line[2:4], line[4:6]]]), "%y %m %d")
                         bsr_num = np.int64(line[6:10])
                         bsr_day = np.int64(line[10:12])
@@ -520,8 +520,7 @@ def download(date_array, tag, inst_id, data_path):
 
                         for i, hour in enumerate(hours):
                             # Set the time for this hour and day
-                            times.append(ldate + dt.timedelta(
-                                hours=np.int64(hour)))
+                            times.append(ldate + dt.timedelta(hours=int(hour)))
 
                             # Set the daily values for this hour
                             ddict['Bartels_solar_rotation_num'].append(bsr_num)

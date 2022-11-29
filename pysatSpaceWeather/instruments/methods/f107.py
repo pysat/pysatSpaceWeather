@@ -145,7 +145,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     f107_inst.inst_module = pysat_sw.instruments.sw_f107
     f107_inst.tag = tag
     f107_inst.date = start
-    f107_inst.doy = int(start.strftime("%j"))
+    f107_inst.doy = np.int64(start.strftime("%j"))
     fill_val = None
 
     f107_times = list()
@@ -326,7 +326,7 @@ def parse_45day_block(block_lines):
                       for tt in split_line[::2]])
 
         # Format the data values
-        values.extend([int(vv) for vv in split_line[1::2]])
+        values.extend([np.int64(vv) for vv in split_line[1::2]])
 
     return dates, values
 
@@ -428,7 +428,7 @@ def parse_daily_solar_data(data_lines, year, optical):
                 if val == "*":
                     val = -999 if i < 5 else -1
                 else:
-                    val = int(val)
+                    val = np.int64(val)
             values[kk].append(val)
 
     return dates, values

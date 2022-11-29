@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[0.1.0] - 2022-XX-XX
+[0.0.8] - 2022-11-29
 --------------------
 * Bugs
    * Fixed F10.7 prelim and daily metadata to allow the fill value to keep the

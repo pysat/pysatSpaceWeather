@@ -152,3 +152,5 @@ These include:
 * Block and inline comments should use proper English grammar and punctuation
   with the exception of single sentences in a block, which may then ommit the
   final period
+* Data files that provide multiple products should be stored, when possible,
+  into separate files with only the data for each Instrument contained within

@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0] - 2022-XX-XX
 --------------------
+* Enhacements
+  * Changed downloads to write files across multiple Instruments, when the
+    remote files contain a mix of data products
+  * Added new instruments: sw_ap, sw_cp, sw_flare, sw_polar-cap, sw_sbfield,
+    sw_ssn, and sw_storm-prob
+  * Added new examples to the documentation
 * Maintenance
   * Updated the GitHub action version numbers
   * Updated syntax for pysat instrument testing suite

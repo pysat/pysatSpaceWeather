@@ -287,7 +287,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
 
             for orig in orig_files.items():
                 # Version determines each file's valid length
-                version = int(orig[1].split("_v")[1][0])
+                version = np.int64(orig[1].split("_v")[1][0])
                 doff = pds.DateOffset(years=1) if version == 2 \
                     else pds.DateOffset(months=3)
                 istart = orig[0]
@@ -386,30 +386,37 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                     raise IOError(''.join(['Gateway timeout when requesting ',
                                            'file using command: ', dstr]))
 
-                raw_dict = json.loads(req.text)['noaa_radio_flux']
-                data = pds.DataFrame.from_dict(raw_dict['samples'])
-                if data.empty:
-                    warnings.warn("no data for {:}".format(dl_date),
-                                  UserWarning)
+                if req.ok:
+                    raw_dict = json.loads(req.text)['noaa_radio_flux']
+                    data = pds.DataFrame.from_dict(raw_dict['samples'])
+                    if data.empty:
+                        warnings.warn("no data for {:}".format(dl_date),
+                                      UserWarning)
+                    else:
+                        # The file format changed over time
+                        try:
+                            # This is the new data format
+                            times = [dt.datetime.strptime(time, '%Y%m%d')
+                                     for time in data.pop('time')]
+                        except ValueError:
+                            # Accepts old file formats
+                            times = [dt.datetime.strptime(time, '%Y %m %d')
+                                     for time in data.pop('time')]
+                        data.index = times
+
+                        # Replace fill value with NaNs
+                        for var in data.columns:
+                            idx, = np.where(data[var] == -99999.0)
+                            data.iloc[idx, :] = np.nan
+
+                        # Create a local CSV file
+                        data.to_csv(data_file, header=True)
                 else:
-                    # The file format changed over time
-                    try:
-                        # This is the new data format
-                        times = [dt.datetime.strptime(time, '%Y%m%d')
-                                 for time in data.pop('time')]
-                    except ValueError:
-                        # Accepts old file formats
-                        times = [dt.datetime.strptime(time, '%Y %m %d')
-                                 for time in data.pop('time')]
-                    data.index = times
+                    pysat.logger.info("".join(["Data not downloaded for ",
+                                               dl_date.strftime("%d %b %Y"),
+                                               ", date may be out of range ",
+                                               "for the database."]))
 
-                    # Replace fill value with NaNs
-                    for var in data.columns:
-                        idx, = np.where(data[var] == -99999.0)
-                        data.iloc[idx, :] = np.nan
-
-                    # Create a local CSV file
-                    data.to_csv(data_file, header=True)
     elif tag == 'prelim':
         # Get the local files, to ensure that the version 1 files are
         # downloaded again if more data has been added
@@ -424,6 +431,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     elif tag == 'forecast':
         methods.swpc.solar_geomag_predictions_download(name, date_array,
                                                        data_path)
+
     elif tag == '45day':
         methods.swpc.recent_ap_f107_download(name, date_array, data_path)
 

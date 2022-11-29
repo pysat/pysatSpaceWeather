@@ -145,7 +145,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     f107_inst.inst_module = pysat_sw.instruments.sw_f107
     f107_inst.tag = tag
     f107_inst.date = start
-    f107_inst.doy = int(start.strftime("%j"))
+    f107_inst.doy = np.int64(start.strftime("%j"))
     fill_val = None
 
     f107_times = list()

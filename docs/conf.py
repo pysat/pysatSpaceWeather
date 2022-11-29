@@ -59,9 +59,9 @@ master_doc = 'index'
 project = 'pysatSpaceWeather'
 title = '{:s} Documentation'.format(project)
 zenodo = json.loads(open('../.zenodo.json').read())
-author = ', '.join([x['name'] for x in zenodo['creators']])
+author = ', '.join([auth['name'] for auth in zenodo['creators']])
 description = 'Tools for space weather indices.'
-copyright = ', '.join(['2021', author])
+copyright = ', '.join(['2022', author])
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

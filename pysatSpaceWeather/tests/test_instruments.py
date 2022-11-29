@@ -34,7 +34,6 @@ class TestInstruments(clslib.InstLibTests):
     ----
     All standard tests, setup, and teardown inherited from the core pysat
     instrument test class.
-
     """
 
 
@@ -96,9 +95,12 @@ class TestSWInstrumentLogging(object):
 
         # Assign the Instrument kwargs
         self.inst_kwargs = [
+            {'inst_module': pysatSpaceWeather.instruments.sw_f107,
+             'tag': 'historic'},
             {'inst_module': pysatSpaceWeather.instruments.sw_kp},
             {'inst_module': pysatSpaceWeather.instruments.ace_epam},
-            {'inst_module': pysatSpaceWeather.instruments.sw_f107}]
+            {'inst_module': pysatSpaceWeather.instruments.sw_f107,
+             'tag': 'prelim'}]
 
     def teardown_method(self):
         """Clean up previous testing setup."""
@@ -107,6 +109,20 @@ class TestSWInstrumentLogging(object):
 
         del self.inst_kwargs, self.tempdir, self.saved_path
         return
+
+    def test_historic_download_past_limit(self, caplog):
+        """Test message raised if loading times not in the database."""
+
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            inst = pysat.Instrument(**self.inst_kwargs[0])
+            inst.download(start=inst.today())
+
+        # Test the warning
+        captured = caplog.text
+        assert captured.find('date may be out of range for the database.') >= 0
+
+        # Test the file was not downloaded
+        assert inst.today() not in inst.files.files.index
 
     @pytest.mark.parametrize("tag", ["def", "now"])
     def test_missing_kp_file(self, tag, caplog):
@@ -119,7 +135,7 @@ class TestSWInstrumentLogging(object):
 
         """
         # Initalize the Instrument and time
-        inst = pysat.Instrument(tag=tag, **self.inst_kwargs[0])
+        inst = pysat.Instrument(tag=tag, **self.inst_kwargs[1])
         future_time = inst.today() + dt.timedelta(weeks=500)
         cap_text = 'Unable to download'
 
@@ -139,7 +155,7 @@ class TestSWInstrumentLogging(object):
 
     def test_realtime_ace_bad_day(self, caplog):
         """Test message raised when downloading old ACE realtime data."""
-        inst = pysat.Instrument(tag='realtime', **self.inst_kwargs[1])
+        inst = pysat.Instrument(tag='realtime', **self.inst_kwargs[2])
         past_time = inst.today() - dt.timedelta(weeks=500)
 
         # Get the logging message
@@ -158,7 +174,7 @@ class TestSWInstrumentLogging(object):
 
     def test_historic_ace_no_data(self, caplog):
         """Test message raised when no historic ACE data found on server."""
-        inst = pysat.Instrument(tag='historic', **self.inst_kwargs[1])
+        inst = pysat.Instrument(tag='historic', **self.inst_kwargs[2])
         past_time = dt.datetime(1800, 1, 1)  # Pre-space age date
 
         # Get the logging message
@@ -178,7 +194,7 @@ class TestSWInstrumentLogging(object):
     def test_missing_prelim_file(self, caplog):
         """Test message raised if loading times not in the DSD database."""
         # Initalize the Instrument, time, and expected log output
-        inst = pysat.Instrument(tag='prelim', **self.inst_kwargs[2])
+        inst = pysat.Instrument(**self.inst_kwargs[3])
         future_time = inst.today() + dt.timedelta(weeks=500)
         cap_text = 'File not available for'
 

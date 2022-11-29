@@ -19,7 +19,7 @@ different time periods. This may be done using the
    import pysatSpaceWeather as py_sw
 
    kp_his = pysat.Instrument(inst_module=py_sw.instruments.sw_kp,
-                             tag='', update_files=True)
+                             tag='def', update_files=True)
    kp_rec = pysat.Instrument(inst_module=py_sw.instruments.sw_kp,
                              tag='recent', update_files=True)
    kp_for = pysat.Instrument(inst_module=py_sw.instruments.sw_kp,
@@ -91,7 +91,7 @@ converts Kp to ap, as shown below.
    
    py_sw.instruments.methods.kp_ap.convert_3hr_kp_to_ap(kp)
 
-   print("Max: {:.1f} -> {:d}, Min: {:.1f} -> {:d}".format(
+   print("Max: {:.1f} -> {:.1f}, Min: {:.1f} -> {:.1f}".format(
        kp['Kp'].max(), kp['3hr_ap'].max(), kp['Kp'].min(), kp['3hr_ap'].min()))
 
 This yields ``Max: 9.0 -> 400.0, Min: 0.0 -> 0.0``. 

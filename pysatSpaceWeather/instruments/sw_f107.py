@@ -124,6 +124,26 @@ def init(self):
     if self.tag == 'historic':
         self.lasp_stime = lasp_stime
 
+    # Raise Deprecation warnings
+    if self.tag in ['daily', 'prelim']:
+        # This tag loads more than just F10.7 data, and the behaviour will be
+        # deprecated in v0.1.0
+        warnings.warn("".join(["Upcoming structural changes will prevent ",
+                               "Instruments from loading multiple data sets in",
+                               " one Instrument. In version 0.1.0+ the SSN, ",
+                               "solar flare, and solar mean field data will be",
+                               " accessable from the `sw_ssn`, `sw_flare`, ",
+                               "and `sw_sbfield` Instruments."]),
+                      DeprecationWarning, stacklevel=2)
+    elif self.tag == '45day':
+        # This tag loads more than just F10.7 data, and the behaviour will be
+        # deprecated in v0.1.0
+        warnings.warn("".join(["Upcoming structural changes will prevent ",
+                               "Instruments from loading multiple data sets in",
+                               " one Instrument. In version 0.1.0+ the Ap will",
+                               " be accessable from the `sw_ap` Instrument."]),
+                      DeprecationWarning, stacklevel=2)
+
     return
 
 
@@ -198,14 +218,6 @@ def load(fnames, tag='', inst_id=''):
                     meta.labels.max_val: np.inf}
 
     if tag == '45day':
-        # This tag loads more than just F10.7 data, and the behaviour will be
-        # deprecated in v0.1.0
-        warnings.warn("".join(["Upcoming structural changes will prevent ",
-                               "Instruments from loading multiple data sets in",
-                               " one Instrument. In version 0.1.0+ the Ap will",
-                               " be accessable from the `sw_ap` Instrument."]),
-                      DeprecationWarning, stacklevel=2)
-
         meta['ap'] = {meta.labels.units: '',
                       meta.labels.name: 'Daily Ap index',
                       meta.labels.notes: '',
@@ -244,16 +256,6 @@ def load(fnames, tag='', inst_id=''):
                 meta.labels.desc: meta['f107_adjusted', meta.labels.desc]}
 
     elif tag == 'daily' or tag == 'prelim':
-        # This tag loads more than just F10.7 data, and the behaviour will be
-        # deprecated in v0.1.0
-        warnings.warn("".join(["Upcoming structural changes will prevent ",
-                               "Instruments from loading multiple data sets in",
-                               " one Instrument. In version 0.1.0+ the SSN, ",
-                               "solar flare, and solar mean field data will be",
-                               " accessable from the `sw_ssn`, `sw_flare`, ",
-                               "and `sw_sbfield` Instruments."]),
-                      DeprecationWarning, stacklevel=2)
-
         # Update the allowed types for the fill value
         meta.labels.label_type['fill_val'] = (float, int, np.float64,
                                               np.int64, str)

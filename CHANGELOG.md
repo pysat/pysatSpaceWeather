@@ -3,6 +3,12 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.0.9] - 2023-01-18
+--------------------
+* Deprecations
+  * Added warnings for the F10.7 and Kp tags that load data belonging in
+  their own Instruments
+
 [0.0.8] - 2022-11-29
 --------------------
 * Bugs

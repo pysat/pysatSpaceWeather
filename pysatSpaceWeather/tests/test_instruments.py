@@ -9,6 +9,7 @@ Imports test methods from pysat.tests.instrument_test_class
 import datetime as dt
 import logging
 import pytest
+import tempfile
 import warnings
 
 # Make sure to import your instrument library here
@@ -88,14 +89,23 @@ class TestSWInstrumentLogging(object):
 
     def setup_method(self):
         """Create a clean the testing setup."""
+        # Prepare for testing downloads
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.saved_path = pysat.params['data_dirs']
+        pysat.params._set_data_dirs(path=self.tempdir.name, store=False)
 
+        # Assign the Instrument kwargs
         self.inst_kwargs = [
-            {'inst_module': pysatSpaceWeather.instruments.sw_kp}]
+            {'inst_module': pysatSpaceWeather.instruments.sw_kp},
+            {'inst_module': pysatSpaceWeather.instruments.ace_epam},
+            {'inst_module': pysatSpaceWeather.instruments.sw_f107}]
 
     def teardown_method(self):
         """Clean up previous testing setup."""
+        # Clean up the pysat parameter space
+        pysat.params._set_data_dirs(self.saved_path, store=False)
 
-        del self.inst_kwargs
+        del self.inst_kwargs, self.tempdir, self.saved_path
         return
 
     @pytest.mark.parametrize("tag", ["def", "now"])
@@ -108,18 +118,83 @@ class TestSWInstrumentLogging(object):
             Kp Instrument tag
 
         """
+        # Initalize the Instrument and time
         inst = pysat.Instrument(tag=tag, **self.inst_kwargs[0])
         future_time = inst.today() + dt.timedelta(weeks=500)
+        cap_text = 'Unable to download'
 
+        # Get the logging message
         with caplog.at_level(logging.INFO, logger='pysat'):
             inst.download(start=future_time)
 
         # Test the warning
         captured = caplog.text
-        assert captured.find(
-            'Unable to download') >= 0, "Unexpected text: {:}".format(captured)
+        assert captured.find(cap_text) >= 0, "Unexpected text: {:}".format(
+            captured)
 
         # Test the file was not downloaded
         assert future_time not in inst.files.files.index
 
         return
+
+    def test_realtime_ace_bad_day(self, caplog):
+        """Test message raised when downloading old ACE realtime data."""
+        inst = pysat.Instrument(tag='realtime', **self.inst_kwargs[1])
+        past_time = inst.today() - dt.timedelta(weeks=500)
+
+        # Get the logging message
+        with caplog.at_level(logging.WARNING, logger='pysat'):
+            inst.download(start=past_time)
+
+        # Test the warning
+        captured = caplog.text
+        assert captured.find(
+            'real-time data only') >= 0, "Unexpected text: {:}".format(captured)
+
+        # Test the file was downloaded
+        assert past_time in inst.files.files.index
+
+        return
+
+    def test_historic_ace_no_data(self, caplog):
+        """Test message raised when no historic ACE data found on server."""
+        inst = pysat.Instrument(tag='historic', **self.inst_kwargs[1])
+        past_time = dt.datetime(1800, 1, 1)  # Pre-space age date
+
+        # Get the logging message
+        with caplog.at_level(logging.WARNING, logger='pysat'):
+            inst.download(start=past_time)
+
+        # Test the warning
+        captured = caplog.text
+        assert captured.find(
+            'not found on server') >= 0, "Unexpected text: {:}".format(captured)
+
+        # Test the file was not downloaded
+        assert past_time not in inst.files.files.index
+
+        return
+
+    def test_missing_prelim_file(self, caplog):
+        """Test message raised if loading times not in the DSD database."""
+        # Initalize the Instrument, time, and expected log output
+        inst = pysat.Instrument(tag='prelim', **self.inst_kwargs[2])
+        future_time = inst.today() + dt.timedelta(weeks=500)
+        cap_text = 'File not available for'
+
+        # Get the logging message
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            inst.download(start=future_time)
+
+        # Test the warning
+        captured = caplog.text
+        assert captured.find(cap_text) >= 0, "Unexpected text: {:}".format(
+            captured)
+
+        # Test the file was not downloaded
+        assert future_time not in inst.files.files.index
+
+        return
+
+        
+

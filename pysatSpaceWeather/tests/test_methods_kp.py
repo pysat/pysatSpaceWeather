@@ -251,6 +251,16 @@ class TestBartelInitMetadata(TestKpInitMetadata):
 
         return
 
+    def test_bad_data_variable(self):
+        """Test metadata initialization doesn't work with the wrong variable."""
+        self.name = 'Kp'
+
+        with pytest.raises(ValueError) as verr:
+            self.test_function(self.testInst.meta, self.name)
+
+        assert str(verr).find('unknown data key') >= 0
+        return
+
 
 class TestSWKp(object):
     """Test class for Kp methods."""

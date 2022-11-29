@@ -35,9 +35,10 @@ def acknowledgements(name, tag):
 
     ackn = {'kp': {'': 'Provided by GFZ German Research Centre for Geosciences',
                    'forecast': swpc.ackn, 'recent': swpc.ackn, 'def': gfz.ackn,
-                   'now': gfz.ackn},
+                   'now': gfz.ackn, 'prediction': swpc.ackn},
             'ap': {'forecast': swpc.ackn, 'recent': swpc.ackn,
-                   '45day': swpc.ackn, 'def': gfz.ackn, 'now': gfz.ackn},
+                   'prediction': swpc.ackn, '45day': swpc.ackn,
+                   'def': gfz.ackn, 'now': gfz.ackn},
             'cp': {'def': gfz.ackn, 'now': gfz.ackn}}
 
     return ackn[name][tag]
@@ -78,9 +79,11 @@ def references(name, tag):
                                    "415-432, 1991."])])
 
     refs = {'kp': {'': gen_refs, 'forecast': gen_refs, 'recent': gen_refs,
-                   'def': gfz.geoind_refs, 'now': gfz.geoind_refs},
+                   'prediction': gen_refs, 'def': gfz.geoind_refs,
+                   'now': gfz.geoind_refs},
             'ap': {'recent': gen_refs, 'forecast': gen_refs, '45day': gen_refs,
-                   'def': gfz.geoind_refs, 'now': gfz.geoind_refs},
+                   'prediction': gen_refs, 'def': gfz.geoind_refs,
+                   'now': gfz.geoind_refs},
             'cp': {'def': gfz.geoind_refs, 'now': gfz.geoind_refs}}
 
     return refs[name][tag]
@@ -566,7 +569,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     kp_inst.inst_module = pysat_sw.instruments.sw_kp
     kp_inst.tag = tag
     kp_inst.date = start
-    kp_inst.doy = int(start.strftime("%j"))
+    kp_inst.doy = np.int64(start.strftime("%j"))
     kp_inst.meta = pysat.Meta(labels=kp_inst.meta_labels)
     initialize_kp_metadata(kp_inst.meta, 'Kp', fill_val=fill_val)
 

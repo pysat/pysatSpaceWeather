@@ -68,7 +68,7 @@ inst_ids = {'': [tag for tag in tags.keys()]}
 # generate todays date to support loading forecast data
 now = dt.datetime.utcnow()
 today = dt.datetime(now.year, now.month, now.day)
-tomorrow = today + dt.datetime(days=1)
+tomorrow = today + dt.timedelta(days=1)
 
 # ----------------------------------------------------------------------------
 # Instrument test attributes
@@ -304,8 +304,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             out_files = out_files + '_' + out_files.index.strftime('%Y-%m-%d')
 
     else:
-        methods.swpc.list_files(name, tag, inst_id, data_path,
-                                format_str=format_str)
+        out_files = methods.swpc.list_files(name, tag, inst_id, data_path,
+                                            format_str=format_str)
 
     return out_files
 

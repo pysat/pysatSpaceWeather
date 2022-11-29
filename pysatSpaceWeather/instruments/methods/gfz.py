@@ -72,7 +72,7 @@ def kp_ap_cp_download(platform, name, tag, inst_id, date_array, data_path):
     kp_translate = {'0': 0.0, '3': 1.0 / 3.0, '7': 2.0 / 3.0}
     dnames = list()
 
-    inst_cols = {'sw_kp': [0, 1, 2, 3], 'gfz_cp': [0, 1, 6, 7],
+    inst_cols = {'sw_kp': [0, 1, 2, 3], 'sw_cp': [0, 1, 6, 7],
                  'sw_ap': [0, 1, 4, 5]}
 
     # Construct the Instrument module name from the platform and name
@@ -85,6 +85,10 @@ def kp_ap_cp_download(platform, name, tag, inst_id, date_array, data_path):
                   general.get_instrument_data_path(inst_mod, tag=tag,
                                                    inst_id=inst_id)
                   for inst_mod in inst_cols.keys()}
+
+    # Check that the directories exist
+    for data_path in data_paths.values():
+        pysat.utils.files.check_and_make_path(data_path)
 
     # Cycle through all the times
     for dl_date in date_array:
@@ -138,20 +142,21 @@ def kp_ap_cp_download(platform, name, tag, inst_id, date_array, data_path):
                         kp_ones = line[12 + ikp]
                         if kp_ones == ' ':
                             kp_ones = 0.0
-                        ddict['Kp'].append(float(kp_ones)
+                        ddict['Kp'].append(np.float64(kp_ones)
                                            + kp_translate[line[13 + ikp]])
                         iap = i * 3
-                        ddict['ap'].append(int(line[31 + iap:34 + iap]))
+                        ddict['ap'].append(np.int64(line[31 + iap:34 + iap]))
 
                 # Put data into nicer DataFrames
                 for inst_mod in inst_cols.keys():
-                    sel_cols = data_cols[inst_cols[inst_mod]]
+                    sel_cols = np.array(data_cols)[inst_cols[inst_mod]]
                     sel_dict = {col: ddict[col] for col in sel_cols}
                     data = pds.DataFrame(sel_dict, index=times,
                                          columns=sel_cols)
 
                     # Write out as a CSV file
-                    sfname = fname.replace('Kp', inst_mod.split('_')[-1])
+                    sfname = fname.replace('Kp',
+                                           inst_mod.split('_')[-1].capitalize())
                     saved_fname = os.path.join(data_paths[inst_mod],
                                                sfname).replace('.wdc', '.txt')
                     data.to_csv(saved_fname, header=True)
@@ -192,7 +197,8 @@ def kp_ap_cp_list_files(name, tag, inst_id, data_path, format_str=None):
     """
 
     if format_str is None:
-        format_str = ''.join(['_'.join([name, tag]), '{year:04d}.txt'])
+        format_str = ''.join(['_'.join([name.capitalize(), tag]),
+                              '{year:04d}.txt'])
 
     # Files are stored by year, going to add a date to the yearly filename for
     # each month and day of month.  The load routine will load the year and use

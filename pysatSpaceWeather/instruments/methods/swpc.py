@@ -61,9 +61,12 @@ def daily_dsd_download(name, today, data_path):
                   for data_name in ['f107', 'flare', 'ssn', 'sbfield']}
     outfiles = {
         data_name: os.path.join(file_paths[data_name], '_'.join([
-            data_name, 'daily', '{:04d}'.format(today.year),
-            '{:s}.txt'.format(today.strftime('%Y-%m-%d'))]))
+            data_name, 'daily', '{:s}.txt'.format(today.strftime('%Y-%m-%d'))]))
         for data_name in file_paths.keys()}
+
+    # Check that the directories exist
+    for data_path in file_paths.values():
+        pysat.utils.files.check_and_make_path(data_path)
 
     # Save the output
     rewrite_daily_solar_data_file(today.year, outfiles, req.text)
@@ -98,6 +101,10 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today):
                   general.get_instrument_data_path('sw_{:s}'.format(data_name),
                                                    tag='prelim')
                   for data_name in ['f107', 'flare', 'ssn', 'sbfield']}
+
+    # Check that the directories exist
+    for data_path in file_paths.values():
+        pysat.utils.files.check_and_make_path(data_path)
 
     # Connect to the host, default port
     ftp = ftplib.FTP('ftp.swpc.noaa.gov')
@@ -348,6 +355,10 @@ def solar_geomag_predictions_download(name, date_array, data_path):
                   for data_name in ['kp', 'ap', 'storm-prob', 'f107', 'flare',
                                     'polar-cap']}
 
+    # Check that the directories exist
+    for data_path in file_paths.values():
+        pysat.utils.files.check_and_make_path(data_path)
+
     # Download webpage
     furl = ''.join(['https://services.swpc.noaa.gov/text/',
                     '3-day-solar-geomag-predictions.txt'])
@@ -463,7 +474,8 @@ def solar_geomag_predictions_download(name, date_array, data_path):
         data = pds.DataFrame(data_vals[data_name], index=data_times[data_name])
 
         # Save the data as a CSV file
-        data_file = '_'.join([data_name, 'prediction',
+        data_tag = 'forecast' if data_name == 'f107' else 'prediction'
+        data_file = '_'.join([data_name, data_tag,
                               '{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))])
         data.to_csv(os.path.join(file_paths[data_name], data_file), header=True)
 
@@ -491,20 +503,14 @@ def geomag_forecast_download(name, date_array, data_path):
     pysat.logger.info(forecast_warning)
 
     # Get the file paths
-    if name == 'kp':
-        kp_path = data_path
-        ap_path = general.get_instrument_data_path('sw_ap', tag='forecast')
-        storm_path = general.get_instrument_data_path('sw_storm-prob',
-                                                      tag='forecast')
-    elif name == 'ap':
-        ap_path = data_path
-        kp_path = general.get_instrument_data_path('sw_kp', tag='forecast')
-        storm_path = general.get_instrument_data_path('sw_storm-prob',
-                                                      tag='forecast')
-    else:
-        storm_path = data_path
-        ap_path = general.get_instrument_data_path('sw_ap', tag='forecast')
-        kp_path = general.get_instrument_data_path('sw_kp', tag='forecast')
+    file_paths = {data_name: data_path if name == data_name else
+                  general.get_instrument_data_path(
+                      'sw_{:s}'.format(data_name), tag='forecast')
+                  for data_name in ['kp', 'ap', 'storm-prob']}
+
+    # Check that the directories exist
+    for data_path in file_paths.values():
+        pysat.utils.files.check_and_make_path(data_path)
 
     # Download webpage
     furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
@@ -545,11 +551,7 @@ def geomag_forecast_download(name, date_array, data_path):
         kp_day.extend(dd)
 
     # Put Kp data into nicer DataFrame
-    kp_data = pds.DataFrame(kp_day, index=kp_times, columns=['Kp'])
-
-    # Save the Kp data
-    kp_file = 'kp_forecast_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-    kp_data.to_csv(os.path.join(kp_path, kp_file), header=True)
+    data_frames = {'kp': pds.DataFrame(kp_day, index=kp_times, columns=['Kp'])}
 
     # Parse the Ap data
     ap_times = pds.date_range(dl_date - dt.timedelta(days=1), periods=5,
@@ -563,11 +565,8 @@ def geomag_forecast_download(name, date_array, data_path):
         ap_vals.append(int(ap_val))
 
     # Put the Ap data into a nicer DataFrame
-    ap_data = pds.DataFrame(ap_vals, index=ap_times, columns=['daily_Ap'])
-
-    # Save the Ap data
-    ap_file = 'ap_forecast_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-    ap_data.to_csv(os.path.join(ap_path, ap_file), header=True)
+    data_frames['ap'] = pds.DataFrame(ap_vals, index=ap_times,
+                                      columns=['daily_Ap'])
 
     # Parse the storm probabilities
     storm_dict = {}
@@ -582,12 +581,14 @@ def geomag_forecast_download(name, date_array, data_path):
 
     # Put the storm probabilities into a nicer DataFrame
     storm_times = pds.date_range(forecast_date, periods=3, freq='1D')
-    storm_data = pds.DataFrame(storm_dict, index=storm_times)
+    data_frames['storm-prob'] = pds.DataFrame(storm_dict, index=storm_times)
 
-    # Save the storm probabilities
-    storm_file = 'storm-prob_forecast_{:s}.txt'.format(dl_date.strftime(
-        '%Y-%m-%d'))
-    storm_data.to_csv(os.path.join(storm_path, storm_file), header=True)
+    # Save the data files
+    for data_name in data_frames.keys():
+        filename = '{:s}_forecast_{:s}.txt'.format(data_name, dl_date.strftime(
+            '%Y-%m-%d'))
+        data_frames[data_name].to_csv(os.path.join(
+            file_paths[data_name], filename), header=True)
 
     return
 
@@ -611,6 +612,16 @@ def kp_ap_recent_download(name, date_array, data_path):
 
     """
     pysat.logger.info(forecast_warning)
+
+    # Get the file paths
+    file_paths = {data_name: data_path if name == data_name else
+                  general.get_instrument_data_path(
+                      'sw_{:s}'.format(data_name), tag='recent')
+                  for data_name in ['kp', 'ap']}
+
+    # Check that the directories exist
+    for data_path in file_paths.values():
+        pysat.utils.files.check_and_make_path(data_path)
 
     # Download webpage
     rurl = ''.join(('https://services.swpc.noaa.gov/text/',
@@ -652,41 +663,29 @@ def kp_ap_recent_download(name, date_array, data_path):
                         int(sub_line[(ihr * 2):((ihr + 1) * 2)]))
                 else:
                     # These are float values
-                    sub_kps[i].append(float(split_sub[ihr]))
+                    sub_kps[i].append(np.float64(split_sub[ihr]))
 
             # Process the Ap data, which has daily values
-            sub_aps[i].append(int(ap_sub_lines[i]))
+            sub_aps[i].append(np.int64(ap_sub_lines[i]))
 
     # Create times on 3 hour cadence
     kp_times = pds.date_range(times[0], periods=(8 * 30), freq='3H')
 
-    # Put Kp data into DataFrame
-    data = pds.DataFrame({'mid_lat_Kp': sub_kps[0], 'high_lat_Kp': sub_kps[1],
-                          'Kp': sub_kps[2]}, index=kp_times)
+    # Put both data sets into DataFrames
+    data = {'kp': pds.DataFrame({'mid_lat_Kp': sub_kps[0],
+                                 'high_lat_Kp': sub_kps[1],
+                                 'Kp': sub_kps[2]}, index=kp_times),
+            'ap': pds.DataFrame({'mid_lat_Ap': sub_aps[0],
+                                 'high_lat_Ap': sub_aps[1],
+                                 'daily_Ap': sub_aps[2]}, index=times)}
 
-    # Write Kp out as a file
-    data_file = 'kp_recent_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
+    # Write out the data sets as files
+    for dkey in data.keys():
+        data_file = '{:s}_recent_{:s}.txt'.format(dkey,
+                                                  dl_date.strftime('%Y-%m-%d'))
 
-    if name == 'kp':
-        kp_path = data_path
-    else:
-        kp_path = general.get_instrument_data_path('sw_kp', tag='recent')
-
-    data.to_csv(os.path.join(kp_path, data_file), header=True)
-
-    # Put Ap data into a DataFrame
-    data = pds.DataFrame({'mid_lat_Ap': sub_aps[0], 'high_lat_Ap': sub_aps[1],
-                          'daily_Ap': sub_kps[2]}, index=times)
-
-    # Write Kp out as a file
-    data_file = 'ap_recent_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-
-    if name == 'ap':
-        ap_path = data_path
-    else:
-        ap_path = general.get_instrument_data_path('sw_ap', tag='recent')
-
-    data.to_csv(os.path.join(ap_path, data_file), header=True)
+        data[dkey].to_csv(os.path.join(file_paths[dkey], data_file),
+                          header=True)
 
     return
 
@@ -711,6 +710,16 @@ def recent_ap_f107_download(name, date_array, data_path):
     """
     pysat.logger.info(forecast_warning)
 
+    # Get the file paths
+    file_paths = {data_name: data_path if name == data_name else
+                  general.get_instrument_data_path(
+                      'sw_{:s}'.format(data_name), tag='45day')
+                  for data_name in ['f107', 'ap']}
+
+    # Check that the directories exist
+    for data_path in file_paths.values():
+        pysat.utils.files.check_and_make_path(data_path)
+
     # Set the download webpage
     furl = 'https://services.swpc.noaa.gov/text/45-day-ap-forecast.txt'
     req = requests.get(furl)
@@ -730,29 +739,20 @@ def recent_ap_f107_download(name, date_array, data_path):
     raw_f107 = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[-1]
     raw_f107 = raw_f107.split('\n')[1:-4]
 
-    # Parse the Ap data
+    # Parse the data
     ap_times, ap = parse_45day_block(raw_ap)
-    ap_data = pds.DataFrame(ap, index=ap_times, columns=['daily_Ap'])
-
-    # Parse the F10.7 data
     f107_times, f107 = parse_45day_block(raw_f107)
-    f107_data = pds.DataFrame(f107, index=f107_times, columns=['f107'])
 
-    # Get the data directories
-    if name == 'ap':
-        ap_path = data_path
-        f107_path = general.get_instrument_data_path('sw_f107', tag='45day')
-    else:
-        ap_path = general.get_instrument_data_path('sw_ap', tag='45day')
-        f107_path = data_path
+    # Save the data in DataFrames
+    data = {'ap': pds.DataFrame(ap, index=ap_times, columns=['daily_Ap']),
+            'f107': pds.DataFrame(f107, index=f107_times, columns=['f107'])}
 
-    # Write out the Ap data file
-    ap_file = 'ap_45day_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-    ap_data.to_csv(os.path.join(ap_path, ap_file), header=True)
-
-    # Write out the F107 data file
-    f107_file = 'f107_45day_{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))
-    f107_data.to_csv(os.path.join(f107_path, f107_file), header=True)
+    # Write out the data files
+    for data_name in data.keys():
+        file_name = '{:s}_45day_{:s}.txt'.format(data_name,
+                                                 dl_date.strftime('%Y-%m-%d'))
+        data[data_name].to_csv(os.path.join(file_paths[data_name], file_name),
+                               header=True)
 
     return
 

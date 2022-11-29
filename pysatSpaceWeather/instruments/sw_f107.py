@@ -1,4 +1,9 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-.
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+# ----------------------------------------------------------------------------
 """Supports F10.7 index values.
 
 Properties
@@ -85,7 +90,7 @@ inst_ids = {'': [tag for tag in tags.keys()]}
 # generate todays date to support loading forecast data
 now = dt.datetime.utcnow()
 today = dt.datetime(now.year, now.month, now.day)
-tomorrow = today + pds.DateOffset(days=1)
+tomorrow = today + dt.timedelta(days=1)
 
 # The LASP archive start day is also important
 lasp_stime = dt.datetime(1947, 2, 14)
@@ -310,8 +315,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             out_files = out_files + '_' + out_files.index.strftime('%Y-%m-%d')
 
     elif tag in ['daily', 'forecast', '45day']:
-        methods.swpc.list_files(name, tag, inst_id, data_path,
-                                format_str=format_str)
+        out_files = methods.swpc.list_files(name, tag, inst_id, data_path,
+                                            format_str=format_str)
 
     return out_files
 
@@ -414,7 +419,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                                               local_files, today)
 
     elif tag == 'daily':
-        methods.f107.daily_dsd_download(name, today, data_path)
+        methods.swpc.daily_dsd_download(name, today, data_path)
 
     elif tag == 'forecast':
         methods.swpc.solar_geomag_predictions_download(name, date_array,

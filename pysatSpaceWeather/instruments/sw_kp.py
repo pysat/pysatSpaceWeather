@@ -287,7 +287,7 @@ def load(fnames, tag='', inst_id=''):
             if kk.find('Kp') >= 0:
                 methods.kp_ap.initialize_kp_metadata(meta, kk, fill_val)
             elif kk.find('Bartels') >= 0:
-                methods.kp_ap.itialize_bartel_metadata(meta, kk)
+                methods.kp_ap.initialize_bartel_metadata(meta, kk)
 
     return result, meta
 

@@ -230,8 +230,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             out_files = out_files + '_' + out_files.index.strftime('%Y-%m-%d')
 
     elif tag == 'daily':
-        methods.swpc.list_files(name, tag, inst_id, data_path,
-                                format_str=format_str)
+        out_files = methods.swpc.list_files(name, tag, inst_id, data_path,
+                                            format_str=format_str)
 
     return out_files
 

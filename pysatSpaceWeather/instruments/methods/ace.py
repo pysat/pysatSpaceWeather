@@ -11,7 +11,6 @@ import numpy as np
 import os
 import pandas as pds
 import requests
-import warnings
 
 import pysat
 
@@ -298,54 +297,6 @@ def common_metadata():
     status_desc = '0 = nominal data, 1 to 8 = bad data record, 9 = no data'
 
     return meta, status_desc
-
-
-def load_csv_data(fnames, read_csv_kwargs=None):
-    """Load CSV data from a list of files into a single DataFrame.
-
-    .. deprecated:: 0.0.5
-        `load_csv_data` will be removed in pysatSpaceWeather 0.0.6+, as it has
-        been moved to `pysat.instruments.methods.general` as of pysat 3.0.1.
-
-    Parameters
-    ----------
-    fnames : array-like
-        Series, list, or array of filenames
-    read_csv_kwargs : dict or NoneType
-        Dict of kwargs to apply to `pds.read_csv`. (default=None)
-
-    Returns
-    -------
-    data : pds.DataFrame
-        Data frame with data from all files in the fnames list
-
-    See Also
-    --------
-    pds.read_csv, pysat.instruments.methods.general.load_csv_data
-
-    """
-
-    warnings.warn("".join(["Moved to pysat.instruments.methods.general.",
-                           "load_csv_data in pysat version 3.0.1. This method ",
-                           "will be removed at the 0.0.6+ release."]),
-                  DeprecationWarning)
-
-    # Ensure the filename input is array-like
-    fnames = np.asarray(fnames)
-    if fnames.shape == ():
-        fnames = np.asarray([fnames])
-
-    # Initialize the optional kwargs
-    if read_csv_kwargs is None:
-        read_csv_kwargs = {}
-
-    # Create a list of data frames from each file
-    fdata = []
-    for fname in fnames:
-        fdata.append(pds.read_csv(fname, **read_csv_kwargs))
-
-    data = pds.DataFrame() if len(fdata) == 0 else pds.concat(fdata, axis=0)
-    return data
 
 
 def ace_swepam_hourly_omni_norm(as_inst, speed_key='sw_bulk_speed',

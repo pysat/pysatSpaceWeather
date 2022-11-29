@@ -56,7 +56,7 @@ tomorrow = today + dt.timedelta(days=1)
 _test_dates = {'': {'noaa': dt.datetime(2007, 1, 1), 'lasp': today}}
 
 # Other tags assumed to be True
-_test_download_travis = {'': {'noaa': False}}
+_test_download_ci = {'': {'noaa': False}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods
@@ -143,15 +143,15 @@ def load(fnames, tag='', inst_id=''):
                 # Read data
                 for line in lines:
                     if len(line) > 1:
-                        temp_year = int(line[14:16] + line[3:5])
+                        temp_year = np.int64(line[14:16] + line[3:5])
                         if temp_year > 57:
                             temp_year += 1900
                         else:
                             temp_year += 2000
 
                         yr[idx:idx + 24] = temp_year
-                        mo[idx:idx + 24] = int(line[5:7])
-                        day[idx:idx + 24] = int(line[8:10])
+                        mo[idx:idx + 24] = np.int64(line[5:7])
+                        day[idx:idx + 24] = np.int64(line[8:10])
                         ut[idx:idx + 24] = np.arange(24)
                         temp = line.strip()[20:-4]
                         temp2 = [temp[4 * i:4 * (i + 1)] for i in np.arange(24)]
@@ -320,7 +320,7 @@ def download(date_array, tag, inst_id, data_path):
                 # Format the time and Dst values
                 times.append(dt.datetime.strptime(line_cols[0],
                                                   '%Y/%j-%H:%M:%S'))
-                data_dict['dst'].append(float(line_cols[1]))
+                data_dict['dst'].append(np.float64(line_cols[1]))
 
         # Re-cast the data as a pandas DataFrame
         data = pds.DataFrame(data_dict, index=times)

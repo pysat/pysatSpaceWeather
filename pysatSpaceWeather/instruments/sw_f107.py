@@ -22,7 +22,7 @@ been successfully completed.
 ::
 
     f107 = pysat.Instrument('sw', 'f107', tag='historic')
-    f107.download(start=f107.lasp_stime, stop=f107.today(), freq='MS')
+    f107.download(start=f107.lasp_stime, stop=f107.today())
     f107.load(date=f107.lasp_stime, end_date=f107.today())
 
 
@@ -104,7 +104,7 @@ _test_dates = {'': {'historic': dt.datetime(2009, 1, 1),
                     '45day': tomorrow}}
 
 # Other tags assumed to be True
-_test_download_travis = {'': {'prelim': False}}
+_test_download_ci = {'': {'prelim': False}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods
@@ -237,6 +237,10 @@ def load(fnames, tag='', inst_id=''):
                 meta.labels.desc: meta['f107_adjusted', meta.labels.desc]}
 
     elif tag == 'daily' or tag == 'prelim':
+        # Update the allowed types for the fill value
+        meta.labels.label_type['fill_val'] = (float, int, np.float64,
+                                              np.int64, str)
+
         meta['ssn'] = {meta.labels.units: '',
                        meta.labels.name: 'Sunspot Number',
                        meta.labels.notes: '',
@@ -375,9 +379,9 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             orig_files = out_files.sort_index().copy()
             new_files = list()
 
-            for orig in orig_files.iteritems():
+            for orig in orig_files.items():
                 # Version determines each file's valid length
-                version = int(orig[1].split("_v")[1][0])
+                version = np.int64(orig[1].split("_v")[1][0])
                 doff = pds.DateOffset(years=1) if version == 2 \
                     else pds.DateOffset(months=3)
                 istart = orig[0]
@@ -455,8 +459,6 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     if tag == 'historic':
         # Test the date array, updating it if necessary
         if date_array.freq != 'MS':
-            warnings.warn(''.join(['Historic F10.7 downloads should be invoked',
-                                   " with the `freq='MS'` option."]))
             date_array = pysat.utils.time.create_date_range(
                 dt.datetime(date_array[0].year, date_array[0].month, 1),
                 date_array[-1], freq='MS')
@@ -486,30 +488,37 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                     raise IOError(''.join(['Gateway timeout when requesting ',
                                            'file using command: ', dstr]))
 
-                raw_dict = json.loads(req.text)['noaa_radio_flux']
-                data = pds.DataFrame.from_dict(raw_dict['samples'])
-                if data.empty:
-                    warnings.warn("no data for {:}".format(dl_date),
-                                  UserWarning)
+                if req.ok:
+                    raw_dict = json.loads(req.text)['noaa_radio_flux']
+                    data = pds.DataFrame.from_dict(raw_dict['samples'])
+                    if data.empty:
+                        warnings.warn("no data for {:}".format(dl_date),
+                                      UserWarning)
+                    else:
+                        # The file format changed over time
+                        try:
+                            # This is the new data format
+                            times = [dt.datetime.strptime(time, '%Y%m%d')
+                                     for time in data.pop('time')]
+                        except ValueError:
+                            # Accepts old file formats
+                            times = [dt.datetime.strptime(time, '%Y %m %d')
+                                     for time in data.pop('time')]
+                        data.index = times
+
+                        # Replace fill value with NaNs
+                        for var in data.columns:
+                            idx, = np.where(data[var] == -99999.0)
+                            data.iloc[idx, :] = np.nan
+
+                        # Create a local CSV file
+                        data.to_csv(data_file, header=True)
                 else:
-                    # The file format changed over time
-                    try:
-                        # This is the new data format
-                        times = [dt.datetime.strptime(time, '%Y%m%d')
-                                 for time in data.pop('time')]
-                    except ValueError:
-                        # Accepts old file formats
-                        times = [dt.datetime.strptime(time, '%Y %m %d')
-                                 for time in data.pop('time')]
-                    data.index = times
+                    pysat.logger.info("".join(["Data not downloaded for ",
+                                               dl_date.strftime("%d %b %Y"),
+                                               ", date may be out of range ",
+                                               "for the database."]))
 
-                    # Replace fill value with NaNs
-                    for var in data.columns:
-                        idx, = np.where(data[var] == -99999.0)
-                        data.iloc[idx, :] = np.nan
-
-                    # Create a local CSV file
-                    data.to_csv(data_file, header=True)
     elif tag == 'prelim':
         ftp = ftplib.FTP('ftp.swpc.noaa.gov')  # Connect to host, default port
         ftp.login()  # User anonymous, passwd anonymous
@@ -652,9 +661,9 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         # String data is the forecast value for the next three days
         raw_data = req.text.split('10cm_flux:')[-1]
         raw_data = raw_data.split('\n')[1]
-        val1 = int(raw_data[24:27])
-        val2 = int(raw_data[38:41])
-        val3 = int(raw_data[52:])
+        val1 = np.int64(raw_data[24:27])
+        val2 = np.int64(raw_data[38:41])
+        val3 = np.int64(raw_data[52:])
 
         # Put data into nicer DataFrame
         data = pds.DataFrame([val1, val2, val3], index=times, columns=['f107'])

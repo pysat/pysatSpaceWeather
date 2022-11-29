@@ -32,9 +32,13 @@ def acknowledgements(name, tag):
     """
     swpc = ''.join(['Prepared by the U.S. Dept. of Commerce, NOAA, Space ',
                     'Weather Prediction Center'])
+    gfz = ''.join(['CC BY 4.0, The Kp index was introduced by Bartels (1949) ',
+                   'and is produced by Geomagnetic Observatory Niemegk, GFZ ',
+                   'German Research Centre for Geosciences.  Please cite the',
+                   " references in the 'references' attribute"])
 
     ackn = {'kp': {'': 'Provided by GFZ German Research Centre for Geosciences',
-                   'forecast': swpc, 'recent': swpc}}
+                   'forecast': swpc, 'recent': swpc, 'def': gfz, 'now': gfz}}
 
     return ackn[name][tag]
 
@@ -72,7 +76,18 @@ def references(name, tag):
                                    "K-derived planetary indices: description ",
                                    "and availability, Rev. Geophys. 29, 3, ",
                                    "415-432, 1991."])])
-    refs = {'kp': {'': gen_refs, 'forecast': gen_refs, 'recent': gen_refs}}
+    gfz_refs = '\n'.join([''.join(["Matzka, J., Bronkalla, O., Tornow, K., ",
+                                   "Elger, K. and Stolle, C., 2021. ",
+                                   "Geomagnetic Kp index. V. 1.0. GFZ Data ",
+                                   "Services, doi:10.5880/Kp.0001"]),
+                          ''.join(["Matzka, J., Stolle, C., Yamazaki, Y., ",
+                                   "Bronkalla, O. and Morschhauser, A., 2021. ",
+                                   "The geomagnetic Kp index and derived ",
+                                   "indices of geomagnetic activity. Space ",
+                                   "Weather,doi:10.1029/2020SW002641"])])
+
+    refs = {'kp': {'': gen_refs, 'forecast': gen_refs, 'recent': gen_refs,
+                   'def': gfz_refs, 'now': gfz_refs}}
 
     return refs[name][tag]
 
@@ -91,7 +106,8 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
 
     """
 
-    meta[data_key] = {meta.labels.name: data_key,
+    meta[data_key] = {meta.labels.units: '',
+                      meta.labels.name: data_key,
                       meta.labels.desc: "Planetary K-index",
                       meta.labels.min_val: 0,
                       meta.labels.max_val: 9,
@@ -99,6 +115,29 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
 
     return
 
+
+def initialize_ap_metadata(meta, data_key, fill_val=-1):
+    """Initialize the ap meta data using our knowledge of the index.
+
+    Parameters
+    ----------
+    meta : pysat._meta.Meta
+        Pysat Metadata
+    data_key : str
+        String denoting the data key
+    fill_val : int or float
+        File-specific fill value (default=-1)
+
+    """
+
+    meta[data_key] = {meta.labels.units: '',
+                      meta.labels.name: data_key,
+                      meta.labels.desc: "ap (equivalent range) index",
+                      meta.labels.min_val: 0,
+                      meta.labels.max_val: 400,
+                      meta.labels.fill_val: fill_val}
+
+    return
 
 # --------------------------------------------------------------------------
 # Common custom functions
@@ -154,16 +193,12 @@ def convert_3hr_kp_to_ap(kp_inst, var_name='Kp'):
     kp_inst['3hr_ap'] = pds.Series(ap_data, index=kp_inst.index)
 
     # Add metadata
-    meta_dict = {kp_inst.meta.labels.name: 'ap',
-                 kp_inst.meta.labels.desc: "3-hour ap (equivalent range) index",
-                 kp_inst.meta.labels.min_val: 0,
-                 kp_inst.meta.labels.max_val: 400,
-                 kp_inst.meta.labels.fill_val: fill_val,
-                 kp_inst.meta.labels.notes: ''.join(
-                     ['ap converted from Kp as described at: ',
-                      'at: https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html'])}
-
-    kp_inst.meta['3hr_ap'] = meta_dict
+    initialize_ap_metadata(kp_inst.meta, '3hr_ap', fill_val)
+    kp_inst.meta['3hr_ap',
+                 kp_inst.meta.labels.desc] = "3-hr ap (equivalent range) index"
+    kp_inst.meta['3hr_ap', kp_inst.meta.labels.notes] = ''.join([
+        'ap converted from Kp as described at: ',
+        'https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html'])
 
     return
 
@@ -212,16 +247,15 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
     if running_name is not None:
         ap_inst[running_name] = ap_mean
 
-        meta_dict = {ap_inst.meta.labels.name: running_name,
-                     ap_inst.meta.labels.desc: "running daily Ap index",
-                     ap_inst.meta.labels.min_val: 0,
-                     ap_inst.meta.labels.max_val: 400,
-                     ap_inst.meta.labels.fill_val:
-                     ap_inst.meta[ap_name][ap_inst.meta.labels.fill_val],
-                     ap_inst.meta.labels.notes:
-                     '24-h running average of 3-hourly ap indices'}
-
-        ap_inst.meta[running_name] = meta_dict
+        initialize_ap_metadata(ap_inst.meta, running_name,
+                               ap_inst.meta[ap_name][
+                                   ap_inst.meta.labels.fill_val])
+        ap_inst.meta[running_name,
+                     ap_inst.meta.labels.desc] = "running daily Ap index"
+        ap_inst.meta[running_name,
+                     ap_inst.meta.labels.notes] = ''.join(['24-h running ave',
+                                                           ' of 3-hourly ',
+                                                           'ap indices'])
 
     # Resample, backfilling so that each day uses the mean for the data from
     # that day only
@@ -242,19 +276,13 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
     ap_inst[daily_name] = pds.Series(ap_data[1:], index=ap_data.index[1:])
 
     # Add metadata
-    meta_dict = {ap_inst.meta.labels.units: '',
-                 ap_inst.meta.labels.name: 'Ap',
-                 ap_inst.meta.labels.desc: "daily Ap index",
-                 ap_inst.meta.labels.min_val: 0,
-                 ap_inst.meta.labels.max_val: 400,
-                 ap_inst.meta.labels.fill_val:
-                 ap_inst.meta[ap_name][ap_inst.meta.labels.fill_val],
-                 ap_inst.meta.labels.notes: ''.join(['Ap daily mean calculated',
-                                                     ' from 3-hourly ap ',
-                                                     'indices'])}
-
-    ap_inst.meta[daily_name] = meta_dict
-
+    initialize_ap_metadata(ap_inst.meta, 'Ap',
+                           ap_inst.meta[ap_name][ap_inst.meta.labels.fill_val])
+    ap_inst.meta[daily_name, ap_inst.meta.labels.desc] = "daily Ap index"
+    ap_inst.meta[daily_name,
+                 ap_inst.meta.labels.notes] = ''.join(['Ap daily mean ',
+                                                       'calculated from ',
+                                                       '3-hourly ap indices'])
     return
 
 
@@ -353,14 +381,11 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap', kp_name='Kp'):
 
     # Set the metadata
     meta = pysat.Meta()
-    meta[kp_name] = {meta.labels.name: 'Kp',
-                     meta.labels.desc: 'Kp converted from {:}'.format(ap_name),
-                     meta.labels.min_val: 0,
-                     meta.labels.max_val: 9,
-                     meta.labels.fill_val: fill_val,
-                     meta.labels.notes: ''.join(
-                         ['Kp converted from ', ap_name, 'as described at: ',
-                          'https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html'])}
+    meta[kp_name] = initialize_kp_metadata(meta, 'Kp', fill_val)
+    meta[meta.labels.desc] = 'Kp converted from {:}'.format(ap_name)
+    meta[meta.labels.notes] = ''.join(
+        ['Kp converted from ', ap_name, 'as described at: ',
+         'https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html'])
 
     # Return data and metadata
     return kp_data, meta
@@ -427,7 +452,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     ----------
     standard_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'kp' name,
-        and '' tag or None to exclude (default=None)
+        and 'def' tag or None to exclude (default=None)
     recent_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'kp' name,
         and 'recent' tag or None to exclude (default=None)
@@ -510,7 +535,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     kp_inst.inst_module = pysat_sw.instruments.sw_kp
     kp_inst.tag = tag
     kp_inst.date = start
-    kp_inst.doy = int(start.strftime("%j"))
+    kp_inst.doy = np.int64(start.strftime("%j"))
     kp_inst.meta = pysat.Meta(labels=kp_inst.meta_labels)
     initialize_kp_metadata(kp_inst.meta, 'Kp', fill_val=fill_val)
 

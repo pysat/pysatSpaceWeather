@@ -7,7 +7,6 @@
 
 from packaging.version import Version
 import pytest
-import warnings
 
 import pysat
 
@@ -17,12 +16,12 @@ from pysatSpaceWeather.instruments.methods import ace as mm_ace
 class TestACEMethods(object):
     """Test class for ACE methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
         self.out = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         del self.out
         return
@@ -48,33 +47,21 @@ class TestACEMethods(object):
         assert str(kerr.value).find('unknown ACE instrument') >= 0
         return
 
-    def test_load_csv_data_dep_warning(self):
-        """Test `load_csv_data` raises a DeprecationWarning."""
-
-        with warnings.catch_warnings(record=True) as war:
-            mm_ace.load_csv_data([])
-
-        assert len(war) == 1
-        assert war[0].category == DeprecationWarning
-        assert str(war[0].message).find(
-            "Moved to pysat.instruments.methods.general.load_csv_data") >= 0
-        return
-
 
 @pytest.mark.skipif(Version(pysat.__version__) < Version('3.0.2'),
                     reason="Requires time routine available in pysat 3.0.2+")
 class TestACESWEPAMMethods(object):
     """Test class for ACE SWEPAM methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing')
+        self.testInst = pysat.Instrument('pysat', 'testing', use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
 
         self.omni_keys = ['sw_proton_dens_norm', 'sw_ion_temp_norm']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up previous testing setup."""
         del self.testInst
         return

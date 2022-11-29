@@ -163,6 +163,95 @@ class TestApInitMetadata(TestKpInitMetadata):
         return
 
 
+class TestBartelInitMetadata(TestKpInitMetadata):
+    """Test class for Bartel metadata initialization methods."""
+
+    def setup_method(self):
+        """Create a clean testing setup."""
+        self.test_function = kp_ap.initialize_bartel_metadata
+
+        # Load a test instrument
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
+                                         use_header=True)
+        test_time = pysat.instruments.pysat_testing._test_dates['']['']
+
+        load_kwargs = {'date': test_time}
+        if Version(pysat.__version__) > Version('3.0.1'):
+            load_kwargs['use_header'] = True
+
+        self.testInst.load(**load_kwargs)
+
+        # Create Kp data
+        self.testInst.data.index = pds.DatetimeIndex(data=[
+            test_time + dt.timedelta(hours=3 * i) for i in range(12)])
+        self.testInst['Kp'] = np.arange(0, 4, 1.0 / 3.0)
+        self.testInst['ap_nan'] = np.full(shape=12, fill_value=np.nan)
+        self.testInst['ap_inf'] = np.full(shape=12, fill_value=np.inf)
+        self.testInst['Bartel_solar_rotation_num'] = np.arange(3000, 3012)
+        self.testInst['day_within_Bartel_solar_rotation'] = np.arange(1, 13)
+        self.testInst.meta['Kp'] = {self.testInst.meta.labels.fill_val: np.nan}
+        self.testInst.meta['ap_nan'] = {self.testInst.meta.labels.fill_val:
+                                        np.nan}
+        self.testInst.meta['ap_inf'] = {self.testInst.meta.labels.fill_val:
+                                        np.inf}
+        self.testInst.meta['Bartels_solar_rotation_num'] = {
+            self.testInst.meta.labels.fill_val: -1}
+        self.testInst.meta['day_within_Bartels_solar_rotation'] = {
+            self.testInst.meta.labels.fill_val: -1}
+
+        # Set the default values
+        self.units = ''
+        self.name = 'Bartels_solar_rotation_num'
+        self.desc = ''.join(['A sequence of 27-day intervals counted from ',
+                             'February 8, 1832'])
+        self.min_val = 1
+        self.max_val = np.inf
+        self.fill_val = -1
+
+        # Load a test Metadata
+        self.testMeta = pysat.Meta()
+        return
+
+    def teardown_method(self):
+        """Clean up previous testing setup."""
+        del self.test_function, self.testInst, self.testMeta
+        return
+
+    def eval_defaults(self, mdata):
+        """Evaluate the outputs of the metadata.
+
+        Parameters
+        ----------
+        mdata : pds.Series
+            Metadata for a desired variable
+
+        """
+        if self.name.find('day_within') >= 0:
+            self.units = 'day'
+            self.name = 'Days within Bartels solar rotation'
+            self.desc = 'Number of day within the Bartels solar rotation'
+            self.max_val = 27
+        else:
+            self.name = 'Bartels solar rotation number'
+
+        assert mdata[self.testInst.meta.labels.units] == self.units
+        assert mdata[self.testInst.meta.labels.name] == self.name
+        assert mdata[self.testInst.meta.labels.desc] == self.desc
+        assert mdata[self.testInst.meta.labels.max_val] == self.max_val
+        assert mdata[self.testInst.meta.labels.min_val] == self.min_val
+        assert mdata[self.testInst.meta.labels.fill_val] == self.fill_val
+
+        return
+
+    def test_long_name_metadata(self):
+        """Test metadata initialization with a long name."""
+        self.name = 'day_within_Bartels_solar_rotation'
+        self.test_function(self.testInst.meta, self.name)
+        self.eval_defaults(self.testInst.meta[self.name])
+
+        return
+
+
 class TestSWKp(object):
     """Test class for Kp methods."""
 

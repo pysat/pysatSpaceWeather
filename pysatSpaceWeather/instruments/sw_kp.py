@@ -234,7 +234,7 @@ def load(fnames, tag='', inst_id=''):
             # appropriate datetime indices
             data_series = pds.Series(dtype='float64')
             for i in np.arange(8):
-                tind = data.index + pds.DateOffset(hours=int(3 * i))
+                tind = data.index + pds.DateOffset(hours=np.int64(3 * i))
                 temp = pds.Series(data.iloc[:, i].values, index=tind)
                 data_series = pds.concat([data_series, temp])
 
@@ -243,7 +243,7 @@ def load(fnames, tag='', inst_id=''):
 
             # Kp comes in non-user friendly values like 2-, 2o, and 2+. Relate
             # these to 1.667, 2.0, 2.333 for processing and user friendliness
-            first = np.array([float(str_val[0]) for str_val in data_series])
+            first = np.array([np.float64(str_val[0]) for str_val in data_series])
             flag = np.array([str_val[1] for str_val in data_series])
 
             ind, = np.where(flag == '+')
@@ -504,22 +504,22 @@ def download(date_array, tag, inst_id, data_path):
                     times = list()
                     for line in lines:
                         ldate = dt.datetime.strptime(' '.join([
-                            "{:02d}".format(int(dd)) for dd in
+                            "{:02d}".format(np.int64(dd)) for dd in
                             [line[:2], line[2:4], line[4:6]]]), "%y %m %d")
-                        bsr_num = int(line[6:10])
-                        bsr_day = int(line[10:12])
+                        bsr_num = np.int64(line[6:10])
+                        bsr_day = np.int64(line[10:12])
                         if line[28:30] == '  ':
                             kp_ones = 0.0
                         else:
-                            kp_ones = float(line[28:30])
+                            kp_ones = np.float64(line[28:30])
                         sum_kp = kp_ones + kp_translate[line[30]]
-                        daily_ap = int(line[55:58])
-                        cp = float(line[58:61])
-                        c9 = int(line[61])
+                        daily_ap = np.int64(line[55:58])
+                        cp = np.float64(line[58:61])
+                        c9 = np.int64(line[61])
 
                         for i, hour in enumerate(hours):
                             # Set the time for this hour and day
-                            times.append(ldate + dt.timedelta(hours=int(hour)))
+                            times.append(ldate + dt.timedelta(hours=np.int64(hour)))
 
                             # Set the daily values for this hour
                             ddict['Bartels_solar_rotation_num'].append(bsr_num)
@@ -534,10 +534,10 @@ def download(date_array, tag, inst_id, data_path):
                             kp_ones = line[12 + ikp]
                             if kp_ones == ' ':
                                 kp_ones = 0.0
-                            ddict['Kp'].append(float(kp_ones)
+                            ddict['Kp'].append(np.float64(kp_ones)
                                                + kp_translate[line[13 + ikp]])
                             iap = i * 3
-                            ddict['ap'].append(int(line[31 + iap:34 + iap]))
+                            ddict['ap'].append(np.int64(line[31 + iap:34 + iap]))
 
                     # Put data into nicer DataFrame
                     data = pds.DataFrame(ddict, index=times, columns=data_cols)
@@ -587,9 +587,9 @@ def download(date_array, tag, inst_id, data_path):
         for line in lines:
             raw = raw_data.split(line)[-1].split('\n')[0]
             cols = raw.split()
-            day1.append(float(cols[-3]))
-            day2.append(float(cols[-2]))
-            day3.append(float(cols[-1]))
+            day1.append(np.float64(cols[-3]))
+            day2.append(np.float64(cols[-2]))
+            day3.append(np.float64(cols[-1]))
 
         times = pds.date_range(forecast_date, periods=24, freq='3H')
         day = []
@@ -641,10 +641,10 @@ def download(date_array, tag, inst_id, data_path):
                     if sub_line.find('.') < 0:
                         # These are integer values
                         sub_kps[i].append(
-                            int(sub_line[(ihr * 2):((ihr + 1) * 2)]))
+                            np.int64(sub_line[(ihr * 2):((ihr + 1) * 2)]))
                     else:
                         # These are float values
-                        sub_kps[i].append(float(split_sub[ihr]))
+                        sub_kps[i].append(np.float64(split_sub[ihr]))
 
         # Create times on 3 hour cadence
         times = pds.date_range(kp_time[0], periods=(8 * 30), freq='3H')

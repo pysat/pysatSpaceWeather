@@ -381,7 +381,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
 
             for orig in orig_files.items():
                 # Version determines each file's valid length
-                version = int(orig[1].split("_v")[1][0])
+                version = np.int64(orig[1].split("_v")[1][0])
                 doff = pds.DateOffset(years=1) if version == 2 \
                     else pds.DateOffset(months=3)
                 istart = orig[0]
@@ -661,9 +661,9 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         # String data is the forecast value for the next three days
         raw_data = req.text.split('10cm_flux:')[-1]
         raw_data = raw_data.split('\n')[1]
-        val1 = int(raw_data[24:27])
-        val2 = int(raw_data[38:41])
-        val3 = int(raw_data[52:])
+        val1 = np.int64(raw_data[24:27])
+        val2 = np.int64(raw_data[38:41])
+        val3 = np.int64(raw_data[52:])
 
         # Put data into nicer DataFrame
         data = pds.DataFrame([val1, val2, val3], index=times, columns=['f107'])

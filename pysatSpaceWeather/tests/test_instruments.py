@@ -115,7 +115,10 @@ class TestSWInstrumentLogging(object):
                 attempts += 1
 
             # Remove empty directories
-            os.removedirs(os.path.split(saved_file)[0])
+            try:
+                os.removedirs(os.path.split(saved_file)[0])
+            except OSError:
+                pass  # The directory isn't empty and that's ok
 
         del self.inst_kwargs, self.saved_path, self.saved_files
         return
@@ -183,7 +186,10 @@ class TestSWInstrumentLogging(object):
         # Test the file was downloaded
         assert past_time in inst.files.files.index
         self.saved_files = [os.path.join(inst.files.data_path,
-                                         inst.files.files[past_time])]
+                                         inst.files.files[past_time]),
+                            os.path.join(inst.files.data_path,
+                                         inst.files.files[
+                                             past_time + dt.timedelta(days=1)])]
 
         return
 

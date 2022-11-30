@@ -113,7 +113,7 @@ class TestSWInstrumentLogging(object):
                 os.remove(self.saved_file)
                 attempts += 1
 
-        del self.inst_kwargs, self.tempdir, self.saved_path, self.saved_file
+        del self.inst_kwargs, self.saved_path, self.saved_file
         return
 
     def test_historic_download_past_limit(self, caplog):

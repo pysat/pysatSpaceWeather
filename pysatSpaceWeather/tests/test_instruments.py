@@ -18,6 +18,7 @@ import pysatSpaceWeather
 # Import the test classes from pysat
 import pysat
 from pysat.tests.classes import cls_instrument_library as clslib
+from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.utils import testing
 
 
@@ -83,14 +84,14 @@ class TestLocalDeprecation(object):
         return
 
 
-class TestSWInstrumentLogging(object):
+class TestSWInstrumentLogging(CICleanSetup):
     """Test logging messages raised under instrument-specific conditions."""
 
     def setup_method(self):
         """Create a clean the testing setup."""
         # Prepare for testing downloads
+        CICleanSetup.setup(self)
         self.tempdir = tempfile.TemporaryDirectory()
-        self.saved_path = pysat.params['data_dirs']
         pysat.params._set_data_dirs(path=self.tempdir.name, store=False)
 
         # Assign the Instrument kwargs
@@ -105,10 +106,10 @@ class TestSWInstrumentLogging(object):
     def teardown_method(self):
         """Clean up previous testing setup."""
         # Clean up the pysat parameter space
-        pysat.params._set_data_dirs(self.saved_path, store=False)
+        CICleanSetup.teardown(self)
         self.tempdir.cleanup()
 
-        del self.inst_kwargs, self.tempdir, self.saved_path
+        del self.inst_kwargs, self.tempdir
         return
 
     def test_historic_download_past_limit(self, caplog):

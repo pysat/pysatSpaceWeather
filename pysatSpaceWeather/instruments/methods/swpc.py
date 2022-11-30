@@ -181,8 +181,16 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today):
                     if str(exception.args[0]).split(" ", 1)[0] != '550':
                         raise IOError(exception)
                     else:
-                        # file isn't actually there, try the next name
-                        os.remove(saved_fname)
+                        # File isn't actually there, try the next name.  The
+                        # extra wrapping is for Windows, which can encounter
+                        # permission errors when handling files.
+                        attempt = 0
+                        while attempt < 100:
+                            try:
+                                os.remove(saved_fname)
+                                attempt = 100
+                            except PermissionError:
+                                attempt += 1
 
                         # Save this so we don't try again. Because there are two
                         # possible filenames for each time, it's ok if one isn't

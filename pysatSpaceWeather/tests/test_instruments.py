@@ -8,8 +8,8 @@ Imports test methods from pysat.tests.instrument_test_class
 
 import datetime as dt
 import logging
+import os
 import pytest
-import tempfile
 import warnings
 
 # Make sure to import your instrument library here
@@ -18,7 +18,6 @@ import pysatSpaceWeather
 # Import the test classes from pysat
 import pysat
 from pysat.tests.classes import cls_instrument_library as clslib
-from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.utils import testing
 
 
@@ -84,15 +83,15 @@ class TestLocalDeprecation(object):
         return
 
 
-class TestSWInstrumentLogging(CICleanSetup):
+class TestSWInstrumentLogging(object):
     """Test logging messages raised under instrument-specific conditions."""
 
     def setup_method(self):
         """Create a clean the testing setup."""
         # Prepare for testing downloads
-        CICleanSetup.setup(self)
-        self.tempdir = tempfile.TemporaryDirectory()
-        pysat.params._set_data_dirs(path=self.tempdir.name, store=False)
+        self.saved_path = pysat.params['data_dirs']
+        pysat.params.data['data_dirs'] = [pysatSpaceWeather.test_data_path]
+        self.saved_file = None
 
         # Assign the Instrument kwargs
         self.inst_kwargs = [
@@ -106,10 +105,15 @@ class TestSWInstrumentLogging(CICleanSetup):
     def teardown_method(self):
         """Clean up previous testing setup."""
         # Clean up the pysat parameter space
-        CICleanSetup.teardown(self)
-        self.tempdir.cleanup()
+        pysat.params.data['data_dirs'] = self.saved_path
 
-        del self.inst_kwargs, self.tempdir
+        if self.saved_file is not None:
+            attempts = 0
+            while os.path.isfile(self.saved_file) and attempts < 100:
+                os.remove(self.saved_file)
+                attempts += 1
+
+        del self.inst_kwargs, self.tempdir, self.saved_path, self.saved_file
         return
 
     def test_historic_download_past_limit(self, caplog):
@@ -171,6 +175,8 @@ class TestSWInstrumentLogging(CICleanSetup):
 
         # Test the file was downloaded
         assert past_time in inst.files.files.index
+        self.saved_file = os.path.join(inst.files.data_path,
+                                       inst.files.files[past_time])
 
         return
 

@@ -79,10 +79,10 @@ the definitive Kp data from the German Research Centre for Geosciences at
 Potsdam (GFZ) will also download Ap and Cp data files.
 
 
-.. _ap-inst:
+.. _sw-ap-inst:
 
 Ap
----
+^^^
 
 Ap is a geomagnetic index that reflects the magnitude of geomagnetic
 disturbances at Earth, but unlike the Kp uses a linear scale.  Historic, recent
@@ -96,10 +96,10 @@ disturbances at Earth, but unlike the Kp uses a linear scale.  Historic, recent
 
 
 
-.. _cp-inst:
+.. _sw-cp-inst:
 
 Cp
----
+^^^
 
 Cp is a derivative geomagnetic index that provides a qualitative estimate of the
 overall level of magnetic activity for the day.  The C9 index provides the same
@@ -112,7 +112,7 @@ available from
    :members:
 
 
-.. _dst-inst:
+.. _sw-dst-inst:
 
 Dst
 ^^^
@@ -132,7 +132,7 @@ You can learn more about the Dst Index at the
    :members:
 
 
-.. _f107-inst:
+.. _sw-f107-inst:
 
 F \ :sub:`10.7`\
 ^^^^^^^^^^^^^^^^
@@ -148,7 +148,7 @@ Historic indices, real-time indices, and forecasted indices are available from
    :members:
 
 
-.. _flare-inst:
+.. _sw-flare-inst:
 
 Solar Flares
 ^^^^^^^^^^^^
@@ -164,10 +164,10 @@ real-time indices, and forecasted indices are available from
 
 
 
-.. _kp-inst:
+.. _sw-kp-inst:
 
 Kp
----
+^^^
 
 Kp is a geomagnetic index that reflects the magnitude of geomagnetic
 disturbances at Earth.  Historic, recent (last 30 days), and forecasted values
@@ -179,7 +179,7 @@ are available from `GFZ <https://www.gfz-potsdam.de/en/kp-index/>`_, and the
    :members:
 
 
-.. _pc-inst:
+.. _sw-pc-inst:
 
 Polar Cap
 ^^^^^^^^^
@@ -192,7 +192,7 @@ Instrument provides absorption predictions from SWPC.
    :members:
 
 
-.. _sbfield-inst:
+.. _sw-sbfield-inst:
 
 Solar Magnetic Field
 ^^^^^^^^^^^^^^^^^^^^
@@ -206,7 +206,7 @@ made at Stanford by
    :members:
 
 
-.. _ssn-inst:
+.. _sw-ssn-inst:
 
 Sunspot Number
 ^^^^^^^^^^^^^^
@@ -220,7 +220,7 @@ SWPC (for example, here is the
    :members:
 
 
-.. _storm-prob-inst:
+.. _sw-storm-prob-inst:
 
 Storm Probability
 ^^^^^^^^^^^^^^^^^

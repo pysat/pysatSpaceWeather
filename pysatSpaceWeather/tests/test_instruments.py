@@ -106,6 +106,7 @@ class TestSWInstrumentLogging(object):
         """Clean up previous testing setup."""
         # Clean up the pysat parameter space
         pysat.params._set_data_dirs(self.saved_path, store=False)
+        self.tempdir.cleanup()
 
         del self.inst_kwargs, self.tempdir, self.saved_path
         return

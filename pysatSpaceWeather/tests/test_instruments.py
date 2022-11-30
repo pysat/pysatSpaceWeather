@@ -211,6 +211,3 @@ class TestSWInstrumentLogging(object):
         assert future_time not in inst.files.files.index
 
         return
-
-        
-

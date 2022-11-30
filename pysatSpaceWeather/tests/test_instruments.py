@@ -91,7 +91,7 @@ class TestSWInstrumentLogging(object):
         # Prepare for testing downloads
         self.saved_path = pysat.params['data_dirs']
         pysat.params.data['data_dirs'] = [pysatSpaceWeather.test_data_path]
-        self.saved_file = None
+        self.saved_files = list()
 
         # Assign the Instrument kwargs
         self.inst_kwargs = [
@@ -107,13 +107,17 @@ class TestSWInstrumentLogging(object):
         # Clean up the pysat parameter space
         pysat.params.data['data_dirs'] = self.saved_path
 
-        if self.saved_file is not None:
+        for saved_file in self.saved_files:
             attempts = 0
-            while os.path.isfile(self.saved_file) and attempts < 100:
-                os.remove(self.saved_file)
+            # Remove file with multiple attempts for Windows
+            while os.path.isfile(saved_file) and attempts < 100:
+                os.remove(saved_file)
                 attempts += 1
 
-        del self.inst_kwargs, self.saved_path, self.saved_file
+            # Remove empty directories
+            os.removedirs(os.path.split(saved_file)[0])
+
+        del self.inst_kwargs, self.saved_path, self.saved_files
         return
 
     def test_historic_download_past_limit(self, caplog):
@@ -156,6 +160,9 @@ class TestSWInstrumentLogging(object):
 
         # Test the file was not downloaded
         assert future_time not in inst.files.files.index
+        self.saved_files = [inst.files.data_path,
+                            inst.files.data_path.replace('kp', 'ap'),
+                            inst.files.data_path.replace('kp', 'cp')]
 
         return
 
@@ -175,8 +182,8 @@ class TestSWInstrumentLogging(object):
 
         # Test the file was downloaded
         assert past_time in inst.files.files.index
-        self.saved_file = os.path.join(inst.files.data_path,
-                                       inst.files.files[past_time])
+        self.saved_files = [os.path.join(inst.files.data_path,
+                                         inst.files.files[past_time])]
 
         return
 
@@ -196,6 +203,7 @@ class TestSWInstrumentLogging(object):
 
         # Test the file was not downloaded
         assert past_time not in inst.files.files.index
+        self.saved_files = [inst.files.data_path]
 
         return
 
@@ -217,5 +225,9 @@ class TestSWInstrumentLogging(object):
 
         # Test the file was not downloaded
         assert future_time not in inst.files.files.index
+        self.saved_files = [inst.files.data_path,
+                            inst.files.data_path.replace('f107', 'sbfield'),
+                            inst.files.data_path.replace('f107', 'ssn'),
+                            inst.files.data_path.replace('f107', 'flare')]
 
         return

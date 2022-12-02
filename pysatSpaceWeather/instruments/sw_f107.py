@@ -57,16 +57,15 @@ available from the pyast.Instrument object is not appropriate for '45day' data.
 
 import datetime as dt
 import ftplib
-import json
 import numpy as np
 import os
 import pandas as pds
 import pysat
 import requests
 import sys
-import warnings
 
 from pysatSpaceWeather.instruments.methods import f107 as mm_f107
+from pysatSpaceWeather.instruments.methods import lisird
 from pysatSpaceWeather.instruments.methods import general
 
 logger = pysat.logger
@@ -464,60 +463,10 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                 date_array[-1], freq='MS')
 
         # Download from LASP, by month
-        for dl_date in date_array:
-            # Create the name to which the local file will be saved
-            str_date = dl_date.strftime('%Y-%m')
-            data_file = os.path.join(data_path,
-                                     'f107_monthly_{:s}.txt'.format(str_date))
-
-            if update_files or not os.path.isfile(data_file):
-                # Set the download webpage
-                dstr = ''.join(['http://lasp.colorado.edu/lisird/latis/dap/',
-                                'noaa_radio_flux.json?time%3E=',
-                                dl_date.strftime('%Y-%m-%d'),
-                                'T00:00:00.000Z&time%3C=',
-                                (dl_date + pds.DateOffset(months=1)
-                                 - pds.DateOffset(days=1)).strftime('%Y-%m-%d'),
-                                'T00:00:00.000Z'])
-
-                # The data is returned as a JSON file
-                req = requests.get(dstr)
-
-                # Process the JSON file
-                if req.text.find('Gateway Timeout') >= 0:
-                    raise IOError(''.join(['Gateway timeout when requesting ',
-                                           'file using command: ', dstr]))
-
-                if req.ok:
-                    raw_dict = json.loads(req.text)['noaa_radio_flux']
-                    data = pds.DataFrame.from_dict(raw_dict['samples'])
-                    if data.empty:
-                        warnings.warn("no data for {:}".format(dl_date),
-                                      UserWarning)
-                    else:
-                        # The file format changed over time
-                        try:
-                            # This is the new data format
-                            times = [dt.datetime.strptime(time, '%Y%m%d')
-                                     for time in data.pop('time')]
-                        except ValueError:
-                            # Accepts old file formats
-                            times = [dt.datetime.strptime(time, '%Y %m %d')
-                                     for time in data.pop('time')]
-                        data.index = times
-
-                        # Replace fill value with NaNs
-                        for var in data.columns:
-                            idx, = np.where(data[var] == -99999.0)
-                            data.iloc[idx, :] = np.nan
-
-                        # Create a local CSV file
-                        data.to_csv(data_file, header=True)
-                else:
-                    pysat.logger.info("".join(["Data not downloaded for ",
-                                               dl_date.strftime("%d %b %Y"),
-                                               ", date may be out of range ",
-                                               "for the database."]))
+        freq = pds.DateOffset(months=1) - pds.DateOffset(days=1)
+        lisird.download(date_array, data_path, 'f107_monthly_', '%Y-%m',
+                        'noaa_radio_flux', freq, update_files,
+                        {'f107_adjusted': -99999.0, 'f107_observed': -99999.0})
 
     elif tag == 'prelim':
         ftp = ftplib.FTP('ftp.swpc.noaa.gov')  # Connect to host, default port

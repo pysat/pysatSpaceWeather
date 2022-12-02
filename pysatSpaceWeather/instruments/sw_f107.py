@@ -463,7 +463,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                 date_array[-1], freq='MS')
 
         # Download from LASP, by month
-        freq = pds.DateOffset(months=1) - pds.DateOffset(days=1)
+        freq = pds.DateOffset(months=1, seconds=-1)
         lisird.download(date_array, data_path, 'f107_monthly_', '%Y-%m',
                         'noaa_radio_flux', freq, update_files,
                         {'f107_adjusted': -99999.0, 'f107_observed': -99999.0})

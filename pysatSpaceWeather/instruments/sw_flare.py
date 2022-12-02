@@ -347,10 +347,10 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         local_files = list_files(tag, inst_id, data_path)
 
         methods.swpc.old_indices_dsd_download(name, date_array, data_path,
-                                              local_files)
+                                              local_files, today)
 
     elif tag == 'daily':
-        methods.f107.daily_dsd_download(name, today, data_path)
+        methods.swpc.daily_dsd_download(name, today, data_path)
 
     elif tag == 'prediction':
         methods.swpc.solar_geomag_predictions_download(name, date_array,

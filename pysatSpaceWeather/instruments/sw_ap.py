@@ -160,7 +160,7 @@ def load(fnames, tag='', inst_id=''):
             if kk.lower().find('ap') >= 0:
                 methods.kp_ap.initialize_ap_metadata(meta, kk, fill_val)
             elif kk.find('Bartels') >= 0:
-                methods.kp_ap.itialize_bartel_metadata(meta, kk)
+                methods.kp_ap.initialize_bartel_metadata(meta, kk)
     else:
         # Load the forecast, recent, prediction, or 45day data
         all_data = []
@@ -239,7 +239,7 @@ def download(date_array, tag, inst_id, data_path):
     """
 
     if tag in ['def', 'now']:
-        methods.gfz.kp_ap_cp_download(platform, name, tag, inst_id, date_array,
+        methods.gfz.kp_ap_cp_download(platform, name, date_array, tag, inst_id,
                                       data_path)
     elif tag == 'recent':
         methods.swpc.kp_ap_recent_download(name, date_array, data_path)

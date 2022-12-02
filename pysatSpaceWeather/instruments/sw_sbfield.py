@@ -260,6 +260,6 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
                                               local_files, today)
 
     elif tag == 'daily':
-        methods.f107.daily_dsd_download(name, today, data_path)
+        methods.swpc.daily_dsd_download(name, today, data_path)
 
     return

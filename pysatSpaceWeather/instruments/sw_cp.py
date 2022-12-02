@@ -119,8 +119,9 @@ def load(fnames, tag='', inst_id=''):
 
     # Initalize the meta data
     meta = pysat.Meta()
-    methods.kp_ap.itialize_bartel_metadata(meta, 'Bartels_solar_rotation_num')
-    methods.kp_ap.itialize_bartel_metadata(meta, 'day_within_Bartels_rotation')
+    methods.kp_ap.initialize_bartel_metadata(meta, 'Bartels_solar_rotation_num')
+    methods.kp_ap.initialize_bartel_metadata(meta,
+                                             'day_within_Bartels_rotation')
 
     meta['Cp'] = {
         meta.labels.units: '',

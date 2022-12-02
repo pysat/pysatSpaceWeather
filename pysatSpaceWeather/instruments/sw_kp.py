@@ -392,7 +392,7 @@ def download(date_array, tag, inst_id, data_path):
                                "supported by GFZ."]),
                       DeprecationWarning, stacklevel=2)
     elif tag in ['def', 'now']:
-        methods.gfz.kp_ap_cp_download(platform, name, tag, inst_id, date_array,
+        methods.gfz.kp_ap_cp_download(platform, name, date_array, tag, inst_id,
                                       data_path)
     elif tag == 'forecast':
         methods.swpc.geomag_forecast_download(name, date_array, data_path)

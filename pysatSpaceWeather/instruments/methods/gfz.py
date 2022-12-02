@@ -38,7 +38,7 @@ geoind_refs = '\n'.join([''.join(["Matzka, J., Bronkalla, O., Tornow, K., ",
 # ----------------------------------------------------------------------------
 # Define the module functions
 
-def kp_ap_cp_download(platform, name, tag, inst_id, date_array, data_path):
+def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path):
     """Download Kp, ap, and Cp data from GFZ.
 
     Parameters
@@ -47,13 +47,13 @@ def kp_ap_cp_download(platform, name, tag, inst_id, date_array, data_path):
         Instrument platform.
     name : str
         Instrument name.
+    date_array : array-like or pandas.DatetimeIndex
+        Array-like or index of datetimes to be downloaded.
     tag : str
         String specifying the database, expects 'def' (definitive) or 'now'
         (nowcast)
     inst_id : str
         Specifies the instrument identification, not used.
-    date_array : array-like or pandas.DatetimeIndex
-        Array-like or index of datetimes to be downloaded.
     data_path : str
         Path to data directory.
 

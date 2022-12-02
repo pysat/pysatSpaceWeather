@@ -11,7 +11,6 @@ import logging
 import pytest
 
 from pysatSpaceWeather import test_data_path
-from pysatSpaceWeather.instruments import sw_mgii
 from pysatSpaceWeather.instruments.methods import lisird
 
 
@@ -23,7 +22,6 @@ class TestLISIRDFunctions(object):
         self.in_args = [[dt.datetime(2001, 1, 1)], test_data_path, 'test_',
                         '%Y-%m-%d', 'sorce_mg_index',
                         dt.timedelta(seconds=86399)]
-        
         return
 
     def teardown_method(self):
@@ -47,7 +45,7 @@ class TestLISIRDFunctions(object):
         """Test raises KeyError with unexpected column names from fill_vals."""
 
         self.in_args[0] += dt.timedelta(years=5)
-        
+
         with pytest.raises(KeyError) as kerr:
             lisird.download(*self.in_args, fill_vals={"NOPE": -999.0})
 

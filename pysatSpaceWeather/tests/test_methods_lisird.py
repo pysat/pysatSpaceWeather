@@ -44,7 +44,7 @@ class TestLISIRDFunctions(object):
     def test_download_bad_fill_columns(self):
         """Test raises KeyError with unexpected column names from fill_vals."""
 
-        self.in_args[0] += dt.timedelta(years=5)
+        self.in_args[0][0] += dt.timedelta(weeks=160)
 
         with pytest.raises(KeyError) as kerr:
             lisird.download(*self.in_args, fill_vals={"NOPE": -999.0})

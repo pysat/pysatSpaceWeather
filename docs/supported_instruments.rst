@@ -188,7 +188,7 @@ Polar cap indices have been developed to provide information about high-latitude
 conditions and inform ionospheric space weather models. Currently, this
 Instrument provides absorption predictions from SWPC.
 
-.. automodule:: pysatSpaceWeather.instruments.sw_polar-cap
+.. automodule:: pysatSpaceWeather.instruments.sw_polarcap
    :members:
 
 
@@ -220,7 +220,7 @@ SWPC (for example, here is the
    :members:
 
 
-.. _sw-storm-prob-inst:
+.. _sw-stormprob-inst:
 
 Storm Probability
 ^^^^^^^^^^^^^^^^^
@@ -230,6 +230,6 @@ and mid-latitude regions. SWPC uses the
 `NOAA SW scales <https://www.swpc.noaa.gov/noaa-scales-explanation>`_, which
 are explained here.
 
-.. automodule:: pysatSpaceWeather.instruments.sw_storm-prob
+.. automodule:: pysatSpaceWeather.instruments.sw_stormprob
    :members:
 

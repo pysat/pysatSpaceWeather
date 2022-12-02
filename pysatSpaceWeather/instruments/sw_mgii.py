@@ -32,7 +32,6 @@ month.
 import datetime as dt
 import numpy as np
 import pandas as pds
-import warnings
 
 import pysat
 
@@ -82,20 +81,13 @@ def init(self):
 
 
 def clean(self):
-    """Clean the MGII data, empty function as this is not necessary.
-
-    Warnings
-    --------
-    Warning raised for SORCE data, which has an uncertainty parameter that
-    should be used to select quality data.
-
-    """
+    """Clean the MGII data, empty function as this is not necessary."""
 
     if self.tag == 'sorce':
-        warnings.warn(''.join(["The SORCE MGII core-to-wing ratio has an ",
-                               "associated uncertaintly ('unc') that should ",
-                               'be considered when using the data']),
-                      UserWarning)
+        pysat.logger.warn(''.join(["The SORCE MGII core-to-wing ratio has an ",
+                                   "associated uncertaintly ('unc') that ",
+                                   "should be considered when using the ",
+                                   'data']), UserWarning)
     return
 
 

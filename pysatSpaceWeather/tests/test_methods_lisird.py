@@ -10,8 +10,8 @@ import datetime as dt
 import logging
 import pytest
 
-from pysatSpaceWeather import test_data_path
 from pysatSpaceWeather.instruments.methods import lisird
+from pysatSpaceWeather import test_data_path
 
 
 class TestLISIRDFunctions(object):

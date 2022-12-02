@@ -152,7 +152,7 @@ def download(date_array, data_path, local_file_prefix, local_date_fmt,
                 raw_dict = json.loads(req.text)[lisird_data_name]
                 data = pds.DataFrame.from_dict(raw_dict['samples'])
                 if data.empty:
-                    pysat.logger.warn("no data for {:}".format(dl_date))
+                    pysat.logger.warning("no data for {:}".format(dl_date))
                 else:
                     # The URL specifies the time format, so break it down
                     frac_sec = [int(tval.split('.')[-1])

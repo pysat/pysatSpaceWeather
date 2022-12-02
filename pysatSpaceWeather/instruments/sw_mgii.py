@@ -84,10 +84,10 @@ def clean(self):
     """Clean the MGII data, empty function as this is not necessary."""
 
     if self.tag == 'sorce':
-        pysat.logger.warn(''.join(["The SORCE MGII core-to-wing ratio has an ",
-                                   "associated uncertaintly ('unc') that ",
-                                   "should be considered when using the ",
-                                   'data']), UserWarning)
+        pysat.logger.warning(''.join(["The SORCE MGII core-to-wing ratio has ",
+                                      "an associated uncertaintly ('unc') ",
+                                      "that should be considered when using ",
+                                      'the data']))
     return
 
 

@@ -6,7 +6,7 @@ Properties
 platform
     'sw'
 name
-    'polar-cap'
+    'polarcap'
 tag
     - 'prediction' Predictions from SWPC for the next 3 days
 inst_id
@@ -29,7 +29,7 @@ Examples
 --------
 ::
 
-    pc = pysat.Instrument('sw', 'polar-cap', tag='prediction')
+    pc = pysat.Instrument('sw', 'polarcap', tag='prediction')
     pc.download()
     pc.load(date=pc.tomorrow())
 
@@ -56,7 +56,7 @@ from pysatSpaceWeather.instruments import methods
 # Instrument attributes
 
 platform = 'sw'
-name = 'polar-cap'
+name = 'polarcap'
 tags = {'prediction': 'SWPC Predictions for the next three days'}
 inst_ids = {'': list(tags.keys())}
 

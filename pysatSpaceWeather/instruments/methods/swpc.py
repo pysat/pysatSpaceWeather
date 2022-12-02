@@ -340,8 +340,8 @@ def solar_geomag_predictions_download(name, date_array, data_path):
     Parameters
     ----------
     name : str
-        Instrument name, expects one of 'kp', 'ap', 'storm-prob', 'f107',
-        'flare', or 'polar-cap'.
+        Instrument name, expects one of 'kp', 'ap', 'stormprob', 'f107',
+        'flare', or 'polarcap'.
     date_array : array-like or pandas.DatetimeIndex
         Array-like or index of datetimes to be downloaded.
     data_path : str
@@ -360,8 +360,8 @@ def solar_geomag_predictions_download(name, date_array, data_path):
                   general.get_instrument_data_path(
                       'sw_{:s}'.format(data_name),
                       tag='forecast' if data_name == 'f107' else 'prediction')
-                  for data_name in ['kp', 'ap', 'storm-prob', 'f107', 'flare',
-                                    'polar-cap']}
+                  for data_name in ['kp', 'ap', 'stormprob', 'f107', 'flare',
+                                    'polarcap']}
 
     # Check that the directories exist
     for data_path in file_paths.values():
@@ -437,15 +437,15 @@ def solar_geomag_predictions_download(name, date_array, data_path):
             split_line = line.split()
             if split_line[0].find('/') > 0:
                 dkey = split_line[0].replace('/', '-Lat_')
-                data_vals['storm-prob'][dkey] = [
+                data_vals['stormprob'][dkey] = [
                     int(val) for val in split_line[1:]]
 
     # Process the polar cap prediction
-    data_vals['polar-cap']['absorption_forecast'] = [
+    data_vals['polarcap']['absorption_forecast'] = [
         str_val for str_val in pc_raw.split('\n')[1].split()]
-    data_times['polar-cap'] = [
+    data_times['polarcap'] = [
         ptimes for i, ptimes in enumerate(pred_times)
-        if i < len(data_vals['polar-cap']['absorption_forecast'])]
+        if i < len(data_vals['polarcap']['absorption_forecast'])]
 
     # Process the F10.7 data
     data_vals['f107']['f107'] = [
@@ -496,7 +496,7 @@ def geomag_forecast_download(name, date_array, data_path):
     Parameters
     ----------
     name : str
-        Instrument name, expects one of 'kp', 'ap', or 'storm-prob'.
+        Instrument name, expects one of 'kp', 'ap', or 'stormprob'.
     date_array : array-like or pandas.DatetimeIndex
         Array-like or index of datetimes to be downloaded.
     data_path : str
@@ -514,7 +514,7 @@ def geomag_forecast_download(name, date_array, data_path):
     file_paths = {data_name: data_path if name == data_name else
                   general.get_instrument_data_path(
                       'sw_{:s}'.format(data_name), tag='forecast')
-                  for data_name in ['kp', 'ap', 'storm-prob']}
+                  for data_name in ['kp', 'ap', 'stormprob']}
 
     # Check that the directories exist
     for data_path in file_paths.values():
@@ -589,7 +589,7 @@ def geomag_forecast_download(name, date_array, data_path):
 
     # Put the storm probabilities into a nicer DataFrame
     storm_times = pds.date_range(forecast_date, periods=3, freq='1D')
-    data_frames['storm-prob'] = pds.DataFrame(storm_dict, index=storm_times)
+    data_frames['stormprob'] = pds.DataFrame(storm_dict, index=storm_times)
 
     # Save the data files
     for data_name in data_frames.keys():

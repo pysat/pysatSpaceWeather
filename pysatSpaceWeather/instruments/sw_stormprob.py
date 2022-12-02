@@ -6,7 +6,7 @@ Properties
 platform
     'sw'
 name
-    'storm-prob'
+    'stormprob'
 tag
     - 'prediction' Predictions from SWPC for the next 3 days
     - 'forecast' Grab forecast data from SWPC (next 3 days)
@@ -30,7 +30,7 @@ Examples
 --------
 ::
 
-    storm = pysat.Instrument('sw', 'storm-prob', tag='forecast')
+    storm = pysat.Instrument('sw', 'stormprob', tag='forecast')
     storm.download()
     storm.load(date=storm.tomorrow())
 
@@ -56,7 +56,7 @@ from pysatSpaceWeather.instruments import methods
 # Instrument attributes
 
 platform = 'sw'
-name = 'storm-prob'
+name = 'stormprob'
 tags = {'forecast': 'SWPC Forecast data next (3 days)',
         'prediction': 'SWPC Predictions for the next three days'}
 inst_ids = {'': list(tags.keys())}

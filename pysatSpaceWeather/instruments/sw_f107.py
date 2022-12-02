@@ -65,8 +65,8 @@ import requests
 import sys
 
 from pysatSpaceWeather.instruments.methods import f107 as mm_f107
-from pysatSpaceWeather.instruments.methods import lisird
 from pysatSpaceWeather.instruments.methods import general
+from pysatSpaceWeather.instruments.methods import lisird
 
 logger = pysat.logger
 

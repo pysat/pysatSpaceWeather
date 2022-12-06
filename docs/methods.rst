@@ -45,3 +45,12 @@ filter for other data sets.
 
 .. automodule:: pysatSpaceWeather.instruments.methods.kp_ap
    :members:
+
+LISIRD
+------
+Contains functions to support LASP Interactive Solar IRradiance Datacenter
+(LISIRD) data sets and downloads.
+
+
+.. automodule:: pysatSpaceWeather.instruments.methods.lisird
+   :members:

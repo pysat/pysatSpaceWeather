@@ -3,6 +3,12 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.0.9] - 2023-01-18
+--------------------
+* Enhancements
+   * Added an instrument for the LASP MgII core-to-wing index
+   * Added functions for general LISIRD downloads
+
 [0.0.8] - 2022-11-29
 --------------------
 * Bugs

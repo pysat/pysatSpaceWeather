@@ -116,3 +116,18 @@ are available from the German Research Centre for Geosciences at Potsdam,
 
 .. automodule:: pysatSpaceWeather.instruments.sw_kp
    :members:
+
+
+.. _mgii-inst:
+
+MgII Core-to-Wing Ratio
+-----------------------
+
+The core-to-wing ratio of the solar MgII line is a proxy for solar chromospheric
+variability.  It has been used to extract a precise measurement of solar
+activity at Earth.  The two data sets provided by LASP together provide index
+values from 1978 through 2020.
+
+
+.. automodule:: pysatSpaceWeather.instruments.sw_mgii
+   :members:

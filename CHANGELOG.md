@@ -3,10 +3,15 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.0.9] - 2023-01-18
+--------------------
+* Enhancements
+  * Added tests for Python 3.6.8, continuing support for older systems
+
 [0.0.8] - 2022-11-29
 --------------------
 * Bugs
-   * Fixed F10.7 prelim and daily metadata to allow the fill value to keep the
+  * Fixed F10.7 prelim and daily metadata to allow the fill value to keep the
      same type as the data
 * Maintenance
   * Updated the GitHub action version numbers

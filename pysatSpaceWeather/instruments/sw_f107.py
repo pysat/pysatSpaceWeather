@@ -63,6 +63,7 @@ import pandas as pds
 import pysat
 import requests
 import sys
+import warnings
 
 from pysatSpaceWeather.instruments.methods import f107 as mm_f107
 from pysatSpaceWeather.instruments.methods import general
@@ -122,6 +123,26 @@ def init(self):
     # Define the historic F10.7 starting time
     if self.tag == 'historic':
         self.lasp_stime = lasp_stime
+
+    # Raise Deprecation warnings
+    if self.tag in ['daily', 'prelim']:
+        # This tag loads more than just F10.7 data, and the behaviour will be
+        # deprecated in v0.1.0
+        warnings.warn("".join(["Upcoming structural changes will prevent ",
+                               "Instruments from loading multiple data sets in",
+                               " one Instrument. In version 0.1.0+ the SSN, ",
+                               "solar flare, and solar mean field data will be",
+                               " accessable from the `sw_ssn`, `sw_flare`, ",
+                               "and `sw_sbfield` Instruments."]),
+                      DeprecationWarning, stacklevel=2)
+    elif self.tag == '45day':
+        # This tag loads more than just F10.7 data, and the behaviour will be
+        # deprecated in v0.1.0
+        warnings.warn("".join(["Upcoming structural changes will prevent ",
+                               "Instruments from loading multiple data sets in",
+                               " one Instrument. In version 0.1.0+ the Ap will",
+                               " be accessable from the `sw_ap` Instrument."]),
+                      DeprecationWarning, stacklevel=2)
 
     return
 
@@ -205,7 +226,6 @@ def load(fnames, tag='', inst_id=''):
                       meta.labels.min_val: 0,
                       meta.labels.max_val: 400}
     elif tag == 'historic':
-
         # LASP updated file format in June, 2022. Minimize impact downstream by
         # continuing use of `f107` as primary data product.
         if 'f107_adjusted' in data.columns:

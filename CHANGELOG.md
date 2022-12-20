@@ -8,6 +8,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Deprecations
   * Added warnings for the F10.7 and Kp tags that load data belonging in
   their own Instruments
+* Enhancements
+   * Added an instrument for the LASP MgII core-to-wing index
+   * Added functions for general LISIRD downloads
 
 [0.0.8] - 2022-11-29
 --------------------

@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Enhancements
   * Added tests for Python 3.6.8, continuing support for older systems
+  * Added an instrument for the LASP MgII core-to-wing index
+  * Added functions for general LISIRD downloads
 
 [0.0.8] - 2022-11-29
 --------------------

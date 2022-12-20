@@ -4,7 +4,11 @@
 
 name: Pytest with Flake8
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+  schedule:
+    - cron: "0 3 * * 1"
 
 jobs:
   build:

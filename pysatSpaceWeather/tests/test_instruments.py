@@ -43,8 +43,12 @@ class TestLocalDeprecation(object):
         """Set up the unit test environment for each method."""
 
         warnings.simplefilter("always", DeprecationWarning)
-        self.in_kwargs = {"inst_module": pysatSpaceWeather.instruments.sw_kp,
-                          'tag': ''}
+        self.in_kwargs = [
+            {"inst_module": pysatSpaceWeather.instruments.sw_kp, 'tag': ''},
+            {"inst_module": pysatSpaceWeather.instruments.sw_kp},
+            {"inst_module": pysatSpaceWeather.instruments.sw_f107,
+             'tag': '45day'},
+            {"inst_module": pysatSpaceWeather.instruments.sw_f107}]
         self.ref_time = dt.datetime(2001, 1, 1)
         self.warn_msgs = []
         self.war = ""
@@ -70,12 +74,77 @@ class TestLocalDeprecation(object):
         """Test the deprecation of the '' tag for the sw_kp Instrument."""
 
         with warnings.catch_warnings(record=True) as self.war:
-            pysat.Instrument(**self.in_kwargs)
+            pysat.Instrument(**self.in_kwargs[0])
 
         self.warn_msgs = ["".join(["Changes at the GFZ database have led to ",
                                    "this data type being deprecated. Switch ",
                                    "to using 'def' for definitive Kp or ",
                                    "'now' for Kp nowcasts from GFZ."])]
+
+        # Evaluate the warning output
+        self.eval_warnings()
+        return
+
+    @pytest.mark.parametrize("tag", ["def", "now"])
+    def test_sw_kp_gfz_extra_data_deprecation(self, tag):
+        """Test the deprecation for loading extra data for the GFZ sw_kp data.
+
+        Parameters
+        ----------
+        tag : str
+            Instrument tag
+
+        """
+
+        with warnings.catch_warnings(record=True) as self.war:
+            pysat.Instrument(tag=tag, **self.in_kwargs[1])
+
+        self.warn_msgs = [
+            "".join(["Upcoming structural changes will prevent Instruments ",
+                     "from loading multiple data sets in one Instrument. In ",
+                     "version 0.1.0+ the Ap and Cp data will be accessable ",
+                     "from the `sw_ap` and `sw_cp` Instruments."])]
+
+        # Evaluate the warning output
+        self.eval_warnings()
+        return
+
+    def test_sw_f107_45day_extra_data_deprecation(self):
+        """Test the deprecation for loading extra data by 45day sw_f107."""
+
+        with warnings.catch_warnings(record=True) as self.war:
+            pysat.Instrument(**self.in_kwargs[2])
+
+        self.warn_msgs = ["".join(["Upcoming structural changes will prevent ",
+                                   "Instruments from loading multiple data ",
+                                   "sets in one Instrument. In version 0.1.0+",
+                                   " the Ap will be accessable from the ",
+                                   "`sw_ap` Instrument."])]
+
+        # Evaluate the warning output
+        self.eval_warnings()
+        return
+
+    @pytest.mark.parametrize("tag", ["daily", "prelim"])
+    def test_sw_f107_extra_data_deprecation(self, tag):
+        """Test the deprecation for loading extra data using SWPC sw_f107 data.
+
+        Parameters
+        ----------
+        tag : str
+            Instrument tag
+
+        """
+
+        with warnings.catch_warnings(record=True) as self.war:
+            pysat.Instrument(tag=tag, **self.in_kwargs[3])
+
+        self.warn_msgs = [
+            "".join(["Upcoming structural changes will prevent Instruments ",
+                     "from loading multiple data sets in one Instrument. In ",
+                     "version 0.1.0+ the SSN, solar flare, and solar mean ",
+                     "field data will be accessable from the `sw_ssn`, ",
+                     "`sw_flare`, and `sw_sbfield` Instruments."])]
 
         # Evaluate the warning output
         self.eval_warnings()

@@ -12,11 +12,22 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     sw_ssn, and sw_storm-prob
   * Added new examples to the documentation
 
+[0.0.9] - 2022-12-21
+--------------------
+* Deprecations
+  * Added warnings for the F10.7 and Kp tags that load data belonging in
+  their own Instruments
+* Enhancements
+  * Added tests for Python 3.6.8, continuing support for older systems
+  * Added a cron job for testing
+  * Added an instrument for the LASP MgII core-to-wing index
+  * Added functions for general LISIRD downloads
+
 [0.0.8] - 2022-11-29
 --------------------
 * Bugs
-   * Fixed F10.7 prelim and daily metadata to allow the fill value to keep the
-     same type as the data
+  * Fixed F10.7 prelim and daily metadata to allow the fill value to keep the
+    same type as the data
 * Maintenance
   * Updated the GitHub action version numbers
   * Updated syntax for pysat instrument testing suite

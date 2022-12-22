@@ -61,11 +61,9 @@ available from the pyast.Instrument object is not appropriate for '45day' data.
 """
 
 import datetime as dt
-import json
 import numpy as np
 import os
 import pandas as pds
-import requests
 import warnings
 
 import pysat

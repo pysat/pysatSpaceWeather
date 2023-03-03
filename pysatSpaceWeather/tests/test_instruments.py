@@ -159,7 +159,8 @@ class TestSWInstrumentLogging(object):
         """Create a clean the testing setup."""
         # Prepare for testing downloads
         self.saved_path = pysat.params['data_dirs']
-        pysat.params._set_data_dirs(path=pysatSpaceWeather.test_data_path, store=False)
+        pysat.params._set_data_dirs(path=pysatSpaceWeather.test_data_path,
+                                    store=False)
         self.saved_files = list()
 
         # Assign the Instrument kwargs

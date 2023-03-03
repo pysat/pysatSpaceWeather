@@ -28,6 +28,7 @@ for all ``tag`` values.
 
    # Download both data sets using only one Instrument
    f107.download(start=f107.tomorrow())
+   ap.download(start=ap.tomorrow())
 
    # Show that both files have been downloaded
    print(f107.files.files[f107.today()], ap.files.files[ap.today()])

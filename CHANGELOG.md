@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0] - 2023-XX-XX
 --------------------
-* Enhacements
+* Enhancements
   * Changed downloads to write files across multiple Instruments, when the
     remote files contain a mix of data products
   * Added new instruments: sw_ap, sw_cp, sw_flare, sw_polar-cap, sw_sbfield,

@@ -159,7 +159,7 @@ class TestSWInstrumentLogging(object):
         """Create a clean the testing setup."""
         # Prepare for testing downloads
         self.saved_path = pysat.params['data_dirs']
-        pysat.params.data['data_dirs'] = [pysatSpaceWeather.test_data_path]
+        pysat.params._set_data_dirs(path=pysatSpaceWeather.test_data_path, store=False)
         self.saved_files = list()
 
         # Assign the Instrument kwargs
@@ -174,7 +174,7 @@ class TestSWInstrumentLogging(object):
     def teardown_method(self):
         """Clean up previous testing setup."""
         # Clean up the pysat parameter space
-        pysat.params.data['data_dirs'] = self.saved_path
+        pysat.params._set_data_dirs(path=self.saved_path, store=False)
 
         for saved_file in self.saved_files:
             attempts = 0

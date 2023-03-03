@@ -153,7 +153,7 @@ Historic indices, real-time indices, and forecasted indices are available from
 Solar Flares
 ^^^^^^^^^^^^
 
-Solar flares have been monitored for decates, and the data has been compiled
+Solar flares have been monitored for decades, and the data has been compiled
 into standard measurements from different data sets. Historic indices,
 real-time indices, and forecasted indices are available from
 `SWPC <https://www.swpc.noaa.gov/phenomena>`_.

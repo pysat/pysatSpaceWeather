@@ -1,34 +1,26 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-.
-# Full license can be found in License.md
-# Full author list can be found in .zenodo.json file
-# DOI:10.5281/zenodo.3986138
-# ----------------------------------------------------------------------------
-"""Supports F10.7 index values.
+# -*- coding: utf-8 -*-
+"""Supports solar flare values.
 
 Properties
 ----------
 platform
     'sw'
 name
-    'f107'
+    'flare'
 tag
-    - 'historic' LASP F10.7 data (downloads by month, loads by day)
     - 'prelim' Preliminary SWPC daily solar indices
     - 'daily' Daily SWPC solar indices (contains last 30 days)
-    - 'forecast' Grab forecast data from SWPC (next 3 days)
-    - '45day' 45-Day Forecast data from the Air Force
+    - 'prediction' Predictions from SWPC for the next 3 days
 
 Examples
 --------
-Download and load all of the historic F10.7 data.  Note that it will not
-stop on the current date, but a point in the past when post-processing has
-been successfully completed.
+Download and load the most recent flare predictions. To always ensure you are
+loading the most recent data, load the data with tomorrow's date.
 ::
 
-    f107 = pysat.Instrument('sw', 'f107', tag='historic')
-    f107.download(start=f107.lasp_stime, stop=f107.today())
-    f107.load(date=f107.lasp_stime, end_date=f107.today())
+    flare = pysat.Instrument('sw', 'flare', tag='prediction')
+    flare.download(start=flare.tomorrow())
+    flare.load(date=flare.tomorrow())
 
 
 Note
@@ -39,24 +31,14 @@ for the current day. When loading forecast data, the date specified with the
 load command is the date the forecast was generated. The data loaded will span
 three days. To always ensure you are loading the most recent data, load
 the data with tomorrow's date.
-::
-
-    f107 = pysat.Instrument('sw', 'f107', tag='forecast')
-    f107.download()
-    f107.load(date=f107.tomorrow())
 
 
 Warnings
 --------
-The 'forecast' F10.7 data loads three days at a time. Loading multiple files,
+The 'prediction' flare data loads three days at a time. Loading multiple files,
 loading multiple days, the data padding feature, and multi_file_day feature
-available from the pyast.Instrument object is not appropriate for 'forecast'
+available from the pyast.Instrument object is not appropriate for 'prediction'
 data.
-
-Like 'forecast', the '45day' forecast loads a specific period of time (45 days)
-and subsequent files contain overlapping data.  Thus, loading multiple files,
-loading multiple days, the data padding feature, and multi_file_day feature
-available from the pyast.Instrument object is not appropriate for '45day' data.
 
 """
 
@@ -64,22 +46,20 @@ import datetime as dt
 import numpy as np
 import os
 import pandas as pds
-import warnings
-
 import pysat
 
 from pysatSpaceWeather.instruments import methods
+
+logger = pysat.logger
 
 # ----------------------------------------------------------------------------
 # Instrument attributes
 
 platform = 'sw'
-name = 'f107'
-tags = {'historic': 'Daily LASP value of F10.7',
-        'prelim': 'Preliminary SWPC daily solar indices',
+name = 'flare'
+tags = {'prelim': 'Preliminary SWPC daily solar indices',
         'daily': 'Daily SWPC solar indices (contains last 30 days)',
-        'forecast': 'SWPC Forecast F107 data next (3 days)',
-        '45day': 'Air Force 45-day Forecast'}
+        'prediction': 'Predictions from SWPC for the next 3 days'}
 
 # Dict keyed by inst_id that lists supported tags for each inst_id
 inst_ids = {'': [tag for tag in tags.keys()]}
@@ -90,17 +70,12 @@ now = dt.datetime.utcnow()
 today = dt.datetime(now.year, now.month, now.day)
 tomorrow = today + dt.timedelta(days=1)
 
-# The LASP archive start day is also important
-lasp_stime = dt.datetime(1947, 2, 14)
-
 # ----------------------------------------------------------------------------
 # Instrument test attributes
 
-_test_dates = {'': {'historic': dt.datetime(2009, 1, 1),
-                    'prelim': dt.datetime(2009, 1, 1),
+_test_dates = {'': {'prelim': dt.datetime(2009, 1, 1),
                     'daily': tomorrow,
-                    'forecast': tomorrow,
-                    '45day': tomorrow}}
+                    'prediction': tomorrow}}
 
 # Other tags assumed to be True
 _test_download_ci = {'': {'prelim': False}}
@@ -115,33 +90,10 @@ def init(self):
     """Initialize the Instrument object with instrument specific values."""
 
     # Set the required Instrument attributes
-    self.acknowledgements = methods.f107.acknowledgements(self.tag)
-    self.references = methods.f107.references(self.tag)
-    pysat.logger.info(self.acknowledgements)
-
-    # Define the historic F10.7 starting time
-    if self.tag == 'historic':
-        self.lasp_stime = lasp_stime
-
-    # Raise Deprecation warnings
-    if self.tag in ['daily', 'prelim']:
-        # This tag loads more than just F10.7 data, and the behaviour will be
-        # deprecated in v0.1.0
-        warnings.warn("".join(["Upcoming structural changes will prevent ",
-                               "Instruments from loading multiple data sets in",
-                               " one Instrument. In version 0.1.0+ the SSN, ",
-                               "solar flare, and solar mean field data will be",
-                               " accessable from the `sw_ssn`, `sw_flare`, ",
-                               "and `sw_sbfield` Instruments."]),
-                      DeprecationWarning, stacklevel=2)
-    elif self.tag == '45day':
-        # This tag loads more than just F10.7 data, and the behaviour will be
-        # deprecated in v0.1.0
-        warnings.warn("".join(["Upcoming structural changes will prevent ",
-                               "Instruments from loading multiple data sets in",
-                               " one Instrument. In version 0.1.0+ the Ap will",
-                               " be accessable from the `sw_ap` Instrument."]),
-                      DeprecationWarning, stacklevel=2)
+    self.acknowledgements = methods.swpc.ackn
+    self.references = "".join(["Check SWPC for appropriate references: ",
+                               "https://www.swpc.noaa.gov/phenomena"])
+    logger.info(self.acknowledgements)
 
     return
 
@@ -157,7 +109,7 @@ def clean(self):
 
 
 def load(fnames, tag='', inst_id=''):
-    """Load F10.7 index files.
+    """Load the solar flare files.
 
     Parameters
     ----------
@@ -179,15 +131,11 @@ def load(fnames, tag='', inst_id=''):
     --------
     pysat.instruments.methods.general.load_csv_data
 
-    Note
-    ----
-    Called by pysat. Not intended for direct use by user.
-
     """
 
     # Get the desired file dates and file names from the daily indexed list
     file_dates = list()
-    if tag in ['historic', 'prelim']:
+    if tag in ['prelim']:
         unique_files = list()
         for fname in fnames:
             file_dates.append(dt.datetime.strptime(fname[-10:], '%Y-%m-%d'))
@@ -207,50 +155,88 @@ def load(fnames, tag='', inst_id=''):
 
     # Initialize the metadata
     meta = pysat.Meta()
-    meta['f107'] = {meta.labels.units: 'SFU',
-                    meta.labels.name: 'F10.7 cm solar index',
-                    meta.labels.notes: '',
-                    meta.labels.desc:
-                    'F10.7 cm radio flux in Solar Flux Units (SFU)',
-                    meta.labels.fill_val: np.nan,
-                    meta.labels.min_val: 0,
-                    meta.labels.max_val: np.inf}
-
-    if tag == 'historic':
-        # LASP updated file format in June, 2022. Minimize impact downstream by
-        # continuing use of `f107` as primary data product.
-        if 'f107_adjusted' in data.columns:
-            # There may be a mix of old and new data formats.
-            if 'f107' in data.columns:
-                # Only fill NaN in the `f107` and `f107_adjusted` columns
-                # for consistency across both data sets
-                data.loc[np.isnan(data['f107']), 'f107'] = data.loc[
-                    np.isnan(data['f107']), 'f107_adjusted']
-
-                data.loc[np.isnan(data['f107_adjusted']),
-                         'f107_adjusted'] = data.loc[
-                             np.isnan(data['f107_adjusted']), 'f107']
+    if tag == 'daily' or tag == 'prelim':
+        meta['goes_bgd_flux'] = {meta.labels.units: 'W/m^2',
+                                 meta.labels.name: 'X-ray Background Flux',
+                                 meta.labels.notes: '',
+                                 meta.labels.desc:
+                                 'GOES X-ray Background Flux',
+                                 meta.labels.fill_val: '*',
+                                 meta.labels.min_val: -np.inf,
+                                 meta.labels.max_val: np.inf}
+        if 'c_flare' in data.columns:
+            meta['c_flare'] = {meta.labels.units: '',
+                               meta.labels.name: 'C X-Ray Flares',
+                               meta.labels.notes: '',
+                               meta.labels.desc: 'C-class X-Ray Flares',
+                               meta.labels.fill_val: -1,
+                               meta.labels.min_val: 0,
+                               meta.labels.max_val: 9}
+        if 'm_flare' in data.columns:
+            meta['m_flare'] = {meta.labels.units: '',
+                               meta.labels.name: 'M X-Ray Flares',
+                               meta.labels.notes: '',
+                               meta.labels.desc: 'M-class X-Ray Flares',
+                               meta.labels.fill_val: -1,
+                               meta.labels.min_val: 0,
+                               meta.labels.max_val: 9}
+        if 'x_flare' in data.columns:
+            meta['x_flare'] = {meta.labels.units: '',
+                               meta.labels.name: 'X X-Ray Flares',
+                               meta.labels.notes: '',
+                               meta.labels.desc: 'X-class X-Ray Flares',
+                               meta.labels.fill_val: -1,
+                               meta.labels.min_val: 0,
+                               meta.labels.max_val: 9}
+        if 'o1_flare' in data.columns:
+            meta['o1_flare'] = {meta.labels.units: '',
+                                meta.labels.name: '1 Optical Flares',
+                                meta.labels.notes: '',
+                                meta.labels.desc: '1-class Optical Flares',
+                                meta.labels.fill_val: -1,
+                                meta.labels.min_val: 0,
+                                meta.labels.max_val: 9}
+        if 'o2_flare' in data.columns:
+            meta['o2_flare'] = {meta.labels.units: '',
+                                meta.labels.name: '2 Optical Flares',
+                                meta.labels.notes: '',
+                                meta.labels.desc: '2-class Optical Flares',
+                                meta.labels.fill_val: -1,
+                                meta.labels.min_val: 0,
+                                meta.labels.max_val: 9}
+        if 'o3_flare' in data.columns:
+            meta['o3_flare'] = {meta.labels.units: '',
+                                meta.labels.name: '3 Optical Flares',
+                                meta.labels.notes: '',
+                                meta.labels.desc: '3-class Optical Flares',
+                                meta.labels.fill_val: -1,
+                                meta.labels.min_val: 0,
+                                meta.labels.max_val: 9}
+    elif tag == 'prediction':
+        for dkey in data.columns:
+            if dkey.find('Region') < 0:
+                meta[dkey] = {meta.labels.units: '',
+                              meta.labels.name: dkey,
+                              meta.labels.notes: '',
+                              meta.labels.desc: ''.join([dkey.replace('_', ' '),
+                                                         ' Probabilities']),
+                              meta.labels.fill_val: -1,
+                              meta.labels.min_val: 0,
+                              meta.labels.max_val: 100}
             else:
-                data['f107'] = data['f107_adjusted']
-
-            # Add metadata
-            meta['f107_observed'] = meta['f107']
-            raw_str = 'Raw F10.7 cm radio flux in Solar Flux Units (SFU)'
-            meta['f107_observed'] = {meta.labels.desc: raw_str}
-
-            meta['f107_adjusted'] = meta['f107_observed']
-            norm_str = ''.join(['F10.7 cm radio flux in Solar Flux Units (SFU)',
-                                ' normalized to 1-AU'])
-            meta['f107_adjusted'] = {meta.labels.desc: norm_str}
-
-            meta['f107'] = {
-                meta.labels.desc: meta['f107_adjusted', meta.labels.desc]}
+                meta[dkey] = {meta.labels.units: '',
+                              meta.labels.name: dkey,
+                              meta.labels.notes: '',
+                              meta.labels.desc: 'SWPC Solar Region Number',
+                              meta.labels.fill_val: -1,
+                              meta.labels.min_val: 1,
+                              meta.labels.max_val: 9999}
 
     return data, meta
 
 
 def list_files(tag='', inst_id='', data_path='', format_str=None):
-    """List local F10.7 data files.
+    """List local solar flare data files.
 
     Parameters
     ----------
@@ -275,25 +261,10 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
 
     """
 
-    if tag == 'historic':
-        # Files are by month, going to add date to monthly filename for
-        # each day of the month. The load routine will load a month of
-        # data and use the appended date to select out appropriate data.
-        if format_str is None:
-            format_str = 'f107_monthly_{year:04d}-{month:02d}.txt'
-        out_files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=format_str)
-        if not out_files.empty:
-            out_files.loc[out_files.index[-1] + pds.DateOffset(months=1)
-                          - pds.DateOffset(days=1)] = out_files.iloc[-1]
-            out_files = out_files.asfreq('D', 'pad')
-            out_files = out_files + '_' + out_files.index.strftime(
-                '%Y-%m-%d')
-
-    elif tag == 'prelim':
+    if tag == 'prelim':
         # Files are by year (and quarter)
         if format_str is None:
-            format_str = ''.join(['f107_prelim_{year:04d}_{month:02d}',
+            format_str = ''.join(['flare_prelim_{year:04d}_{month:02d}',
                                   '_v{version:01d}.txt'])
         out_files = pysat.Files.from_os(data_path=data_path,
                                         format_str=format_str)
@@ -305,7 +276,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
 
             for orig in orig_files.items():
                 # Version determines each file's valid length
-                version = np.int64(orig[1].split("_v")[1][0])
+                version = int(orig[1].split("_v")[1][0])
                 doff = pds.DateOffset(years=1) if version == 2 \
                     else pds.DateOffset(months=3)
                 istart = orig[0]
@@ -332,7 +303,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             out_files = out_files.sort_index()
             out_files = out_files + '_' + out_files.index.strftime('%Y-%m-%d')
 
-    elif tag in ['daily', 'forecast', '45day']:
+    else:
         out_files = methods.swpc.list_files(name, tag, inst_id, data_path,
                                             format_str=format_str)
 
@@ -340,7 +311,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
 
 
 def download(date_array, tag, inst_id, data_path, update_files=False):
-    """Download F107 index data from the appropriate repository.
+    """Download solar flare data from the appropriate repository.
 
     Parameters
     ----------
@@ -370,23 +341,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     Called by pysat. Not intended for direct use by user.
 
     """
-
-    # Download standard F107 data
-    if tag == 'historic':
-        # Test the date array, updating it if necessary
-        if date_array.freq != 'MS':
-            date_array = pysat.utils.time.create_date_range(
-                dt.datetime(date_array[0].year, date_array[0].month, 1),
-                date_array[-1], freq='MS')
-
-        # Download from LASP, by month
-        freq = pds.DateOffset(months=1, seconds=-1)
-        methods.lisird.download(date_array, data_path, 'f107_monthly_',
-                                '%Y-%m', 'noaa_radio_flux', freq, update_files,
-                                {'f107_adjusted': -99999.0,
-                                 'f107_observed': -99999.0})
-
-    elif tag == 'prelim':
+    if tag == 'prelim':
         # Get the local files, to ensure that the version 1 files are
         # downloaded again if more data has been added
         local_files = list_files(tag, inst_id, data_path)
@@ -397,11 +352,8 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     elif tag == 'daily':
         methods.swpc.daily_dsd_download(name, today, data_path)
 
-    elif tag == 'forecast':
+    elif tag == 'prediction':
         methods.swpc.solar_geomag_predictions_download(name, date_array,
                                                        data_path)
-
-    elif tag == '45day':
-        methods.swpc.recent_ap_f107_download(name, date_array, data_path)
 
     return

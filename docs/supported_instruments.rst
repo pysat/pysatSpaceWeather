@@ -103,7 +103,7 @@ apo
 apo is a linear (half)-hourly, planetary, open-ended, geomagnetic index that
 reflects the magnitude of geomagnetic disturbances at Earth. It is like Ap, but
 does not have an upper limit. Values from 1995 onwards are available from 
-`GFZ <https://www.gfz-potsdam.de/en/hp30-hp60/>`_.
+`GFZ <https://kp.gfz-potsdam.de/en/hp30-hp60>`_.
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_apo
@@ -185,7 +185,7 @@ Hpo
 Hpo is a (half)-Hourly, Planetary, Open-ended, geomagnetic index that
 reflects the magnitude of geomagnetic disturbances at Earth. It is like Kp, but
 does not have an upper limit. Values from 1995 onwards are available from 
-`GFZ <https://www.gfz-potsdam.de/en/hp30-hp60/>`_.
+`GFZ <https://kp.gfz-potsdam.de/en/hp30-hp60>`_.
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_hpo

@@ -197,8 +197,8 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     freq = pds.DateOffset(months=1, seconds=-1)
 
     # Call the download routine
-    methods.gfz.json_download(date_array, data_path, local_file_prefix,
-                              local_date_fmt, gfz_data_name, freq,
-                              update_files=update_files)
+    methods.gfz.json_downloads(date_array, data_path, local_file_prefix,
+                               local_date_fmt, gfz_data_name, freq,
+                               update_files=update_files)
 
     return

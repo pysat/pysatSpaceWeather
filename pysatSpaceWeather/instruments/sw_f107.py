@@ -416,10 +416,10 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         local_file_prefix = '{:s}_'.format(gfz_data_name)
 
         # Call the download routine
-        methods.gfz.json_download(date_array, data_path, local_file_prefix,
-                                  "%Y-%m", gfz_data_name,
-                                  pds.DateOffset(months=1, seconds=-1),
-                                  update_files=update_files)
+        methods.gfz.json_downloads(date_array, data_path, local_file_prefix,
+                                   "%Y-%m", gfz_data_name,
+                                   pds.DateOffset(months=1, seconds=-1),
+                                   update_files=update_files)
 
     elif tag == 'daily':
         methods.swpc.daily_dsd_download(name, today, data_path)

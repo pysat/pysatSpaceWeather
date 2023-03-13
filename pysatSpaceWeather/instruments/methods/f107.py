@@ -87,10 +87,10 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     ----------
     standard_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'f107' name,
-        and 'historic', 'prelim', or 'daily' tag
+        and 'historic', 'prelim', 'now', or 'daily' tag
     forecast_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'f107' name,
-        and 'prelim', '45day' or 'forecast' tag
+        and 'now', 'prelim', '45day' or 'forecast' tag
     start : dt.datetime or NoneType
         Starting time for combining data, or None to use earliest loaded
         date from the pysat Instruments (default=None)

@@ -92,7 +92,7 @@ def build_lisird_url(lisird_data_name, start, stop):
 
 
 def download(date_array, data_path, local_file_prefix, local_date_fmt,
-             lisird_data_name, freq, update_files=True, fill_vals=None):
+             lisird_data_name, freq, update_files=False, fill_vals=None):
     """Download routine for LISIRD data.
 
     Parameters

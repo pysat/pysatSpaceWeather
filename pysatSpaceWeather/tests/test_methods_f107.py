@@ -131,7 +131,7 @@ class TestSWF107Combine(object):
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 16)
-        inst_id = {tag: '' for tag in  sw_f107.tags.keys()}
+        inst_id = {tag: '' for tag in sw_f107.tags.keys()}
         inst_id['now'] = 'obs'
         self.combine_inst = {tag: pysat.Instrument(inst_module=sw_f107, tag=tag,
                                                    inst_id=inst_id[tag],

@@ -10,6 +10,7 @@ name
 tag
     - 'prelim' Preliminary SWPC daily solar indices
     - 'daily' Daily SWPC solar indices (contains last 30 days)
+    - 'now' Nowcast and definitive international sunspot number data from GFZ
 
 Examples
 --------
@@ -37,7 +38,9 @@ from pysatSpaceWeather.instruments import methods
 platform = 'sw'
 name = 'ssn'
 tags = {'prelim': 'Preliminary SWPC daily solar indices',
-        'daily': 'Daily SWPC solar indices (contains last 30 days)'}
+        'daily': 'Daily SWPC solar indices (contains last 30 days)',
+        'now':
+        'Nowcast and definitive international sunspot number data from GFZ'}
 
 # Dict keyed by inst_id that lists supported tags for each inst_id
 inst_ids = {'': [tag for tag in tags.keys()]}
@@ -52,6 +55,7 @@ tomorrow = today + pds.DateOffset(days=1)
 # Instrument test attributes
 
 _test_dates = {'': {'prelim': dt.datetime(2009, 1, 1),
+                    'now': dt.datetime(2009, 1, 1),
                     'daily': tomorrow}}
 
 # Other tags assumed to be True
@@ -67,7 +71,10 @@ def init(self):
     """Initialize the Instrument object with instrument specific values."""
 
     # Set the required Instrument attributes
-    self.acknowledgements = methods.swpc.ackn
+    if self.tag == 'now':
+        self.acknowledgements = methods.gfz.ackn
+    else:
+        self.acknowledgements = methods.swpc.ackn
     self.references = "".join(["E.g., Arlt, R., Vaquero, J.M. Historical ",
                                "sunspot records. Living Rev Sol Phys 17, 1 ",
                                '(2020). doi:10.1007/s41116-020-0023-y'])
@@ -113,7 +120,7 @@ def load(fnames, tag='', inst_id=''):
 
     # Get the desired file dates and file names from the daily indexed list
     file_dates = list()
-    if tag == 'prelim':
+    if tag in ['prelim', 'now']:
         unique_files = list()
         for fname in fnames:
             file_dates.append(dt.datetime.strptime(fname[-10:], '%Y-%m-%d'))
@@ -124,6 +131,10 @@ def load(fnames, tag='', inst_id=''):
     # Load the CSV data files
     data = pysat.instruments.methods.general.load_csv_data(
         fnames, read_csv_kwargs={"index_col": 0, "parse_dates": True})
+
+    # Adjust variable names to be consistent across data sets
+    if tag == 'now':
+        data = data.rename(columns={'SN': 'ssn'})
 
     # If there is a date range, downselect here
     if len(file_dates) > 0:
@@ -140,15 +151,16 @@ def load(fnames, tag='', inst_id=''):
                    meta.labels.fill_val: -999,
                    meta.labels.min_val: 0,
                    meta.labels.max_val: np.inf}
-    meta['ss_area'] = {meta.labels.units: '10$^-6$ Solar Hemisphere',
-                       meta.labels.name: 'Sunspot Area',
-                       meta.labels.notes: '',
-                       meta.labels.desc:
-                       ''.join(['Sunspot Area in Millionths of the ',
-                                'Visible Hemisphere']),
-                       meta.labels.fill_val: -999,
-                       meta.labels.min_val: 0,
-                       meta.labels.max_val: 1.0e6}
+    if 'ss_area' in data.columns:
+        meta['ss_area'] = {meta.labels.units: '10$^-6$ Solar Hemisphere',
+                           meta.labels.name: 'Sunspot Area',
+                           meta.labels.notes: '',
+                           meta.labels.desc:
+                           ''.join(['Sunspot Area in Millionths of the ',
+                                    'Visible Hemisphere']),
+                           meta.labels.fill_val: -999,
+                           meta.labels.min_val: 0,
+                           meta.labels.max_val: 1.0e6}
     if 'new_reg' in data.columns:
         meta['new_reg'] = {meta.labels.units: '',
                            meta.labels.name: 'New Regions',
@@ -229,6 +241,15 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             out_files = out_files.sort_index()
             out_files = out_files + '_' + out_files.index.strftime('%Y-%m-%d')
 
+    elif tag == 'now':
+        out_files = pysat.Files.from_os(data_path=data_path,
+                                        format_str=format_str)
+        if not out_files.empty:
+            freq = pds.DateOffset(months=1, days=-1)
+            out_files.loc[out_files.index[-1] + freq] = out_files.iloc[-1]
+            out_files = out_files.asfreq('D', 'pad')
+            out_files = out_files + '_' + out_files.index.strftime('%Y-%m-%d')
+
     elif tag == 'daily':
         out_files = methods.swpc.list_files(name, tag, inst_id, data_path,
                                             format_str=format_str)
@@ -273,5 +294,16 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
 
     elif tag == 'daily':
         methods.swpc.daily_dsd_download(name, today, data_path)
+
+    elif tag == 'now':
+        # Set the download input options
+        gfz_data_name = 'SN'
+        local_file_prefix = '{:s}_'.format(gfz_data_name)
+
+        # Call the download routine
+        methods.gfz.json_download(date_array, data_path, local_file_prefix,
+                                  "%Y-%m", gfz_data_name,
+                                  pds.DateOffset(months=1, seconds=-1),
+                                  update_files=update_files)
 
     return

@@ -23,7 +23,7 @@ def acknowledgements(tag):
     Parameters
     ----------
     tag : str
-        Tag of the space waether index
+        Tag of the space weather index
 
     Returns
     -------
@@ -36,7 +36,8 @@ def acknowledgements(tag):
                     'Weather Prediction Center'])
 
     ackn = {'historic': lisird, 'prelim': swpc, 'daily': swpc,
-            'forecast': swpc, '45day': swpc}
+            'forecast': swpc, '45day': swpc,
+            'now': pysat_sw.instruments.methods.gfz.ackn}
 
     return ackn[tag]
 
@@ -66,9 +67,12 @@ def references(tag):
                         "p 454-457."])
     swpc_desc = ''.join(['Dataset description: https://www.swpc.noaa.gov/',
                          'sites/default/files/images/u2/Usr_guide.pdf'])
+    gfz_desc = ''.join(['Dataset description: https://kp.gfz-potsdam.de/app/',
+                        'format/Kp_ap_Ap_SN_F107_format.txt'])
 
     refs = {'historic': "\n".join([noaa_desc, orig_ref]),
             'prelim': "\n".join([swpc_desc, orig_ref]),
+            'now': "\n".join([gfz_desc, orig_ref]),
             'daily': "\n".join([swpc_desc, orig_ref]),
             'forecast': "\n".join([swpc_desc, orig_ref]),
             '45day': "\n".join([swpc_desc, orig_ref])}

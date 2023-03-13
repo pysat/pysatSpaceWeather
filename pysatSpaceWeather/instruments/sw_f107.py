@@ -15,9 +15,12 @@ name
 tag
     - 'historic' LASP F10.7 data (downloads by month, loads by day)
     - 'prelim' Preliminary SWPC daily solar indices
+    - 'now' A mist of nowcast and definitive values from GFZ
     - 'daily' Daily SWPC solar indices (contains last 30 days)
     - 'forecast' Grab forecast data from SWPC (next 3 days)
     - '45day' 45-Day Forecast data from the Air Force
+inst_id
+    '', 'obs', 'adj'
 
 Examples
 --------
@@ -77,12 +80,14 @@ platform = 'sw'
 name = 'f107'
 tags = {'historic': 'Daily LASP value of F10.7',
         'prelim': 'Preliminary SWPC daily solar indices',
+        'now': 'Nowcast and definitive data from GFZ',
         'daily': 'Daily SWPC solar indices (contains last 30 days)',
         'forecast': 'SWPC Forecast F107 data next (3 days)',
         '45day': 'Air Force 45-day Forecast'}
 
 # Dict keyed by inst_id that lists supported tags for each inst_id
-inst_ids = {'': [tag for tag in tags.keys()]}
+inst_ids = {'': [tag for tag in tags.keys() if tag != 'now'], 'obs': ['now'],
+            'adj': ['now']}
 
 # Dict keyed by inst_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
@@ -100,7 +105,9 @@ _test_dates = {'': {'historic': dt.datetime(2009, 1, 1),
                     'prelim': dt.datetime(2009, 1, 1),
                     'daily': tomorrow,
                     'forecast': tomorrow,
-                    '45day': tomorrow}}
+                    '45day': tomorrow},
+               'obs': {'now': dt.datetime(2009, 1, 1)},
+               'adj': {'now': dt.datetime(2009, 1, 1)}}
 
 # Other tags assumed to be True
 _test_download_ci = {'': {'prelim': False}}
@@ -187,7 +194,7 @@ def load(fnames, tag='', inst_id=''):
 
     # Get the desired file dates and file names from the daily indexed list
     file_dates = list()
-    if tag in ['historic', 'prelim']:
+    if tag in ['historic', 'prelim', 'now']:
         unique_files = list()
         for fname in fnames:
             file_dates.append(dt.datetime.strptime(fname[-10:], '%Y-%m-%d'))
@@ -199,6 +206,10 @@ def load(fnames, tag='', inst_id=''):
     data = pysat.instruments.methods.general.load_csv_data(
         fnames, read_csv_kwargs={"index_col": 0, "parse_dates": True})
 
+    # Rename the GFZ variable name to be consistent with the other data sets
+    if tag == 'now':
+        data = data.rename(columns={'F{:s}'.format(inst_id): 'f107'})
+
     # If there is a date range, downselect here
     if len(file_dates) > 0:
         idx, = np.where((data.index >= min(file_dates))
@@ -207,11 +218,13 @@ def load(fnames, tag='', inst_id=''):
 
     # Initialize the metadata
     meta = pysat.Meta()
+    desc_prefix = '' if inst_id == '' else '{:s} '.format(inst_id.capitalize())
     meta['f107'] = {meta.labels.units: 'SFU',
                     meta.labels.name: 'F10.7 cm solar index',
                     meta.labels.notes: '',
                     meta.labels.desc:
-                    'F10.7 cm radio flux in Solar Flux Units (SFU)',
+                    '{:s}F10.7 cm radio flux in Solar Flux Units (SFU)'.format(
+                        desc_prefix),
                     meta.labels.fill_val: np.nan,
                     meta.labels.min_val: 0,
                     meta.labels.max_val: np.inf}
@@ -275,12 +288,16 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
 
     """
 
-    if tag == 'historic':
+    if tag in ['historic', 'now']:
         # Files are by month, going to add date to monthly filename for
         # each day of the month. The load routine will load a month of
         # data and use the appended date to select out appropriate data.
         if format_str is None:
-            format_str = 'f107_monthly_{year:04d}-{month:02d}.txt'
+            if tag == 'historic':
+                format_str = 'f107_monthly_{year:04d}-{month:02d}.txt'
+            else:
+                format_str = 'F{:s}_{{year:04d}}-{{month:02d}}.txt'.format(
+                    inst_id)
         out_files = pysat.Files.from_os(data_path=data_path,
                                         format_str=format_str)
         if not out_files.empty:
@@ -393,6 +410,16 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
 
         methods.swpc.old_indices_dsd_download(name, date_array, data_path,
                                               local_files, today)
+    elif tag == 'now':
+        # Set the download input options
+        gfz_data_name = 'F{:s}'.format(inst_id)
+        local_file_prefix = '{:s}_'.format(gfz_data_name)
+
+        # Call the download routine
+        methods.gfz.json_download(date_array, data_path, local_file_prefix,
+                                  "%Y-%m", gfz_data_name,
+                                  pds.DateOffset(months=1, seconds=-1),
+                                  update_files=update_files)
 
     elif tag == 'daily':
         methods.swpc.daily_dsd_download(name, today, data_path)

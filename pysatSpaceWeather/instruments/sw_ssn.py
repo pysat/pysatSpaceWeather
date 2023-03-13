@@ -242,6 +242,9 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
             out_files = out_files + '_' + out_files.index.strftime('%Y-%m-%d')
 
     elif tag == 'now':
+        if format_str is None:
+            format_str = 'SN_{year:04d}-{month:02d}.txt'
+
         out_files = pysat.Files.from_os(data_path=data_path,
                                         format_str=format_str)
         if not out_files.empty:

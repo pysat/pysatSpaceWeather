@@ -95,6 +95,20 @@ disturbances at Earth, but unlike the Kp uses a linear scale.  Historic, recent
    :members:
 
 
+.. _sw-apo-inst:
+
+apo
+^^^
+
+apo is a linear (half)-hourly, planetary, open-ended, geomagnetic index that
+reflects the magnitude of geomagnetic disturbances at Earth. It is like Ap, but
+does not have an upper limit. Values from 1995 onwards are available from 
+`GFZ <https://www.gfz-potsdam.de/en/hp30-hp60/>`_.
+
+
+.. automodule:: pysatSpaceWeather.instruments.sw_apo
+   :members:
+
 
 .. _sw-cp-inst:
 
@@ -160,6 +174,21 @@ real-time indices, and forecasted indices are available from
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_flare
+   :members:
+
+
+.. _sw-hpo-inst:
+
+Hpo
+^^^
+
+Hpo is a (half)-Hourly, Planetary, Open-ended, geomagnetic index that
+reflects the magnitude of geomagnetic disturbances at Earth. It is like Kp, but
+does not have an upper limit. Values from 1995 onwards are available from 
+`GFZ <https://www.gfz-potsdam.de/en/hp30-hp60/>`_.
+
+
+.. automodule:: pysatSpaceWeather.instruments.sw_hpo
    :members:
 
 

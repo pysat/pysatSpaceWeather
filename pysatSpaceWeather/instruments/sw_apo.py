@@ -10,7 +10,8 @@ name
 tag
     - 'now' Near real-time nowcast apo data from GFZ
 inst_id
-    '30min', '60min'
+    - '30min' Half-hourly indices
+    - '60min' Hourly indices
 
 Note
 ----

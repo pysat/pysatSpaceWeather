@@ -10,7 +10,7 @@ name
 tag
     - 'prediction' Predictions from SWPC for the next 3 days
 inst_id
-    ''
+    - ''
 
 Note
 ----

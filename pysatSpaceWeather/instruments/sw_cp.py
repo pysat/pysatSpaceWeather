@@ -11,7 +11,7 @@ tag
     - 'def' Definitive Cp data from GFZ
     - 'now' Nowcast Cp data from GFZ
 inst_id
-    ''
+    - ''
 
 Note
 ----

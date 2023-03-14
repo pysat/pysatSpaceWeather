@@ -20,7 +20,9 @@ tag
     - 'forecast' Grab forecast data from SWPC (next 3 days)
     - '45day' 45-Day Forecast data from the Air Force
 inst_id
-    '', 'obs', 'adj'
+    - '' No distinction, may include observed, adjusted, or both
+    - 'obs' Observed F10.7
+    - 'adj' Adjusted F10.7
 
 Examples
 --------

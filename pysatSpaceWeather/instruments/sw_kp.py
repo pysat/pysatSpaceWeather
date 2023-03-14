@@ -15,7 +15,7 @@ tag
     - 'forecast' Forecast data from SWPC (next 3 days)
     - 'recent' The last 30 days of Kp data from SWPC
 inst_id
-    ''
+    - ''
 
 Note
 ----

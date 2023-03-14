@@ -10,7 +10,8 @@ name
 tag
     - 'now' Near real-time nowcast Hpo data from GFZ
 inst_id
-    '30min', '60min'
+    - '30min' Half-hourly resolution indices
+    - '60min' Hourly resolution indices
 
 Note
 ----

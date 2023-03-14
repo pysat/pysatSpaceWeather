@@ -15,7 +15,7 @@ name
 tag
     - 'historic' LASP F10.7 data (downloads by month, loads by day)
     - 'prelim' Preliminary SWPC daily solar indices
-    - 'now' A mist of nowcast and definitive values from GFZ
+    - 'now' A mix of nowcast and definitive values from GFZ
     - 'daily' Daily SWPC solar indices (contains last 30 days)
     - 'forecast' Grab forecast data from SWPC (next 3 days)
     - '45day' 45-Day Forecast data from the Air Force

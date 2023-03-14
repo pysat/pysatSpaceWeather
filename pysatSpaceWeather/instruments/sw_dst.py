@@ -8,10 +8,10 @@ platform
 name
     'dst'
 tag
-    'noaa' - Historic Dst data coalated by and maintained by NOAA/NCEI
-    'lasp' - Predicted Dst from real-time ACE or DSCOVR provided by LASP
+    - 'noaa' Historic Dst data coalated by and maintained by NOAA/NCEI
+    - 'lasp' Predicted Dst from real-time ACE or DSCOVR provided by LASP
 inst_id
-    ''
+    - ''
 
 Note
 ----

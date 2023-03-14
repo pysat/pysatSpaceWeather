@@ -15,7 +15,7 @@ tag
     - 'recent' The last 30 days of Ap data from SWPC
     - '45day' 45-Day forecast data from the Air Force
 inst_id
-    ''
+    - ''
 
 Note
 ----

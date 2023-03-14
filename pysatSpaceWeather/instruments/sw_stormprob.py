@@ -11,7 +11,7 @@ tag
     - 'prediction' Predictions from SWPC for the next 3 days
     - 'forecast' Grab forecast data from SWPC (next 3 days)
 inst_id
-    ''
+    - ''
 
 Note
 ----

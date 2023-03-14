@@ -8,8 +8,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Enhancements
   * Changed downloads to write files across multiple Instruments, when the
     remote files contain a mix of data products
-  * Added new instruments: sw_ap, sw_cp, sw_flare, sw_polar-cap, sw_sbfield,
-    sw_ssn, and sw_storm-prob
+  * Added new instruments: sw_ap, sw_apo, sw_cp, sw_flare, sw_hpo, sw_polar-cap,
+    sw_sbfield, sw_ssn, and sw_storm-prob
+  * Added new data sources (tag 'now') for the F10.7 from GFZ
+  * Created a general download routine for the GFZ data
   * Added new examples to the documentation
 
 [0.0.9] - 2022-12-21

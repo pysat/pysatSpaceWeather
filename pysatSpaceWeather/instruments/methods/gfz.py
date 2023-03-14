@@ -7,6 +7,7 @@
 """Provides routines that support GFZ space weather instruments."""
 
 import datetime as dt
+import json
 import numpy as np
 import os
 import pandas as pds
@@ -19,12 +20,14 @@ from pysatSpaceWeather.instruments.methods import general
 # ----------------------------------------------------------------------------
 # Define the module variables
 
-ackn = ''.join(['CC BY 4.0, The Kp index was introduced by Bartels (1949) and ',
-                'is produced, along with derivative indices, by the ',
-                'Geomagnetic Observatory Niemegk, GFZ German Research Centre ',
-                'for Geosciences.  Please cite the references in the ',
+ackn = ''.join(['CC BY 4.0, This index is produced by the Geomagnetic ',
+                'Observatory Niemegk, GFZ German Research Centre for ',
+                'Geosciences.  Please cite the references in the ',
                 "'references' attribute"])
-geoind_refs = '\n'.join([''.join(["Matzka, J., Bronkalla, O., Tornow, K., ",
+geoind_refs = '\n'.join([''.join(["Bartels, J. (1949) - The standardized index",
+                                  "Ks and the planetary index Kp, IATME ",
+                                  "Bulletin 12b, 97."]),
+                         ''.join(["Matzka, J., Bronkalla, O., Tornow, K., ",
                                   "Elger, K. and Stolle, C., 2021. ",
                                   "Geomagnetic Kp index. V. 1.0. GFZ Data ",
                                   "Services, doi:10.5880/Kp.0001"]),
@@ -33,10 +36,112 @@ geoind_refs = '\n'.join([''.join(["Matzka, J., Bronkalla, O., Tornow, K., ",
                                   "The geomagnetic Kp index and derived ",
                                   "indices of geomagnetic activity. Space ",
                                   "Weather,doi:10.1029/2020SW002641"])])
+hpo_refs = '\n'.join([''.join(["Yamazaki, Y., Matzka, J., Stolle, C., ",
+                               "Kervalishvili, G., Rauberg, J., Bronkalla, O.,",
+                               " Morschhauser, A., Bruinsma, S., Shprits, ",
+                               "Y.Y., Jackson, D.R., 2022. Geomagnetic ",
+                               "Activity Index Hpo. Geophys. Res. Lett., 49, ",
+                               "e2022GL098860, doi:10.1029/2022GL098860"]),
+                      ''.join(["Matzka, J., Bronkalla, O., Kervalishvili, G.,",
+                               " Rauberg, J. and Yamazaki, Y., 2022. ",
+                               "Geomagnetic Hpo index. V. 2.0. GFZ Data ",
+                               "Services, doi:10.5880/Hpo.0002"])])
 
 
 # ----------------------------------------------------------------------------
 # Define the module functions
+
+def json_downloads(date_array, data_path, local_file_prefix, local_date_fmt,
+                   gfz_data_name, freq, update_files=False, is_def=False):
+    """Download data from GFZ into CSV files at a specified cadence.
+
+    Parameters
+    ----------
+    date_array : array-like or pandas.DatetimeIndex
+        Array-like or index of datetimes to be downloaded.
+    data_path : str
+        Path to data directory.
+    local_file_prefix : str
+        Prefix for local files, e.g., 'tag_' or 'tag_monthly_'
+    local_date_fmt : str
+        String format for the local filename, e.g., '%Y-%m-%d' or '%Y-%m'
+    gfz_data_name : str
+        Name of the data index on the GFZ server, expects one of: 'Kp', 'ap',
+        'Ap', 'Cp', 'C9', 'Hp30', 'Hp60', 'ap30', 'ap60', 'SN', 'Fobs', 'Fadj'
+        where SN is the international sunspot number and Fxxx is the observed
+        and adjusted F10.7.
+    freq : pds.DateOffset or dt.timedelta
+        Offset to add to the start date to ensure all data is downloaded
+        (inclusive)
+    update_files : bool
+        Re-download data for files that already exist if True (default=False)
+    is_def : bool
+        If true, selects only the definitive data, otherwise also includes
+        nowcast data (default=False)
+
+    Raises
+    ------
+    IOError
+        If there is a gateway timeout when downloading data
+
+    """
+
+    # Set the local variables
+    base_url = "https://kp.gfz-potsdam.de/app/json/"
+    time_fmt = "%Y-%m-%dT%H:%M:%SZ"
+    last_file = ''
+
+    # Cycle through all the dates
+    for dl_date in date_array:
+        # Build the local filename
+        local_file = os.path.join(
+            data_path, ''.join([local_file_prefix,
+                                dl_date.strftime(local_date_fmt), '.txt']))
+
+        # Determine if the download should occur
+        if not os.path.isfile(local_file) or (update_files
+                                              and local_file != last_file):
+            # Get the URL for the desired data
+            stop = dl_date + freq
+            query_url = "{:s}?start={:s}&end={:s}&index={:s}".format(
+                base_url, dl_date.strftime(time_fmt), stop.strftime(time_fmt),
+                gfz_data_name)
+
+            if is_def:
+                # Add the definitive flag
+                query_url = '{:s}&status=def'.format(query_url)
+
+            # The data is returned as a JSON file
+            req = requests.get(query_url)
+
+            # Process the JSON file
+            if req.text.find('Gateway Timeout') >= 0:
+                raise IOError(''.join(['Gateway timeout when requesting ',
+                                       'file using command: ', query_url]))
+
+            if req.ok:
+                raw_dict = json.loads(req.text)
+                data = pds.DataFrame.from_dict({gfz_data_name:
+                                                raw_dict[gfz_data_name]})
+                if data.empty:
+                    pysat.logger.warning("no data for {:}".format(dl_date))
+                else:
+                    # Convert the datetime strings to datetime objects
+                    time_list = [dt.datetime.strptime(time_str, time_fmt)
+                                 for time_str in raw_dict['datetime']]
+
+                    # Add the time index
+                    data.index = time_list
+
+                    # Create a local CSV file
+                    data.to_csv(local_file, header=True)
+            else:
+                pysat.logger.info("".join(["Data not downloaded for ",
+                                           dl_date.strftime("%d %b %Y"),
+                                           ", date may be out of range ",
+                                           "for the database."]))
+    return
+
 
 def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path):
     """Download Kp, ap, and Cp data from GFZ.
@@ -205,8 +310,8 @@ def kp_ap_cp_list_files(name, tag, inst_id, data_path, format_str=None):
     # the append date to select out approriate data.
     files = pysat.Files.from_os(data_path=data_path, format_str=format_str)
     if not files.empty:
-        files.loc[files.index[-1] + pds.DateOffset(years=1)
-                  - pds.DateOffset(days=1)] = files.iloc[-1]
+        files.loc[files.index[-1]
+                  + pds.DateOffset(years=1, days=-1)] = files.iloc[-1]
         files = files.asfreq('D', 'pad')
         files = files + '_' + files.index.strftime('%Y-%m-%d')
 
@@ -228,11 +333,10 @@ def load_def_now(fnames):
 
     """
 
-    # Load the definitive or nowcast data. The Kp, ap, and Cp data are stored
-    # together in yearly files that are separated by index on download.  We
-    # need to return data daily.  The daily date is attached to filename.
-    # Parse off the last date, load month of data, and downselect to the
-    # desired day
+    # Load the definitive or nowcast data. The GFZ index data are stored in
+    # yearly or monthly files that are separated by index ondownload. We need
+    # to return data daily. The daily date is attached to filename. Parse off
+    # the last date, load all data, and downselect to the desired day
     unique_fnames = dict()
     for filename in fnames:
         fname = filename[0:-11]

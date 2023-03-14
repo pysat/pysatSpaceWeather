@@ -23,7 +23,7 @@ def acknowledgements(tag):
     Parameters
     ----------
     tag : str
-        Tag of the space waether index
+        Tag of the space weather index
 
     Returns
     -------
@@ -36,7 +36,8 @@ def acknowledgements(tag):
                     'Weather Prediction Center'])
 
     ackn = {'historic': lisird, 'prelim': swpc, 'daily': swpc,
-            'forecast': swpc, '45day': swpc}
+            'forecast': swpc, '45day': swpc,
+            'now': pysat_sw.instruments.methods.gfz.ackn}
 
     return ackn[tag]
 
@@ -66,9 +67,12 @@ def references(tag):
                         "p 454-457."])
     swpc_desc = ''.join(['Dataset description: https://www.swpc.noaa.gov/',
                          'sites/default/files/images/u2/Usr_guide.pdf'])
+    gfz_desc = ''.join(['Dataset description: https://kp.gfz-potsdam.de/app/',
+                        'format/Kp_ap_Ap_SN_F107_format.txt'])
 
     refs = {'historic': "\n".join([noaa_desc, orig_ref]),
             'prelim': "\n".join([swpc_desc, orig_ref]),
+            'now': "\n".join([gfz_desc, orig_ref]),
             'daily': "\n".join([swpc_desc, orig_ref]),
             'forecast': "\n".join([swpc_desc, orig_ref]),
             '45day': "\n".join([swpc_desc, orig_ref])}
@@ -83,10 +87,10 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     ----------
     standard_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'f107' name,
-        and 'historic', 'prelim', or 'daily' tag
+        and 'historic', 'prelim', 'now', or 'daily' tag
     forecast_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'f107' name,
-        and 'prelim', '45day' or 'forecast' tag
+        and 'now', 'prelim', '45day' or 'forecast' tag
     start : dt.datetime or NoneType
         Starting time for combining data, or None to use earliest loaded
         date from the pysat Instruments (default=None)

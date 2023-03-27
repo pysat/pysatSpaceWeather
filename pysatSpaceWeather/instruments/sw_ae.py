@@ -26,7 +26,7 @@ from pysatSpaceWeather.instruments.methods import lasp
 # Instrument attributes
 
 platform = 'sw'
-name = 'al'
+name = 'ae'
 tags = {'lasp': 'Predicted AE from real-time ACE or DSCOVR provided by LASP'}
 inst_ids = {'': [tag for tag in tags.keys()]}
 

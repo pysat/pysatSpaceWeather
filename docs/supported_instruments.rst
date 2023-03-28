@@ -78,6 +78,53 @@ by :py:class:`pysat.Instrument` and saved into appropriate files.  For example,
 the definitive Kp data from the German Research Centre for Geosciences at
 Potsdam (GFZ) will also download Ap and Cp data files.
 
+.. _sw-ae-inst:
+
+AE
+^^^
+
+AE is an auroral electrojet index that reflects the level of magnetic deflection
+in the auroral zone, due to the difference between the eastward and westward
+electroject currents at Earth.  Real-time predictions (last 96 hours) are
+provided by
+`LASP <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_.
+
+
+.. automodule:: pysatSpaceWeather.instruments.sw_ae
+   :members:
+
+
+.. _sw-al-inst:
+
+
+AL
+^^^
+
+AL is an auroral electrojet index that reflects the lower envelope, the negative
+peak of the electroject currents at Earth.  Real-time predictions (last 96
+hours) are provided by
+`LASP <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_.
+
+
+.. automodule:: pysatSpaceWeather.instruments.sw_al
+   :members:
+
+
+.. _sw-al-inst:
+
+
+AU
+^^^
+
+AU is an auroral electrojet index that reflects the upper envelope, the positive
+peak of the electroject currents at Earth.  Real-time predictions (last 96
+hours) are provided by
+`LASP <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_.
+
+
+.. automodule:: pysatSpaceWeather.instruments.sw_au
+   :members:
+
 
 .. _sw-ap-inst:
 

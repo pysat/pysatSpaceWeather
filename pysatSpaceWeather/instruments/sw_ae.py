@@ -6,9 +6,9 @@ Properties
 platform
     'sw'
 name
-    'al'
+    'ae'
 tag
-    - 'lasp' Predicted Dst from real-time ACE or DSCOVR provided by LASP
+    - 'lasp' Predicted AE from real-time ACE or DSCOVR provided by LASP
 inst_id
     - ''
 
@@ -104,7 +104,7 @@ def load(fnames, tag='', inst_id=''):
 
 
 def list_files(tag='', inst_id='', data_path='', format_str=None):
-    """List local data files for Dst data.
+    """List local data files for AE data.
 
     Parameters
     ----------

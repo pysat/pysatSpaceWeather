@@ -171,8 +171,11 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
                 standard_inst.load(**load_kwargs)
 
-            good_times = ((standard_inst.index >= itime)
-                          & (standard_inst.index < stop))
+            if standard_inst.empty:
+                good_times = [False]
+            else:
+                good_times = ((standard_inst.index >= itime)
+                              & (standard_inst.index < stop))
 
             if notes.find("standard") < 0:
                 notes += " the {:} source ({:} to ".format(inst_flag,
@@ -223,9 +226,12 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                         f107_inst.meta.labels.fill_val]
 
                 # Determine which times to save
-                good_times = ((forecast_inst.index >= itime)
-                              & (forecast_inst.index < stop))
-                good_vals = forecast_inst['f107'][good_times] != fill_val
+                if forecast_inst.empty:
+                    good_vals = []
+                else:
+                    good_times = ((forecast_inst.index >= itime)
+                                  & (forecast_inst.index < stop))
+                    good_vals = forecast_inst['f107'][good_times] != fill_val
 
                 # Save desired data and cycle time
                 if len(good_vals) > 0:

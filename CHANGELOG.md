@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ---------------------
 * Bugs
   * Fixed a bug evaluating the length of preliminary F10.7 data downloads
+  * Fixed a bug in some versions where empty time indexes cannot be evaluated
 
 [0.0.9] - 2022-12-21
 --------------------

@@ -3,6 +3,11 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.0.10] - 2023-04-18
+---------------------
+* Bugs
+  * Fixed a bug evaluating the length of preliminary F10.7 data downloads
+
 [0.0.9] - 2022-12-21
 --------------------
 * Deprecations
@@ -20,7 +25,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed F10.7 prelim and daily metadata to allow the fill value to keep the
     same type as the data
 * Maintenance
-  * Updated the GitHub action version numbers
+  * Updated the GitHub Action version numbers
   * Updated syntax for pysat instrument testing suite
   * Remove deprecated pytest syntax (backwards support for nose)
   * Removed deprecated pandas syntax (iteritems)

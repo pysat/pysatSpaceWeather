@@ -324,7 +324,7 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
     # Load the desired data
     if kp_inst is None:
         kp_inst = pysat.Instrument(inst_module=pysat_sw.instruments.sw_kp,
-                                   tag='', pad=pds.DateOffset(days=1))
+                                   tag='', pad=dt.timedelta(days=1))
 
     if kp_inst.empty:
         load_kwargs = {'date': inst.index[0], 'end_date': inst.index[-1],
@@ -335,8 +335,8 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
         kp_inst.load(**load_kwargs)
 
     # Begin filtering, starting at the beginning of the instrument data
-    sel_data = kp_inst[(inst.index[0] - pds.DateOffset(days=1)):
-                       (inst.index[-1] + pds.DateOffset(days=1))]
+    sel_data = kp_inst[(inst.index[0] - dt.timedelta(days=1)):
+                       (inst.index[-1] + dt.timedelta(days=1))]
     ind, = np.where((sel_data[var_name] > max_kp)
                     | (sel_data[var_name] < min_kp))
 

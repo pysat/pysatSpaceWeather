@@ -473,7 +473,6 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     Called by pysat. Not intended for direct use by user.
 
     """
-
     # Download standard F107 data
     if tag == 'historic':
         # Test the date array, updating it if necessary
@@ -498,6 +497,10 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         # Get the local files, to ensure that the version 1 files are
         # downloaded again if more data has been added
         local_files = list_files(tag, inst_id, data_path)
+
+        # Cut the date from the end of the local files
+        for i, lfile in enumerate(local_files):
+            local_files[i] = lfile[:-11]
 
         # To avoid downloading multiple files, cycle dates based on file length
         dl_date = date_array[0]

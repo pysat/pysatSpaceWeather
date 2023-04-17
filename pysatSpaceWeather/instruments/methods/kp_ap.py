@@ -292,8 +292,9 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
 
     Parameters
     ----------
-    inst : pysat.Instrument
-        Instrument with non-Kp data to be filtered by geomagnetic activity
+    inst : pysat.Instrument or NoneType
+        Instrument with non-Kp data to be filtered by geomagnetic activity or
+        None to use the definitive Kp data from GFZ
     min_kp : float
         Minimum Kp value allowed. Kp values below this filter the data in
         inst (default=0)

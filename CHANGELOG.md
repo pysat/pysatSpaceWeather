@@ -3,10 +3,13 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[0.0.10] - 2023-04-18
+[0.0.10] - 2023-05-05
 ---------------------
 * Maintenance
   * Bumped the NEP29 numpy version in tests
+  * Updated the docstring, updated the default Kp instrument, and added an
+    error catch for empty Instruments in the
+    `instruments.methods.kp_ap.filter_geomag` function
 * Bugs
   * Fixed a bug evaluating the length of preliminary F10.7 data downloads
   * Fixed a bug in some versions where empty time indexes cannot be evaluated

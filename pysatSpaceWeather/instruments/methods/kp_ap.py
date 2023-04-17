@@ -308,6 +308,11 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
     var_name : str
         String providing the variable name for the Kp data (default='Kp')
 
+    Raises
+    ------
+    IOError
+        If no data is available to load
+
     Note
     ----
     Loads Kp data for the same timeframe covered by inst and sets inst.data to
@@ -324,7 +329,7 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
     # Load the desired data
     if kp_inst is None:
         kp_inst = pysat.Instrument(inst_module=pysat_sw.instruments.sw_kp,
-                                   tag='', pad=dt.timedelta(days=1))
+                                   tag='def', pad=dt.timedelta(days=1))
 
     if kp_inst.empty:
         load_kwargs = {'date': inst.index[0], 'end_date': inst.index[-1],
@@ -333,6 +338,12 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
             load_kwargs['use_header'] = True
 
         kp_inst.load(**load_kwargs)
+
+    if kp_inst.empty:
+        raise IOError(
+            'unable to load {:} data for {:}, check local data'.format(
+                ':'.join([inst.platform, inst.name, inst.tag, inst.inst_id]),
+                eval(load_kwargs)))
 
     # Begin filtering, starting at the beginning of the instrument data
     sel_data = kp_inst[(inst.index[0] - dt.timedelta(days=1)):

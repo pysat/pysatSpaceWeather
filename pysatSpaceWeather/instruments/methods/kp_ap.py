@@ -337,7 +337,12 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
         if Version(pysat.__version__) > Version('3.0.1'):
             load_kwargs['use_header'] = True
 
-        kp_inst.load(**load_kwargs)
+        # TODO(#117): This gets around a bug in pysat that will be fixed in
+        # pysat version 3.1.0+
+        try:
+            kp_inst.load(**load_kwargs)
+        except TypeError:
+            pass
 
     if kp_inst.empty:
         raise IOError(

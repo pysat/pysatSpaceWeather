@@ -293,8 +293,7 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
     Parameters
     ----------
     inst : pysat.Instrument or NoneType
-        Instrument with non-Kp data to be filtered by geomagnetic activity or
-        None to use the definitive Kp data from GFZ
+        Instrument with non-Kp data to be filtered by geomagnetic activity
     min_kp : float
         Minimum Kp value allowed. Kp values below this filter the data in
         inst (default=0)
@@ -305,14 +304,14 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
         Number of hours to filter data after Kp drops below max_kp (default=24)
     kp_inst : pysat.Instrument or NoneType
         Kp pysat.Instrument object with or without data already loaded. If None,
-        will load GFZ historic kp data for the instrument date (default=None)
+        will load GFZ definitive kp data for the instrument date (default=None)
     var_name : str
         String providing the variable name for the Kp data (default='Kp')
 
     Raises
     ------
     IOError
-        If no data is available to load
+        If no Kp data is available to load
 
     Note
     ----
@@ -342,9 +341,9 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
 
     if kp_inst.empty:
         raise IOError(
-            'unable to load {:} data for {:}, check local data'.format(
+            'unable to load {:} data for {:}-{:}, check local data'.format(
                 ':'.join([inst.platform, inst.name, inst.tag, inst.inst_id]),
-                eval(load_kwargs)))
+                inst.index[0], inst.index[-1]))
 
     # Begin filtering, starting at the beginning of the instrument data
     sel_data = kp_inst[(inst.index[0] - dt.timedelta(days=1)):

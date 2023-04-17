@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.0.10] - 2023-04-18
 ---------------------
+* Maintenance
+  * Bumped the NEP29 numpy version in tests
 * Bugs
   * Fixed a bug evaluating the length of preliminary F10.7 data downloads
   * Fixed a bug in some versions where empty time indexes cannot be evaluated

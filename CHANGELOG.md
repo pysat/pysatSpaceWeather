@@ -3,19 +3,18 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[0.1.0] - 2023-XX-XX
---------------------
-* Enhancements
-  * Changed downloads to write files across multiple Instruments, when the
-    remote files contain a mix of data products
-  * Added new instruments: sw_ae, sw_al, sw_au, sw_ap, sw_apo, sw_cp, sw_flare,
-    sw_hpo, sw_polar-cap, sw_sbfield, sw_ssn, and sw_storm-prob
-  * Added new data sources (tag 'now') for the F10.7 from GFZ
-  * Created a general download routine for the GFZ and LASP data
-  * Added new examples to the documentation
+[0.0.10] - 2023-05-05
+---------------------
 * Maintenance
+  * Bumped the NEP29 numpy version in tests
+  * Updated the docstring, updated the default Kp instrument, and added an
+    error catch for empty Instruments in the
+    `instruments.methods.kp_ap.filter_geomag` function
   * Updated standards for Github Actions workflows
   * Added a manual test to install the pysatSpaceWeather RC
+* Bugs
+  * Fixed a bug evaluating the length of preliminary F10.7 data downloads
+  * Fixed a bug in some versions where empty time indexes cannot be evaluated
 
 [0.0.9] - 2022-12-21
 --------------------
@@ -34,7 +33,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed F10.7 prelim and daily metadata to allow the fill value to keep the
     same type as the data
 * Maintenance
-  * Updated the GitHub action version numbers
+  * Updated the GitHub Action version numbers
   * Updated syntax for pysat instrument testing suite
   * Remove deprecated pytest syntax (backwards support for nose)
   * Removed deprecated pandas syntax (iteritems)

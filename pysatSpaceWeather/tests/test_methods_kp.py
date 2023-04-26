@@ -457,12 +457,11 @@ class TestSWKp(object):
 
     def test_filter_geomag_load_kp(self):
         """Test geomag_filter loading the Kp instrument."""
-
         try:
             kp_ap.filter_geomag(self.testInst)
             assert len(self.testInst.index) == 12  # No filtering with defaults
-        except KeyError:
-            pass  # Routine failed on filtering, after loading w/o Kp data
+        except IOError as ierr:
+            assert str(ierr).find('unable to load') >= 0  # No data to load
         return
 
 

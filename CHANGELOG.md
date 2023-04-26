@@ -13,6 +13,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added new data sources (tag 'now') for the F10.7 from GFZ
   * Created a general download routine for the GFZ and LASP data
   * Added new examples to the documentation
+* Maintenance
+  * Updated standards for Github Actions workflows
+  * Added a manual test to install the pysatSpaceWeather RC
 
 [0.0.9] - 2022-12-21
 --------------------

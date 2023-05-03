@@ -6,5 +6,5 @@ m2r2
 numpydoc
 pytest-cov
 pytest-ordering
-sphinx
+sphinx<7.0
 sphinx_rtd_theme

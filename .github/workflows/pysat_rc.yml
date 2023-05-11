@@ -23,7 +23,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install pysat RC
-      run: pip install --no-deps -i https://test.pypi.org/simple/ pysat
+      run: pip install --no-deps --pre -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysat
 
     - name: Install standard dependencies
       run: |

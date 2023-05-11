@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated the docstring, updated the default Kp instrument, and added an
     error catch for empty Instruments in the
     `instruments.methods.kp_ap.filter_geomag` function
+  * Updated GitHub Action workflow installs
 * Bugs
   * Fixed a bug evaluating the length of preliminary F10.7 data downloads
   * Fixed a bug in some versions where empty time indexes cannot be evaluated

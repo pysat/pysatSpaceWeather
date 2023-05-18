@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[0.0.10] - 2023-05-05
+[0.0.10] - 2023-05-19
 ---------------------
 * Maintenance
   * Bumped the NEP29 numpy version in tests

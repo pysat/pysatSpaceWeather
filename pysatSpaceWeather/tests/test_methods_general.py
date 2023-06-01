@@ -40,7 +40,6 @@ class TestGeneralMethods(object):
         general.preprocess(self.testInst)
 
         # Test the output
-        for var in self.testInst.meta.keys():
-            assert np.isnan(
-                self.testInst.meta[var, self.testInst.meta.labels.fill_val])
+        assert np.isnan(
+            self.testInst.meta[var, self.testInst.meta.labels.fill_val])
         return

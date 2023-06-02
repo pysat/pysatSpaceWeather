@@ -4,7 +4,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
 # ----------------------------------------------------------------------------
-"""Provides routines to support the geomagnetic indeces, Kp and Ap."""
+"""Provides routines to support the geomagnetic indices, Kp and Ap."""
 
 import datetime as dt
 import numpy as np
@@ -14,6 +14,8 @@ import pandas as pds
 import pysat
 
 import pysatSpaceWeather as pysat_sw
+from pysatSpaceWeather.instruments.methods import gfz
+from pysatSpaceWeather.instruments.methods import swpc
 
 
 # --------------------------------------------------------------------------
@@ -30,15 +32,14 @@ def acknowledgements(name, tag):
         Instrument tag.
 
     """
-    swpc = ''.join(['Prepared by the U.S. Dept. of Commerce, NOAA, Space ',
-                    'Weather Prediction Center'])
-    gfz = ''.join(['CC BY 4.0, The Kp index was introduced by Bartels (1949) ',
-                   'and is produced by Geomagnetic Observatory Niemegk, GFZ ',
-                   'German Research Centre for Geosciences.  Please cite the',
-                   " references in the 'references' attribute"])
 
     ackn = {'kp': {'': 'Provided by GFZ German Research Centre for Geosciences',
-                   'forecast': swpc, 'recent': swpc, 'def': gfz, 'now': gfz}}
+                   'forecast': swpc.ackn, 'recent': swpc.ackn, 'def': gfz.ackn,
+                   'now': gfz.ackn, 'prediction': swpc.ackn},
+            'ap': {'forecast': swpc.ackn, 'recent': swpc.ackn,
+                   'prediction': swpc.ackn, '45day': swpc.ackn,
+                   'def': gfz.ackn, 'now': gfz.ackn},
+            'cp': {'def': gfz.ackn, 'now': gfz.ackn}}
 
     return ackn[name][tag]
 
@@ -76,18 +77,14 @@ def references(name, tag):
                                    "K-derived planetary indices: description ",
                                    "and availability, Rev. Geophys. 29, 3, ",
                                    "415-432, 1991."])])
-    gfz_refs = '\n'.join([''.join(["Matzka, J., Bronkalla, O., Tornow, K., ",
-                                   "Elger, K. and Stolle, C., 2021. ",
-                                   "Geomagnetic Kp index. V. 1.0. GFZ Data ",
-                                   "Services, doi:10.5880/Kp.0001"]),
-                          ''.join(["Matzka, J., Stolle, C., Yamazaki, Y., ",
-                                   "Bronkalla, O. and Morschhauser, A., 2021. ",
-                                   "The geomagnetic Kp index and derived ",
-                                   "indices of geomagnetic activity. Space ",
-                                   "Weather,doi:10.1029/2020SW002641"])])
 
     refs = {'kp': {'': gen_refs, 'forecast': gen_refs, 'recent': gen_refs,
-                   'def': gfz_refs, 'now': gfz_refs}}
+                   'prediction': gen_refs, 'def': gfz.geoind_refs,
+                   'now': gfz.geoind_refs},
+            'ap': {'recent': gen_refs, 'forecast': gen_refs, '45day': gen_refs,
+                   'prediction': gen_refs, 'def': gfz.geoind_refs,
+                   'now': gfz.geoind_refs},
+            'cp': {'def': gfz.geoind_refs, 'now': gfz.geoind_refs}}
 
     return refs[name][tag]
 
@@ -135,6 +132,43 @@ def initialize_ap_metadata(meta, data_key, fill_val=-1):
                       meta.labels.desc: "ap (equivalent range) index",
                       meta.labels.min_val: 0,
                       meta.labels.max_val: 400,
+                      meta.labels.fill_val: fill_val}
+
+    return
+
+
+def initialize_bartel_metadata(meta, data_key, fill_val=-1):
+    """Initialize the Bartel rotation meta data using our knowledge of the data.
+
+    Parameters
+    ----------
+    meta : pysat._meta.Meta
+        Pysat Metadata
+    data_key : str
+        String denoting the data key
+    fill_val : int or float
+        File-specific fill value (default=-1)
+
+    """
+
+    if data_key.find('solar_rotation_num') >= 0:
+        units = ''
+        bname = 'Bartels solar rotation number'
+        desc = 'A sequence of 27-day intervals counted from February 8, 1832'
+        max_val = np.inf
+    elif data_key.find('day_within') >= 0:
+        units = 'day'
+        bname = 'Days within Bartels solar rotation'
+        desc = 'Number of day within the Bartels solar rotation',
+        max_val = 27
+    else:
+        raise ValueError('unknown data key: {:}'.format(data_key))
+
+    meta[data_key] = {meta.labels.units: units,
+                      meta.labels.name: bname,
+                      meta.labels.desc: desc,
+                      meta.labels.min_val: 1,
+                      meta.labels.max_val: max_val,
                       meta.labels.fill_val: fill_val}
 
     return

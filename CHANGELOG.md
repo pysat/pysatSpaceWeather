@@ -3,6 +3,17 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.1.0] - 2023-XX-XX
+--------------------
+* Enhancements
+  * Changed downloads to write files across multiple Instruments, when the
+    remote files contain a mix of data products
+  * Added new instruments: sw_ae, sw_al, sw_au, sw_ap, sw_apo, sw_cp, sw_flare,
+    sw_hpo, sw_polar-cap, sw_sbfield, sw_ssn, and sw_storm-prob
+  * Added new data sources (tag 'now') for the F10.7 from GFZ
+  * Created a general download routine for the GFZ and LASP data
+  * Added new examples to the documentation
+
 [0.0.10] - 2023-06-01
 ---------------------
 * Maintenance

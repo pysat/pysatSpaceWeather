@@ -195,7 +195,9 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None):
 
         if(len(date_array) > 1 or date_array[0].year != now.year
            or date_array[0].month != now.month or date_array[0].day != now.day):
-            logger.warning('real-time data only available for current day')
+            logger.warning(''.join(['real-time data only available for current',
+                                    ' day, data in this file will have the ',
+                                    'wrong date']))
     else:
         data_rate = 1 if name in ['mag', 'swepam'] else 5
         file_fmt = '_'.join(["%Y%m%d", "ace", name,

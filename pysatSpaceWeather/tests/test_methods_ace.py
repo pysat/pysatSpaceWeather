@@ -47,6 +47,16 @@ class TestACEMethods(object):
         assert str(kerr.value).find('unknown ACE instrument') >= 0
         return
 
+    def test_clean_bad_inst(self):
+        """Test AttributeError is raised with a non-ACE instrument."""
+        inst = pysat.Instrument('pysat', 'testing')
+
+        with pytest.raises(AttributeError) as aerr:
+            mm_ace.clean(inst)
+
+        assert str(aerr.value).find("Can't apply ACE cleaning to platform") >= 0
+        return
+
 
 @pytest.mark.skipif(Version(pysat.__version__) < Version('3.0.2'),
                     reason="Requires time routine available in pysat 3.0.2+")

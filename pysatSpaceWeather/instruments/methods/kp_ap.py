@@ -326,7 +326,7 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
 
     Parameters
     ----------
-    inst : pysat.Instrument or NoneType
+    inst : pysat.Instrument
         Instrument with non-Kp data to be filtered by geomagnetic activity
     min_kp : float
         Minimum Kp value allowed. Kp values below this filter the data in
@@ -338,14 +338,9 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
         Number of hours to filter data after Kp drops below max_kp (default=24)
     kp_inst : pysat.Instrument or NoneType
         Kp pysat.Instrument object with or without data already loaded. If None,
-        will load GFZ definitive kp data for the instrument date (default=None)
+        will load GFZ historic kp data for the instrument date (default=None)
     var_name : str
         String providing the variable name for the Kp data (default='Kp')
-
-    Raises
-    ------
-    IOError
-        If no Kp data is available to load
 
     Note
     ----
@@ -363,7 +358,7 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
     # Load the desired data
     if kp_inst is None:
         kp_inst = pysat.Instrument(inst_module=pysat_sw.instruments.sw_kp,
-                                   tag='def', pad=dt.timedelta(days=1))
+                                   tag='', pad=pds.DateOffset(days=1))
 
     if kp_inst.empty:
         load_kwargs = {'date': inst.index[0], 'end_date': inst.index[-1],
@@ -371,22 +366,11 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
         if Version(pysat.__version__) > Version('3.0.1'):
             load_kwargs['use_header'] = True
 
-        # TODO(#117): This gets around a bug in pysat that will be fixed in
-        # pysat version 3.1.0+
-        try:
-            kp_inst.load(**load_kwargs)
-        except TypeError:
-            pass
-
-    if kp_inst.empty:
-        raise IOError(
-            'unable to load {:} data for {:}-{:}, check local data'.format(
-                ':'.join([inst.platform, inst.name, inst.tag, inst.inst_id]),
-                inst.index[0], inst.index[-1]))
+        kp_inst.load(**load_kwargs)
 
     # Begin filtering, starting at the beginning of the instrument data
-    sel_data = kp_inst[(inst.index[0] - dt.timedelta(days=1)):
-                       (inst.index[-1] + dt.timedelta(days=1))]
+    sel_data = kp_inst[(inst.index[0] - pds.DateOffset(days=1)):
+                       (inst.index[-1] + pds.DateOffset(days=1))]
     ind, = np.where((sel_data[var_name] > max_kp)
                     | (sel_data[var_name] < min_kp))
 

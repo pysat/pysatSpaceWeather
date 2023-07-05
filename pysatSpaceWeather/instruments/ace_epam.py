@@ -70,6 +70,9 @@ _test_dates = {inst_id: {'realtime': dt.datetime(now.year, now.month, now.day),
                          'historic': dt.datetime(2009, 1, 1)}
                for inst_id in inst_ids.keys()}
 
+# Set clean warning tests
+_clean_warn = mm_ace.clean_warn
+
 # ----------------------------------------------------------------------------
 # Instrument methods
 

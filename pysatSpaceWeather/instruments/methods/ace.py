@@ -15,9 +15,9 @@ import requests
 import pysat
 
 logger = pysat.logger
-clean_warn = {'dusty': ('logger', 'WARN',
-                        "unused clean level 'dusty', reverting to 'clean'",
-                        'clean')}
+clean_warn = {'dusty': [('logger', 'WARN',
+                         "unused clean level 'dusty', reverting to 'clean'",
+                         'clean')]}
 
 
 def acknowledgements():

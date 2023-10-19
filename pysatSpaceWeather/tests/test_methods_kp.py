@@ -373,7 +373,7 @@ class TestSWKp(object):
 
         # Assert the converted Kp meta data exists and is reasonable
         assert 'Kp' in kp_meta.keys()
-        assert(kp_meta['Kp'][kp_meta.labels.fill_val] == -1)
+        assert kp_meta['Kp'][kp_meta.labels.fill_val] == -1
 
         return
 
@@ -387,7 +387,7 @@ class TestSWKp(object):
 
         # Assert the converted Kp meta data exists and is reasonable
         assert 'Kp' in kp_meta.keys()
-        assert(kp_meta['Kp'][kp_meta.labels.fill_val] == -1)
+        assert kp_meta['Kp'][kp_meta.labels.fill_val] == -1
 
         del kp_out, kp_meta
         return
@@ -402,7 +402,7 @@ class TestSWKp(object):
 
         # Assert the converted Kp meta data exists and is reasonable
         assert 'Kp' in kp_meta.keys()
-        assert(kp_meta['Kp'][kp_meta.labels.fill_val] == -1)
+        assert kp_meta['Kp'][kp_meta.labels.fill_val] == -1
 
         del kp_out, kp_meta
         return
@@ -594,8 +594,8 @@ class TestSwKpCombine(object):
         assert kp_inst.variables[0] == 'Kp'
 
         # Fill value is defined by combine
-        assert(kp_inst.meta['Kp'][kp_inst.meta.labels.fill_val]
-               == self.combine['fill_val'])
+        assert (kp_inst.meta['Kp'][kp_inst.meta.labels.fill_val]
+                == self.combine['fill_val'])
         assert (kp_inst['Kp'] != self.combine['fill_val']).all()
 
         del kp_inst
@@ -612,8 +612,8 @@ class TestSwKpCombine(object):
         assert kp_inst.index[-1] < self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
-        assert(kp_inst.meta['Kp'][kp_inst.meta.labels.fill_val]
-               == self.combine['fill_val'])
+        assert (kp_inst.meta['Kp'][kp_inst.meta.labels.fill_val]
+                == self.combine['fill_val'])
         assert (kp_inst['Kp'] == self.combine['fill_val']).any()
 
         del kp_inst, combo_in
@@ -648,8 +648,8 @@ class TestSwKpCombine(object):
         assert kp_inst.index[-1] < self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
-        assert(kp_inst.meta['Kp'][kp_inst.meta.labels.fill_val]
-               == self.combine['fill_val'])
+        assert (kp_inst.meta['Kp'][kp_inst.meta.labels.fill_val]
+                == self.combine['fill_val'])
         assert len(kp_inst['Kp'][kp_inst['Kp']]
                    == self.combine['fill_val']) > 0
 

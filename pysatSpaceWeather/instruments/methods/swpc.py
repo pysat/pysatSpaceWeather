@@ -316,8 +316,8 @@ def parse_daily_solar_data(data_lines, year, optical):
             if year == 1994 and kk == 'new_reg':
                 # New regions only in files after 1994
                 val = -999
-            elif((year == 1994 and kk in xray_keys)
-                 or (not optical and kk in optical_keys)):
+            elif np.any([year == 1994 and kk in xray_keys,
+                         not optical and kk in optical_keys]):
                 # X-ray flares in files after 1994, optical flares come later
                 val = -1
             else:

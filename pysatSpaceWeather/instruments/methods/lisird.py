@@ -148,8 +148,12 @@ def download(date_array, data_path, local_file_prefix, local_date_fmt,
                 raise IOError(''.join(['Gateway timeout when requesting ',
                                        'file using command: ', url]))
 
-            if req.ok:
-                raw_dict = json.loads(req.text)[lisird_data_name]
+            # Load the dict if text was retrieved
+            json_dict = json.loads(req.text) if req.ok else {'': {}}
+
+            # Download any data in the query
+            if lisird_data_name in json_dict.keys():
+                raw_dict = json_dict[lisird_data_name]
                 data = pds.DataFrame.from_dict(raw_dict['samples'])
                 if data.empty:
                     pysat.logger.warning("no data for {:}".format(dl_date))
@@ -162,6 +166,7 @@ def download(date_array, data_path, local_file_prefix, local_date_fmt,
                              + dt.timedelta(microseconds=frac_sec[i] * 6)
                              for i, tval in enumerate(data.pop('time'))]
                     data.index = times
+                    data.index.name = 'Epoch'
 
                     # Replace fill value with NaNs
                     for var in fill_vals.keys():
@@ -176,8 +181,13 @@ def download(date_array, data_path, local_file_prefix, local_date_fmt,
                     # Create a local CSV file
                     data.to_csv(local_file, header=True)
             else:
-                pysat.logger.info("".join(["Data not downloaded for ",
-                                           dl_date.strftime("%d %b %Y"),
-                                           ", date may be out of range ",
-                                           "for the database."]))
+                if len(json_dict.keys()) == 1 and '' in json_dict.keys():
+                    pysat.logger.info("".join(["Data not downloaded for ",
+                                               dl_date.strftime("%d %b %Y"),
+                                               ", date may be out of range ",
+                                               "for the database."]))
+                else:
+                    raise IOError(''.join(['Returned unexpectedly formatted ',
+                                           'data using command: ', url]))
+
     return

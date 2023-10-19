@@ -1,7 +1,7 @@
 *~
 .DS_store
 
-# Python Repository Ignores as Recommended by github.com########################
+# Python Repository Ignores as Recommended by github.com
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

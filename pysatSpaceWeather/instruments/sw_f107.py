@@ -99,7 +99,7 @@ lasp_stime = dt.datetime(1947, 2, 14)
 
 _test_dates = {'': {'historic': dt.datetime(2009, 1, 1),
                     'prelim': dt.datetime(2009, 1, 1),
-                    'daily': tomorrow,
+                    'daily': today,
                     'forecast': tomorrow,
                     '45day': tomorrow}}
 

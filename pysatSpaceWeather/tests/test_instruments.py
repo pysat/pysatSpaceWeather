@@ -34,6 +34,7 @@ class TestInstruments(clslib.InstLibTests):
     ----
     All standard tests, setup, and teardown inherited from the core pysat
     instrument test class.
+
     """
 
 

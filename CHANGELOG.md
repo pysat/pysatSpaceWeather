@@ -14,6 +14,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Created a general download routine for the GFZ and LASP data
   * Added new examples to the documentation
   * Added new test attributes for clean messages to the ACE instruments
+* Maintenance
+  * Updated the LISIRD download routine to reflect new behaviour
+  * Changed F10.7 daily test day to ensure new pysat padding tests work
 
 [0.0.10] - 2023-06-01
 ---------------------

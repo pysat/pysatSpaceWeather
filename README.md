@@ -26,7 +26,7 @@ Python 3.7+.
 
 | Common modules | Community modules |
 | -------------- | ----------------- |
-| netCDF4        | pysat >= 3.0.4    |
+| netCDF4        | pysat >= 3.1.0    |
 | numpy          |                   |
 | pandas         |                   |
 | requests       |                   |
@@ -51,11 +51,6 @@ cd pysatSpaceWeather/
 python setup.py install
 ```
 
-Note: pre-0.1.0 version
------------------------
-pysatSpaceWeather is currently in an alpha development phase.  Feedback and
-contributions are appreciated.
-
 # Examples
 
 The instrument modules are portable and designed to be run like any pysat
@@ -64,7 +59,7 @@ instrument.
 ```
 import pysat
 import pysatSpaceWeather
-dst = pysat.Instrument(inst_module=pysatSpaceWeather.instruments.sw_dist)
+dst = pysat.Instrument(inst_module=pysatSpaceWeather.instruments.sw_dst)
 ```
 
 Another way to use the instruments in an external repository is to register the

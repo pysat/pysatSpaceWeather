@@ -7,4 +7,4 @@ except ImportError:
 
 from pysatSpaceWeather import instruments  # noqa F401
 
-__version__ = metadata.version('PACKAGENAME')
+__version__ = metadata.version('pysatSpaceWeather')

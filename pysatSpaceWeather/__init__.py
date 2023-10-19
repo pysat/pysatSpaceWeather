@@ -5,7 +5,7 @@ try:
     from importlib import resources
 except ImportError:
     import importlib_metadata as metadata
-    import importlib-resources as resources
+    import importlib_resources as resources
 
 from pysatSpaceWeather import instruments  # noqa F401
 

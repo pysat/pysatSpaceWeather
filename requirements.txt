@@ -1,3 +1,4 @@
+importlib-resources
 netCDF4
 numpy
 packaging

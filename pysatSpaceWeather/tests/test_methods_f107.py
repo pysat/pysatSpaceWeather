@@ -109,14 +109,14 @@ class TestSWF107(object):
         assert 'f107a' in self.testInst.meta.keys()
 
         # Assert the finite values have realistic means
-        assert(np.nanmin(self.testInst['f107a'])
-               > np.nanmin(self.testInst['f107']))
-        assert(np.nanmax(self.testInst['f107a'])
-               < np.nanmax(self.testInst['f107']))
+        assert (np.nanmin(self.testInst['f107a'])
+                > np.nanmin(self.testInst['f107']))
+        assert (np.nanmax(self.testInst['f107a'])
+                < np.nanmax(self.testInst['f107']))
 
         # Assert the expected number of fill values
-        assert(len(self.testInst['f107a'][np.isnan(self.testInst['f107a'])])
-               == 40)
+        assert (len(self.testInst['f107a'][np.isnan(self.testInst['f107a'])])
+                == 40)
         return
 
 

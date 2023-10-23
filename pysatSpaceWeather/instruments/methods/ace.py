@@ -196,8 +196,9 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None):
         file_fmt = "{:s}-{:s}.txt".format("ace", "magnetometer"
                                           if name == "mag" else name)
 
-        if(len(date_array) > 1 or date_array[0].year != now.year
-           or date_array[0].month != now.month or date_array[0].day != now.day):
+        if any([len(date_array) > 1, date_array[0].year != now.year,
+                date_array[0].month != now.month,
+                date_array[0].day != now.day]):
             logger.warning(''.join(['real-time data only available for current',
                                     ' day, data in this file will have the ',
                                     'wrong date']))

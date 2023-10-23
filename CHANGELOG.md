@@ -14,6 +14,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Created a general download routine for the GFZ and LASP data
   * Added new examples to the documentation
   * Added new test attributes for clean messages to the ACE instruments
+* Maintenance
+  * Updated package documentation, yamls, and other supporting files
 
 [0.0.10] - 2023-06-01
 ---------------------

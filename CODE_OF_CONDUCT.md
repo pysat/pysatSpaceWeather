@@ -72,5 +72,11 @@ This Code of Conduct is adapted from the [Contributor Covenant][homepage],
 version 1.4, available at
 [https://contributor-covenant.org/version/1/4][version]
 
+## FAQ
+
+For answers to common questions about this code of conduct, see
+[https://www.contributor-covenant.org/faq][faq]
+
 [homepage]: https://contributor-covenant.org
 [version]: https://contributor-covenant.org/version/1/4/
+[faq]: https://www.contributor-covenant.org/faq

@@ -1,16 +1,16 @@
-"""Initialization file for pysatSpaceWeather module."""
+"""Core library for pysatSpaceWeather."""
 
-import os
+try:
+    from importlib import metadata
+    from importlib import resources
+except ImportError:
+    import importlib_metadata as metadata
+    import importlib_resources as resources
+from os import path
 
 from pysatSpaceWeather import instruments  # noqa F401
 
-# Set directory for test data
-proj_dir = os.path.abspath(os.path.dirname(__file__))
-test_data_path = os.path.join(proj_dir, 'tests', 'test_data')
-
-# Set the package version
-with open(os.path.join(proj_dir, "version.txt"), "r") as fin:
-    __version__ = fin.read().strip()
-
-# Clean up
-del proj_dir, fin
+__version__ = metadata.version('pysatSpaceWeather')
+test_data_path = path.join(
+    path.split(str(resources.path(__package__, '__init__.py').__enter__()))[0],
+    'tests', 'test_data')

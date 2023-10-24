@@ -140,7 +140,10 @@ class TestSWF107Combine(object):
         self.combine_times = {"start": self.test_day - dt.timedelta(days=30),
                               "stop": self.test_day + dt.timedelta(days=3)}
         self.load_kwargs = {}
-        if Version(pysat.__version__) > Version('3.0.1'):
+        
+        # TODO(#131): Remove version check after min version supported is 3.2.0
+        if all([Version(pysat.__version__) > Version('3.0.1'),
+                Version(pysat.__version__) < Version('3.2.0')]):
             self.load_kwargs['use_header'] = True
 
         return

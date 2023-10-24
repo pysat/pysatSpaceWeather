@@ -166,7 +166,10 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                 # Set the load kwargs, which vary by pysat version and tag
                 load_kwargs = {'date': itime}
 
-                if Version(pysat.__version__) > Version('3.0.1'):
+                # TODO(#131): Remove version check after minimum version
+                # supported is 3.2.0
+                if all([Version(pysat.__version__) > Version('3.0.1'),
+                        Version(pysat.__version__) < Version('3.2.0')]):
                     load_kwargs['use_header'] = True
 
                 if standard_inst.tag == 'daily':
@@ -214,7 +217,11 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
             for filename in files:
                 if filename is not None:
                     load_kwargs = {'fname': filename}
-                    if Version(pysat.__version__) > Version('3.0.1'):
+
+                    # TODO(#131): Remove version check after minimum version
+                    # supported is 3.2.0
+                    if all([Version(pysat.__version__) > Version('3.0.1'),
+                            Version(pysat.__version__) < Version('3.2.0')]):
                         load_kwargs['use_header'] = True
 
                     forecast_inst.load(**load_kwargs)

@@ -65,7 +65,14 @@ class TestACESWEPAMMethods(object):
 
     def setup_method(self):
         """Create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', use_header=True)
+
+        # TODO(#131): Remove version check after min version supported is 3.2.0
+        inst_kwargs = dict()
+        if all([Version(pysat.__version__) > Version('3.0.1'),
+                Version(pysat.__version__) < Version('3.2.0')]):
+            inst_kwargs['use_header'] = True
+
+        self.testInst = pysat.Instrument('pysat', 'testing', **inst_kwargs)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
 
         self.omni_keys = ['sw_proton_dens_norm', 'sw_ion_temp_norm']

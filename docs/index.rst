@@ -9,7 +9,7 @@ routines to load common historic, real-time, and forecasted space weather
 indices as pysat.Instrument objects.
 
 .. toctree::
-   :maxdepth: -1
+   :maxdepth: 2
 
    overview.rst
    installation.rst

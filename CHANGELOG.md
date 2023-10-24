@@ -18,6 +18,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated package documentation, yamls, and other supporting files
   * Updated the LISIRD download routine to reflect new behaviour
   * Changed F10.7 daily test day to ensure new pysat padding tests work
+  * Removed try/except loop that was a fix for pysat < 3.1.0
+  * Updated 'use_header' kwarg use for pysat 3.2.0 changes
 
 [0.0.10] - 2023-06-01
 ---------------------

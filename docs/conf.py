@@ -97,6 +97,9 @@ todo_include_todos = True
 # a list of builtin themes.
 html_theme = 'sphinx_rtd_theme'
 html_theme_path = ["_themes", ]
+html_logo = os.path.join(os.path.abspath('.'), 'figures',
+                         'pysatSpaceWeather.png')
+html_theme_options = {'logo_only': True}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

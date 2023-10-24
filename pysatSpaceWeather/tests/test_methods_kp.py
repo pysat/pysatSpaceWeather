@@ -134,7 +134,7 @@ class TestApInitMetadata(TestKpInitMetadata):
         if all([Version(pysat.__version__) > Version('3.0.1'),
                 Version(pysat.__version__) < Version('3.2.0')]):
             inst_dict['use_header'] = True
-    
+
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing', **inst_dict)
         test_time = pysat.instruments.pysat_testing._test_dates['']['']

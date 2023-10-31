@@ -153,7 +153,7 @@ def load(fnames, tag='', inst_id=''):
     return data, meta
 
 
-def download(date_array, tag, inst_id, data_path):
+def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
     """Download the storm probabilities from the appropriate repository.
 
     Parameters
@@ -166,6 +166,14 @@ def download(date_array, tag, inst_id, data_path):
         Specifies the instrument identification, not used.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        If not None, will process any files with the correct name and date
+        as if they were downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied.
 
     Note
     ----
@@ -178,9 +186,10 @@ def download(date_array, tag, inst_id, data_path):
     """
 
     if tag == 'forecast':
-        methods.swpc.geomag_forecast_download(name, date_array, data_path)
+        methods.swpc.geomag_forecast_download(name, date_array, data_path,
+                                              mock_download_dir)
     elif tag == 'prediction':
-        methods.swpc.solar_geomag_predictions_download(name, date_array,
-                                                       data_path)
+        methods.swpc.solar_geomag_predictions_download(
+            name, date_array, data_path, mock_download_dir)
 
     return

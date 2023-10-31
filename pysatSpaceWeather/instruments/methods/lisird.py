@@ -92,7 +92,8 @@ def build_lisird_url(lisird_data_name, start, stop):
 
 
 def download(date_array, data_path, local_file_prefix, local_date_fmt,
-             lisird_data_name, freq, update_files=False, fill_vals=None):
+             lisird_data_name, freq, update_files=False, fill_vals=None,
+             mock_download_dir=None):
     """Download routine for LISIRD data.
 
     Parameters
@@ -114,16 +115,26 @@ def download(date_array, data_path, local_file_prefix, local_date_fmt,
         Re-download data for files that already exist if True (default=False)
     fill_vals : dict or NoneType
         Dict of fill values to replace with NaN by variable name or None to
-        leave alone
+        leave alone (default=None)
+    mock_download_dir : str or NoneType
+        If not None, will process any files with the correct name and date
+        as if they were downloaded (default=None)
 
     Raises
     ------
     IOError
-        If there is a gateway timeout when downloading data
+        If there is a gateway timeout when downloading data or an unknown mock
+        download directory is supplied.
     KeyError
-        If the `fill_vals` input does not match the downloaded data
+        If the `fill_vals` input does not match the downloaded data.
 
     """
+    # If a mock download directory was supplied, test to see it exists
+    if mock_download_dir is not None:
+        if not os.path.isdir(mock_download_dir):
+            raise IOError('file location is not a directory: {:}'.format(
+                mock_download_dir))
+
     # Initialize the fill_vals dict, if necessary
     if fill_vals is None:
         fill_vals = {}
@@ -131,25 +142,37 @@ def download(date_array, data_path, local_file_prefix, local_date_fmt,
     # Cycle through all the dates
     for dl_date in date_array:
         # Build the local filename
-        local_file = os.path.join(
-            data_path, ''.join([local_file_prefix,
-                                dl_date.strftime(local_date_fmt), '.txt']))
+        fname = ''.join([local_file_prefix, dl_date.strftime(local_date_fmt),
+                         '.txt'])
+        local_file = os.path.join(data_path, fname)
 
         # Determine if the download should occur
         if update_files or not os.path.isfile(local_file):
-            # Get the URL for the desired data
-            url = build_lisird_url(lisird_data_name, dl_date, dl_date + freq)
+            if mock_download_dir is None:
+                # Get the URL for the desired data
+                url = build_lisird_url(lisird_data_name, dl_date,
+                                       dl_date + freq)
 
-            # The data is returned as a JSON file
-            req = requests.get(url)
+                # The data is returned as a JSON file
+                req = requests.get(url)
 
-            # Process the JSON file
-            if req.text.find('Gateway Timeout') >= 0:
-                raise IOError(''.join(['Gateway timeout when requesting ',
-                                       'file using command: ', url]))
+                # Process the JSON file
+                if req.text.find('Gateway Timeout') >= 0:
+                    raise IOError(''.join(['Gateway timeout when requesting ',
+                                           'file using command: ', url]))
 
-            # Load the dict if text was retrieved
-            json_dict = json.loads(req.text) if req.ok else {'': {}}
+                # Load the dict if text was retrieved
+                json_dict = json.loads(req.text) if req.ok else {'': {}}
+            else:
+                # Get the local repository filename
+                url = os.path.join(mock_download_dir, fname)
+                if os.path.isfile(url):
+                    with open(url, 'r') as fpin:
+                        raw_txt = fpin.read()
+
+                    json_dict = json.loads(raw_txt)
+                else:
+                    json_dict = {'': {}}
 
             if lisird_data_name in json_dict.keys():
                 raw_dict = json_dict[lisird_data_name]
@@ -183,7 +206,9 @@ def download(date_array, data_path, local_file_prefix, local_date_fmt,
                     pysat.logger.info("".join(["Data not downloaded for ",
                                                dl_date.strftime("%d %b %Y"),
                                                ", date may be out of range ",
-                                               "for the database."]))
+                                               "for the database or the local",
+                                               " repository file may be ",
+                                               "missing: ", url]))
                 else:
                     raise IOError(''.join(['Returned unexpectedly formatted ',
                                            'data using command: ', url]))

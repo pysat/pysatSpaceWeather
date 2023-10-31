@@ -165,7 +165,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
     return files
 
 
-def download(date_array, tag, inst_id, data_path, update_files=False):
+def download(date_array, tag, inst_id, data_path, update_files=False,
+             mock_download_dir=None):
     """Download the apo index data from the appropriate repository.
 
     Parameters
@@ -180,6 +181,9 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         Path to data directory.
     update_files : bool
         Re-download data for files that already exist if True (default=False)
+    mock_download_dir : str or NoneType
+        If not None, will process any files with the correct name and date
+        as if they were downloaded (default=None)
 
     Note
     ----
@@ -188,6 +192,11 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     Warnings
     --------
     Only able to download current recent data, not archived forecasts.
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied.
 
     """
 
@@ -200,6 +209,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
     # Call the download routine
     methods.gfz.json_downloads(date_array, data_path, local_file_prefix,
                                local_date_fmt, gfz_data_name, freq,
-                               update_files=update_files)
+                               update_files=update_files,
+                               mock_download_dir=mock_download_dir)
 
     return

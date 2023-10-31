@@ -66,3 +66,48 @@ def get_instrument_data_path(inst_mod_name, tag='', inst_id='', **kwargs):
     del temp_inst
 
     return data_path
+
+
+def get_local_or_remote_text(url, mock_download_dir, filename):
+    """Retrieve text from a remote or local file.
+
+    Parameters
+    ----------
+    filename : str
+        Filename without any directory structure
+    url : str
+        Remote URL where file is located
+    mock_download_dir : str or NoneType
+        If not None, directory where file is located
+
+    Returns
+    -------
+    raw_txt : str
+        All the text from the desired file.
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the file is
+        missing.
+
+    """
+    if mock_download_dir is None:
+        # Set the download webpage
+        furl = ''.join([url, filename])
+        req = requests.get(furl)
+        raw_txt = req.text
+    else:
+        if not os.path.isdir(mock_download_dir):
+            raise IOError('file location is not a directory: {:}'.format(
+                mock_download_dir))
+
+        furl = os.path.join(mock_download_dir, filename)
+
+        if os.path.isfile(furl):
+            with open(furl, 'r') as fpin:
+                raw_txt = fpin.read()
+        else:
+            raise IOError('desired file is missing: {:}.'.format(furl))
+
+    return raw_txt

@@ -30,7 +30,7 @@ forecast_warning = ''.join(['This routine can only download the current ',
 # ----------------------------------------------------------------------------
 # Define the module functions
 
-def daily_dsd_download(name, today, data_path):
+def daily_dsd_download(name, today, data_path, mock_download_dir=None):
     """Download the daily NOAA Daily Solar Data indices.
 
     Parameters
@@ -41,6 +41,15 @@ def daily_dsd_download(name, today, data_path):
         Datetime for current day
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        If not None, will process any files with the correct name and date
+        as if they were downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the desired file
+        is missing.
 
     Note
     ----
@@ -50,9 +59,10 @@ def daily_dsd_download(name, today, data_path):
     """
     pysat.logger.info('This routine only downloads the latest 30 day file')
 
-    # Set the download webpage
-    furl = 'https://services.swpc.noaa.gov/text/daily-solar-indices.txt'
-    req = requests.get(furl)
+    # Get the file information
+    raw_txt = general.get_local_or_remote_text(
+        'https://services.swpc.noaa.gov/text/', mock_download_dir,
+        'daily-solar-indices.txt')
 
     # Get the file paths and output names
     file_paths = {data_name: data_path if name == data_name else
@@ -69,12 +79,13 @@ def daily_dsd_download(name, today, data_path):
         pysat.utils.files.check_and_make_path(data_path)
 
     # Save the output
-    rewrite_daily_solar_data_file(today.year, outfiles, req.text)
+    rewrite_daily_solar_data_file(today.year, outfiles, raw_txt)
 
     return
 
 
-def old_indices_dsd_download(name, date_array, data_path, local_files, today):
+def old_indices_dsd_download(name, date_array, data_path, local_files, today,
+                             mock_download_dir=None):
     """Download the old NOAA Daily Solar Data indices.
 
     Parameters
@@ -89,6 +100,14 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today):
         A Series containing the local filenames indexed by time.
     today : dt.datetime
         Datetime for current day
+    mock_download_dir : str or NoneType
+        If not None, will process any files with the correct name and date
+        as if they were downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied.
 
     Note
     ----
@@ -106,10 +125,14 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today):
     for data_path in file_paths.values():
         pysat.utils.files.check_and_make_path(data_path)
 
-    # Connect to the host, default port
-    ftp = ftplib.FTP('ftp.swpc.noaa.gov')
-    ftp.login()  # User anonymous, passwd anonymous
-    ftp.cwd('/pub/indices/old_indices')
+    if mock_download_dir is None:
+        # Connect to the host, default port
+        ftp = ftplib.FTP('ftp.swpc.noaa.gov')
+        ftp.login()  # User anonymous, passwd anonymous
+        ftp.cwd('/pub/indices/old_indices')
+    elif not os.path.isdir(mock_download_dir):
+        raise IOError('file location is not a directory: {:}'.format(
+            mock_download_dir))
 
     bad_fname = list()
 
@@ -165,37 +188,44 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today):
             # Attempt to download if the file does not exist or if the
             # file has been updated
             if rewritten or not downloaded:
-                try:
-                    sys.stdout.flush()
-                    ftp.retrbinary('RETR ' + fname,
-                                   open(saved_fname, 'wb').write)
+                if mock_download_dir is None:
+                    try:
+                        sys.stdout.flush()
+                        ftp.retrbinary('RETR ' + fname,
+                                       open(saved_fname, 'wb').write)
+                        downloaded = True
+                        pysat.logger.info(' '.join(('Downloaded file for ',
+                                                    dl_date.strftime('%x'))))
+
+                    except ftplib.error_perm as exception:
+                        # Could not fetch, so cannot rewrite
+                        rewritten = False
+
+                        # Test for an error
+                        if str(exception.args[0]).split(" ", 1)[0] != '550':
+                            raise IOError(exception)
+                        else:
+                            # File isn't actually there, try the next name.  The
+                            # extra wrapping is for Windows, which can encounter
+                            # permission errors when handling files.
+                            attempt = 0
+                            while attempt < 100:
+                                try:
+                                    os.remove(saved_fname)
+                                    attempt = 100
+                                except PermissionError:
+                                    attempt += 1
+
+                            # Save this so we don't try again. Because there are
+                            # two possible filenames for each time, it's ok if
+                            # one isn't there.  We just don't want to keep
+                            # looking for it.
+                            bad_fname.append(fname)
+                else:
+                    # Set the saved filename
+                    saved_fname = os.path.join(mock_download_dir, local_fname)
                     downloaded = True
-                    pysat.logger.info(' '.join(('Downloaded file for ',
-                                                dl_date.strftime('%x'))))
-
-                except ftplib.error_perm as exception:
-                    # Could not fetch, so cannot rewrite
-                    rewritten = False
-
-                    # Test for an error
-                    if str(exception.args[0]).split(" ", 1)[0] != '550':
-                        raise IOError(exception)
-                    else:
-                        # File isn't actually there, try the next name.  The
-                        # extra wrapping is for Windows, which can encounter
-                        # permission errors when handling files.
-                        attempt = 0
-                        while attempt < 100:
-                            try:
-                                os.remove(saved_fname)
-                                attempt = 100
-                            except PermissionError:
-                                attempt += 1
-
-                        # Save this so we don't try again. Because there are two
-                        # possible filenames for each time, it's ok if one isn't
-                        # there.  We just don't want to keep looking for it.
-                        bad_fname.append(fname)
+                    rewritten = True
 
             # If the first file worked, don't try again
             if downloaded:
@@ -215,7 +245,8 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today):
         dl_date = vend[iname] + pds.DateOffset(days=1)
 
     # Close connection after downloading all dates
-    ftp.close()
+    if mock_download_dir is None:
+        ftp.close()
     return
 
 
@@ -334,7 +365,8 @@ def parse_daily_solar_data(data_lines, year, optical):
     return dates, values
 
 
-def solar_geomag_predictions_download(name, date_array, data_path):
+def solar_geomag_predictions_download(name, date_array, data_path,
+                                      mock_download_dir=None):
     """Download the 3-day solar-geomagnetic predictions from SWPC.
 
     Parameters
@@ -346,6 +378,15 @@ def solar_geomag_predictions_download(name, date_array, data_path):
         Array-like or index of datetimes to be downloaded.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        If not None, will process any files with the correct name and date
+        as if they were downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the desired file
+        is missing.
 
     Note
     ----
@@ -367,27 +408,27 @@ def solar_geomag_predictions_download(name, date_array, data_path):
     for data_path in file_paths.values():
         pysat.utils.files.check_and_make_path(data_path)
 
-    # Download webpage
-    furl = ''.join(['https://services.swpc.noaa.gov/text/',
-                    '3-day-solar-geomag-predictions.txt'])
-    req = requests.get(furl)
+    # Get the file information
+    raw_txt = general.get_local_or_remote_text(
+        'https://services.swpc.noaa.gov/text/', mock_download_dir,
+        '3-day-solar-geomag-predictions.txt')
 
     # Parse text to get the date the prediction was generated
-    date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
+    date_str = raw_txt.split(':Issued: ')[-1].split(' UTC')[0]
     dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
 
     # Parse the data to get the prediction dates
-    date_strs = req.text.split(':Prediction_dates:')[-1].split('\n')[0]
+    date_strs = raw_txt.split(':Prediction_dates:')[-1].split('\n')[0]
     pred_times = [dt.datetime.strptime(' '.join(date_str.split()), '%Y %b %d')
                   for date_str in date_strs.split('  ') if len(date_str) > 0]
 
     # Separate out the data by chunks
-    ap_raw = req.text.split(':Geomagnetic_A_indices:')[-1]
-    kp_raw = req.text.split(':Pred_Mid_k:')[-1]
-    storm_raw = req.text.split(':Prob_Mid:')[-1]
-    pc_raw = req.text.split(':Polar_cap:')[-1]
-    f107_raw = req.text.split(':10cm_flux:')[-1]
-    flare_raw = req.text.split(':Whole_Disk_Flare_Prob:')[-1]
+    ap_raw = raw_txt.split(':Geomagnetic_A_indices:')[-1]
+    kp_raw = raw_txt.split(':Pred_Mid_k:')[-1]
+    storm_raw = raw_txt.split(':Prob_Mid:')[-1]
+    pc_raw = raw_txt.split(':Polar_cap:')[-1]
+    f107_raw = raw_txt.split(':10cm_flux:')[-1]
+    flare_raw = raw_txt.split(':Whole_Disk_Flare_Prob:')[-1]
 
     # Initalize the data for each data type
     data_vals = {data_name: dict() for data_name in file_paths.keys()}
@@ -490,7 +531,8 @@ def solar_geomag_predictions_download(name, date_array, data_path):
     return
 
 
-def geomag_forecast_download(name, date_array, data_path):
+def geomag_forecast_download(name, date_array, data_path,
+                             mock_download_dir=None):
     """Download the 3-day geomagnetic Kp, ap, and storm data from SWPC.
 
     Parameters
@@ -501,6 +543,15 @@ def geomag_forecast_download(name, date_array, data_path):
         Array-like or index of datetimes to be downloaded.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        If not None, will process any files with the correct name and date
+        as if they were downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the desored file
+        is missing.
 
     Note
     ----
@@ -520,18 +571,19 @@ def geomag_forecast_download(name, date_array, data_path):
     for data_path in file_paths.values():
         pysat.utils.files.check_and_make_path(data_path)
 
-    # Download webpage
-    furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
-    req = requests.get(furl)
+    # Get the file information
+    raw_txt = general.get_local_or_remote_text(
+        'https://services.swpc.noaa.gov/text/', mock_download_dir,
+        '3-day-geomag-forecast.txt')
 
     # Parse text to get the date the prediction was generated
-    date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
+    date_str = raw_txt.split(':Issued: ')[-1].split(' UTC')[0]
     dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
 
     # Separate out the data by chunks
-    ap_raw = req.text.split('NOAA Ap Index Forecast')[-1]
-    kp_raw = req.text.split('NOAA Kp index forecast ')[-1]
-    storm_raw = req.text.split('NOAA Geomagnetic Activity Probabilities')[-1]
+    ap_raw = raw_txt.split('NOAA Ap Index Forecast')[-1]
+    kp_raw = raw_txt.split('NOAA Kp index forecast ')[-1]
+    storm_raw = raw_txt.split('NOAA Geomagnetic Activity Probabilities')[-1]
 
     # Get dates of the forecasts
     date_str = kp_raw[0:6] + ' ' + str(dl_date.year)
@@ -601,7 +653,7 @@ def geomag_forecast_download(name, date_array, data_path):
     return
 
 
-def kp_ap_recent_download(name, date_array, data_path):
+def kp_ap_recent_download(name, date_array, data_path, mock_download_dir=None):
     """Download recent Kp and ap data from SWPC.
 
     Parameters
@@ -612,6 +664,15 @@ def kp_ap_recent_download(name, date_array, data_path):
         Array-like or index of datetimes to be downloaded.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        If not None, will process any files with the correct name and date
+        as if they were downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the desired file
+        is missing.
 
     Note
     ----
@@ -631,17 +692,17 @@ def kp_ap_recent_download(name, date_array, data_path):
     for data_path in file_paths.values():
         pysat.utils.files.check_and_make_path(data_path)
 
-    # Download webpage
-    rurl = ''.join(('https://services.swpc.noaa.gov/text/',
-                    'daily-geomagnetic-indices.txt'))
-    req = requests.get(rurl)
+    # Get the file information
+    raw_txt = general.get_local_or_remote_text(
+        'https://services.swpc.noaa.gov/text/', mock_download_dir,
+        'daily-geomagnetic-indices.txt')
 
     # Parse text to get the date the prediction was generated
-    date_str = req.text.split(':Issued: ')[-1].split('\n')[0]
+    date_str = raw_txt.split(':Issued: ')[-1].split('\n')[0]
     dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
 
     # Data is the forecast value for the next three days
-    raw_data = req.text.split('#  Date ')[-1]
+    raw_data = raw_txt.split('#  Date ')[-1]
 
     # Keep only the middle bits that matter
     raw_data = raw_data.split('\n')[1:-1]
@@ -698,7 +759,8 @@ def kp_ap_recent_download(name, date_array, data_path):
     return
 
 
-def recent_ap_f107_download(name, date_array, data_path):
+def recent_ap_f107_download(name, date_array, data_path,
+                            mock_download_dir=None):
     """Download 45-day ap and F10.7 data from SWPC.
 
     Parameters
@@ -709,6 +771,15 @@ def recent_ap_f107_download(name, date_array, data_path):
         Array-like or index of datetimes to be downloaded.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        If not None, will process any files with the correct name and date
+        as if they were downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the desored file
+        is missing.
 
     Note
     ----
@@ -728,16 +799,17 @@ def recent_ap_f107_download(name, date_array, data_path):
     for data_path in file_paths.values():
         pysat.utils.files.check_and_make_path(data_path)
 
-    # Set the download webpage
-    furl = 'https://services.swpc.noaa.gov/text/45-day-ap-forecast.txt'
-    req = requests.get(furl)
+    # Get the file information
+    raw_txt = general.get_local_or_remote_text(
+        'https://services.swpc.noaa.gov/text/', mock_download_dir,
+        '45-day-ap-forecast.txt')
 
     # Parse text to get the date the prediction was generated
-    date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
+    date_str = raw_txt.split(':Issued: ')[-1].split(' UTC')[0]
     dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
 
     # Get to the forecast data
-    raw_data = req.text.split('45-DAY AP FORECAST')[-1]
+    raw_data = raw_txt.split('45-DAY AP FORECAST')[-1]
 
     # Grab Ap part
     raw_ap = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[0]

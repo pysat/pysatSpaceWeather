@@ -98,7 +98,14 @@ def get_local_or_remote_text(url, mock_download_dir, filename):
         # Set the download webpage
         furl = ''.join([url, filename])
         req = requests.get(furl)
-        raw_txt = req.text if req.ok else None
+
+        if req.text.find('not found on this server') > 0:
+            # Ensure useful information about server is passed on to user
+            pysat.logger.warning('File {:} not found: {:}'.format(filename,
+                                                                  url))
+            raw_txt = None
+        else:
+            raw_txt = req.text if req.ok else None
     else:
         if not os.path.isdir(mock_download_dir):
             raise IOError('file location is not a directory: {:}'.format(

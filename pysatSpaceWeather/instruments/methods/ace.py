@@ -244,45 +244,40 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None,
                                        "data may have been saved to an ",
                                        "unexpected filename. Check URL: ",
                                        url[tag], ", or directory: ",
-                                       mock_download_dir]))
+                                       repr(mock_download_dir)]))
         else:
             # Split the file at the last header line and the new line markers
             raw_data = raw_data.split('#-----------------')[-1]
             raw_data = raw_data.split('\n')[1:]  # Remove the last header line
 
-            # Test to see if the file was found on the server
-            if ' '.join(raw_data).find('not found on this server') > 0:
-                logger.warning('File {:} not found: {:}'.format(
-                    dl_date.strftime(file_fmt), url[tag]))
-            else:
-                # Parse the file, treating the 4 time columns separately
-                data_dict = {col: list() for col in data_cols[name]}
-                times = list()
-                nsplit = len(data_cols[name]) + 4
-                for raw_line in raw_data:
-                    split_line = raw_line.split()
-                    if len(split_line) == nsplit:
-                        times.append(dt.datetime.strptime(
-                            ' '.join(split_line[:4]), '%Y %m %d %H%M'))
-                        for i, col in enumerate(data_cols[name]):
-                            # Convert to a number and save
-                            #
-                            # Output is saved as a float, so don't bother to
-                            # differentiate between int and float
-                            data_dict[col].append(float(split_line[4 + i]))
-                    else:
-                        if len(split_line) > 0:
-                            raise IOError(''.join([
-                                'unexpected line encoutered in ', url[tag], "/",
-                                dl_date.strftime(file_fmt), ":\n", raw_line]))
+            # Parse the file, treating the 4 time columns separately
+            data_dict = {col: list() for col in data_cols[name]}
+            times = list()
+            nsplit = len(data_cols[name]) + 4
+            for raw_line in raw_data:
+                split_line = raw_line.split()
+                if len(split_line) == nsplit:
+                    times.append(dt.datetime.strptime(
+                        ' '.join(split_line[:4]), '%Y %m %d %H%M'))
+                    for i, col in enumerate(data_cols[name]):
+                        # Convert to a number and save
+                        #
+                        # Output is saved as a float, so don't bother to
+                        # differentiate between int and float
+                        data_dict[col].append(float(split_line[4 + i]))
+                else:
+                    if len(split_line) > 0:
+                        raise IOError(''.join([
+                            'unexpected line encoutered in ', url[tag], "/",
+                            dl_date.strftime(file_fmt), ":\n", raw_line]))
 
-                # Put data into nicer DataFrame
-                data = pds.DataFrame(data_dict, index=times)
+            # Put data into nicer DataFrame
+            data = pds.DataFrame(data_dict, index=times)
 
-                # Write out as a file
-                data_file = '{:s}.txt'.format(
-                    '_'.join(["ace", name, tag, dl_date.strftime('%Y-%m-%d')]))
-                data.to_csv(os.path.join(data_path, data_file), header=True)
+            # Write out as a file
+            data_file = '{:s}.txt'.format(
+                '_'.join(["ace", name, tag, dl_date.strftime('%Y-%m-%d')]))
+            data.to_csv(os.path.join(data_path, data_file), header=True)
 
     return
 

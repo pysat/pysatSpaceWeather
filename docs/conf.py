@@ -180,6 +180,5 @@ epub_exclude_files = ['search.html']
 intersphinx_mapping = {'https://docs.python.org/': None}
 
 # Links to ignore when checking for stability
-linkcheck_ignore = [r'https://lasp.colorado.edu/space_weather/dsttemerin/',
-                    r'https://lasp.colorado.edu/lisird/latis/dap/QUERY',
-                    r'https://kp.gfz-potsdam.de/app/json/?QUERY']
+linkcheck_ignore = ['https://lasp.colorado.edu/space_weather/dsttemerin/',
+                    'https://*QUERY']

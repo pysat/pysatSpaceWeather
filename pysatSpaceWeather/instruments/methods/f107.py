@@ -156,7 +156,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     f107_values = list()
 
     # Cycle through the desired time range
-    itime = start
+    itime = dt.datetime(start.year, start.month, start.day)
 
     while itime < stop and inst_flag is not None:
         # Load and save the standard data for as many times as possible

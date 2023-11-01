@@ -260,7 +260,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
     return out_files
 
 
-def download(date_array, tag, inst_id, data_path, update_files=False.
+def download(date_array, tag, inst_id, data_path, update_files=False,
              mock_download_dir=None):
     """Download solar magnetic field data from the appropriate repository.
 

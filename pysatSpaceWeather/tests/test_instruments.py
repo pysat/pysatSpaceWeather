@@ -347,7 +347,8 @@ class TestMockDownloads(object):
         del self.dkwargs, self.tempdir, self.saved_path
         return
 
-    @pytest.mark.parametrize("inst_dict", instruments['download'])
+    @pytest.mark.parametrize("inst_dict", instruments['download']
+                             + instruments['no_download'])
     def test_error_bad_dir(self, inst_dict):
         """Test IOError is raised for a bad mock-download directory.
 
@@ -369,7 +370,8 @@ class TestMockDownloads(object):
                                input_args=[date], input_kwargs=self.dkwargs)
         return
 
-    @pytest.mark.parametrize("inst_dict", instruments['download'])
+    @pytest.mark.parametrize("inst_dict", instruments['download']
+                             + instruments['no_download'])
     def test_loginfo_missing_file(self, inst_dict, caplog):
         """Test log for info about a missing file when using mock downloads.
 
@@ -395,7 +397,8 @@ class TestMockDownloads(object):
             captured)
         return
 
-    @pytest.mark.parametrize("inst_dict", instruments['download'])
+    @pytest.mark.parametrize("inst_dict", instruments['download']
+                             + instruments['no_download'])
     def test_mock_download(self, inst_dict):
         """Test pysat's ability to process files downloaded by a user.
 

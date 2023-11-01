@@ -252,7 +252,9 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today,
                 lines = fprelim.read()
 
             rewrite_daily_solar_data_file(dl_date.year, outfiles, lines)
-            os.remove(saved_fname)
+            if mock_download_dir is None:
+                # Only remove the file if it wasn't obtained from a local dir
+                os.remove(saved_fname)
 
         # Cycle to the next date
         dl_date = vend[iname] + pds.DateOffset(days=1)

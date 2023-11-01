@@ -206,9 +206,9 @@ def download(date_array, data_path, local_file_prefix, local_date_fmt,
                     pysat.logger.info("".join(["Data not downloaded for ",
                                                dl_date.strftime("%d %b %Y"),
                                                ", date may be out of range ",
-                                               "for the database or the local",
-                                               " repository file may be ",
-                                               "missing: ", url]))
+                                               "for the database or data may ",
+                                               "have been saved to an ",
+                                               "unexpected filename: ", url]))
                 else:
                     raise IOError(''.join(['Returned unexpectedly formatted ',
                                            'data using command: ', url]))

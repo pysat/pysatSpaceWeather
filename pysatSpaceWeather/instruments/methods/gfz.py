@@ -324,8 +324,9 @@ def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path,
                 pysat.logger.info("".join(["Unable to download data for ",
                                            dl_date.strftime("%d %b %Y"),
                                            ", date may be out of range for ",
-                                           "the database or missing from the",
-                                           " local directory: ", furl]))
+                                           "the database or data may have been",
+                                           " saved to an unexpected filename: ",
+                                           furl]))
     return
 
 

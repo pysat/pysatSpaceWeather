@@ -301,6 +301,6 @@ def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
 
     # Download the desired data
     lisird.download(date_array, data_path, local_file_prefix, local_date_fmt,
-                    lisird_data_name, freq, mock_download_dir)
+                    lisird_data_name, freq, mock_download_dir=mock_download_dir)
 
     return

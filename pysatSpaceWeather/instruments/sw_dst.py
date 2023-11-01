@@ -307,6 +307,11 @@ def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
                 down_fname = os.path.join(mock_download_dir, fname)
                 if os.path.isfile(down_fname):
                     shutil.copyfile(down_fname, saved_fname)
+                else:
+                    pysat.logger.info("".join(["Data not downloaded for ",
+                                               down_fname, ", data may have ",
+                                               "been saved to an unexpected ",
+                                               "filename."]))
 
         if mock_download_dir is None:
             ftp.close()

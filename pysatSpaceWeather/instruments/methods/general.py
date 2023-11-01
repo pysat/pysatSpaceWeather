@@ -84,21 +84,21 @@ def get_local_or_remote_text(url, mock_download_dir, filename):
 
     Returns
     -------
-    raw_txt : str
-        All the text from the desired file.
+    raw_txt : str or NoneType
+        All the text from the desired file or None if the file could not be
+        retrieved
 
     Raises
     ------
     IOError
-        If an unknown mock download directory is supplied or the file is
-        missing.
+        If an unknown mock download directory is supplied.
 
     """
     if mock_download_dir is None:
         # Set the download webpage
         furl = ''.join([url, filename])
         req = requests.get(furl)
-        raw_txt = req.text
+        raw_txt = req.text if req.ok else None
     else:
         if not os.path.isdir(mock_download_dir):
             raise IOError('file location is not a directory: {:}'.format(
@@ -110,6 +110,6 @@ def get_local_or_remote_text(url, mock_download_dir, filename):
             with open(furl, 'r') as fpin:
                 raw_txt = fpin.read()
         else:
-            raise IOError('desired file is missing: {:}.'.format(furl))
+            raw_txt = None
 
     return raw_txt

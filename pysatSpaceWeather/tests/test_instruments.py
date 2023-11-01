@@ -203,7 +203,7 @@ class TestSWInstrumentLogging(object):
 
         # Test the warning
         captured = caplog.text
-        assert captured.find('date may be out of range for the database.') >= 0
+        assert captured.find('date may be out of range for the database') >= 0
 
         # Test the file was not downloaded
         assert inst.today() not in inst.files.files.index
@@ -276,7 +276,7 @@ class TestSWInstrumentLogging(object):
         # Test the warning
         captured = caplog.text
         assert captured.find(
-            'not found on server') >= 0, "Unexpected text: {:}".format(captured)
+            'not found:') >= 0, "Unexpected text: {:}".format(captured)
 
         # Test the file was not downloaded
         assert past_time not in inst.files.files.index

@@ -54,7 +54,7 @@ tomorrow = today + dt.timedelta(days=1)
 # ----------------------------------------------------------------------------
 # Instrument test attributes
 
-_test_dates = {'': {'noaa': dt.datetime(2007, 1, 1), 'lasp': today}}
+_test_dates = {'': {'noaa': dt.datetime(2000, 1, 1), 'lasp': today}}
 
 # Other tags assumed to be True
 _test_download_ci = {'': {'noaa': False}}

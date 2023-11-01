@@ -3,6 +3,8 @@
 
 import importlib
 import numpy as np
+import os
+import requests
 
 import pysat
 

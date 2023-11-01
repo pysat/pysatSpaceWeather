@@ -360,6 +360,6 @@ def download(date_array, tag, inst_id, data_path, update_files=False,
 
     elif tag == 'prediction':
         methods.swpc.solar_geomag_predictions_download(
-            name, date_array, data_path, mock_download_Dir)
+            name, date_array, data_path, mock_download_dir)
 
     return

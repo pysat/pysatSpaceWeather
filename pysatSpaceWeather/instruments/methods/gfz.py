@@ -132,7 +132,6 @@ def json_downloads(date_array, data_path, local_file_prefix, local_date_fmt,
                     raise IOError(''.join(['Gateway timeout when requesting ',
                                            'file using command: ', query_url]))
 
-                
                 raw_txt = req.text if req.ok else None
             else:
                 # Get the text from the downloaded file

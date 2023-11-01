@@ -10,7 +10,6 @@ import datetime as dt
 import numpy as np
 import os
 import pandas as pds
-import requests
 
 import pysat
 
@@ -265,7 +264,9 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None,
                 else:
                     if len(split_line) > 0:
                         raise IOError(''.join(['unexpected line encoutered in ',
-                                               furl, ":\n", raw_line]))
+                                               url[tag], "/",
+                                               dl_date.strftime(file_fmt),
+                                               ":\n", raw_line]))
 
             # Put data into nicer DataFrame
             data = pds.DataFrame(data_dict, index=times)

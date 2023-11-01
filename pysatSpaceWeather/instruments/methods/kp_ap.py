@@ -238,7 +238,7 @@ def convert_3hr_kp_to_ap(kp_inst, var_name='Kp'):
 
 
 def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
-                  running_name=None):
+                  running_name=None, min_periods=8):
     """Calculate the daily Ap index from the 3hr ap index.
 
     Parameters
@@ -252,6 +252,9 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
     running_name : str or NoneType
         Column name for daily running average of ap, not output if None
         (default=None)
+    min_periods : int
+        Mininmum number of observations needed to output an average value
+        (default=8)
 
     Raises
     ------
@@ -276,7 +279,8 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
         raise ValueError("daily Ap column name already exists: " + daily_name)
 
     # Calculate the daily mean value
-    ap_mean = ap_inst[ap_name].rolling(window='1D', min_periods=8).mean()
+    ap_mean = ap_inst[ap_name].rolling(window='1D',
+                                       min_periods=min_periods).mean()
 
     if running_name is not None:
         ap_inst[running_name] = ap_mean
@@ -430,9 +434,9 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap', kp_name='Kp'):
 
     # Set the metadata
     meta = pysat.Meta()
-    meta[kp_name] = initialize_kp_metadata(meta, 'Kp', fill_val)
-    meta[meta.labels.desc] = 'Kp converted from {:}'.format(ap_name)
-    meta[meta.labels.notes] = ''.join(
+    initialize_kp_metadata(meta, 'Kp', fill_val)
+    meta['Kp', meta.labels.desc] = 'Kp converted from {:}'.format(ap_name)
+    meta['Kp', meta.labels.notes] = ''.join(
         ['Kp converted from ', ap_name, 'as described at: ',
          'https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html'])
 

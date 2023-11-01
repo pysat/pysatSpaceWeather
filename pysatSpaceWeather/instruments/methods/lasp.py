@@ -64,8 +64,8 @@ def prediction_downloads(name, tag, data_path, mock_download_dir=None):
             with open(url, 'r') as fpin:
                 raw_txt = fpin.read()
         else:
-            pysat.logger.warning(''.join(['LASP last 96 hour Dst file not ',
-                                          'found in local directory: ', url,
+            pysat.logger.warning(''.join(['LASP last 96 hour file not found in',
+                                          'the local directory: ', url,
                                           ", data may have been saved to an ",
                                           "unexpected filename"]))
             raw_txt = None

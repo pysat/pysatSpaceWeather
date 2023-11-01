@@ -10,3 +10,4 @@ tools
    examples/ex_kp.rst
    examples/ex_ace.rst
    examples/ex_mult_downloads.rst
+   examples/ex_mock_downloads.rst

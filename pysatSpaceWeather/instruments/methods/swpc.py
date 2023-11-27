@@ -41,8 +41,9 @@ def daily_dsd_download(name, today, data_path, mock_download_dir=None):
     data_path : str
         Path to data directory.
     mock_download_dir : str or NoneType
-        If not None, will process any files with the correct name and date
-        as if they were downloaded (default=None)
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Raises
     ------
@@ -106,8 +107,9 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today,
     today : dt.datetime
         Datetime for current day
     mock_download_dir : str or NoneType
-        If not None, will process any files with the correct name and date
-        as if they were downloaded (default=None)
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Raises
     ------
@@ -394,8 +396,9 @@ def solar_geomag_predictions_download(name, date_array, data_path,
     data_path : str
         Path to data directory.
     mock_download_dir : str or NoneType
-        If not None, will process any files with the correct name and date
-        as if they were downloaded (default=None)
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Raises
     ------
@@ -570,8 +573,9 @@ def geomag_forecast_download(name, date_array, data_path,
     data_path : str
         Path to data directory.
     mock_download_dir : str or NoneType
-        If not None, will process any files with the correct name and date
-        as if they were downloaded (default=None)
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Raises
     ------
@@ -697,8 +701,9 @@ def kp_ap_recent_download(name, date_array, data_path, mock_download_dir=None):
     data_path : str
         Path to data directory.
     mock_download_dir : str or NoneType
-        If not None, will process any files with the correct name and date
-        as if they were downloaded (default=None)
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Raises
     ------
@@ -810,8 +815,9 @@ def recent_ap_f107_download(name, date_array, data_path,
     data_path : str
         Path to data directory.
     mock_download_dir : str or NoneType
-        If not None, will process any files with the correct name and date
-        as if they were downloaded (default=None)
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Raises
     ------

@@ -80,9 +80,9 @@ def json_downloads(date_array, data_path, local_file_prefix, local_date_fmt,
         If true, selects only the definitive data, otherwise also includes
         nowcast data (default=False)
     mock_download_dir : str or NoneType
-        If not None, will process any files with the correct name and date
-        (following the local file prefix and date format) as if they were
-        downloaded (default=None)
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date (following the local
+        file prefix and date format) as if they were downloaded (default=None)
 
     Raises
     ------
@@ -188,8 +188,9 @@ def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path,
     data_path : str
         Path to data directory.
     mock_download_dir : str or NoneType
-        If not None, will process any files with the correct name and date
-        as if they were downloaded (default=None)
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date (following the local
+        file prefix and date format) as if they were downloaded (default=None)
 
     Raises
     ------

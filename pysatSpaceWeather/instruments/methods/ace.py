@@ -177,8 +177,9 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None,
         Current universal time, if None this is determined for each
         download. (default=None)
     mock_download_dir : str or NoneType
-        If not None, will process any files with the correct name and date
-        as if they were downloaded (default=None)
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Raises
     ------

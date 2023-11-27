@@ -80,7 +80,9 @@ def get_local_or_remote_text(url, mock_download_dir, filename):
     url : str
         Remote URL where file is located
     mock_download_dir : str or NoneType
-        If not None, directory where file is located
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Returns
     -------

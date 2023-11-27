@@ -228,8 +228,9 @@ def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
     data_path : str
         Path to data directory.
     mock_download_dir : str or NoneType
-        If not None, will process any files with the correct name and date
-        as if they were downloaded (default=None)
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Note
     ----

@@ -52,7 +52,8 @@ hpo_refs = '\n'.join([''.join(["Yamazaki, Y., Matzka, J., Stolle, C., ",
 # Define the module functions
 
 def json_downloads(date_array, data_path, local_file_prefix, local_date_fmt,
-                   gfz_data_name, freq, update_files=False, is_def=False):
+                   gfz_data_name, freq, update_files=False, is_def=False,
+                   mock_download_dir=None):
     """Download data from GFZ into CSV files at a specified cadence.
 
     Parameters
@@ -78,13 +79,24 @@ def json_downloads(date_array, data_path, local_file_prefix, local_date_fmt,
     is_def : bool
         If true, selects only the definitive data, otherwise also includes
         nowcast data (default=False)
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date (following the local
+        file prefix and date format) as if they were downloaded (default=None)
 
     Raises
     ------
     IOError
-        If there is a gateway timeout when downloading data
+        If there is a gateway timeout when downloading data or if an unknown
+        mock download directory is supplied.
 
     """
+
+    # If a mock download directory was supplied, test to see it exists
+    if mock_download_dir is not None:
+        if not os.path.isdir(mock_download_dir):
+            raise IOError('file location is not a directory: {:}'.format(
+                mock_download_dir))
 
     # Set the local variables
     base_url = "https://kp.gfz-potsdam.de/app/json/"
@@ -94,33 +106,44 @@ def json_downloads(date_array, data_path, local_file_prefix, local_date_fmt,
     # Cycle through all the dates
     for dl_date in date_array:
         # Build the local filename
-        local_file = os.path.join(
-            data_path, ''.join([local_file_prefix,
-                                dl_date.strftime(local_date_fmt), '.txt']))
+        local_fname = ''.join([local_file_prefix,
+                               dl_date.strftime(local_date_fmt), '.txt'])
+        local_file = os.path.join(data_path, local_fname)
 
         # Determine if the download should occur
         if not os.path.isfile(local_file) or (update_files
                                               and local_file != last_file):
-            # Get the URL for the desired data
-            stop = dl_date + freq
-            query_url = "{:s}?start={:s}&end={:s}&index={:s}".format(
-                base_url, dl_date.strftime(time_fmt), stop.strftime(time_fmt),
-                gfz_data_name)
+            if mock_download_dir is None:
+                # Get the URL for the desired data
+                stop = dl_date + freq
+                query_url = "{:s}?start={:s}&end={:s}&index={:s}".format(
+                    base_url, dl_date.strftime(time_fmt),
+                    stop.strftime(time_fmt), gfz_data_name)
 
-            if is_def:
-                # Add the definitive flag
-                query_url = '{:s}&status=def'.format(query_url)
+                if is_def:
+                    # Add the definitive flag
+                    query_url = '{:s}&status=def'.format(query_url)
 
-            # The data is returned as a JSON file
-            req = requests.get(query_url)
+                # The data is returned as a JSON file
+                req = requests.get(query_url)
 
-            # Process the JSON file
-            if req.text.find('Gateway Timeout') >= 0:
-                raise IOError(''.join(['Gateway timeout when requesting ',
-                                       'file using command: ', query_url]))
+                # Process the JSON file
+                if req.text.find('Gateway Timeout') >= 0:
+                    raise IOError(''.join(['Gateway timeout when requesting ',
+                                           'file using command: ', query_url]))
 
-            if req.ok:
-                raw_dict = json.loads(req.text)
+                raw_txt = req.text if req.ok else None
+            else:
+                # Get the text from the downloaded file
+                query_url = os.path.join(mock_download_dir, local_fname)
+                if os.path.isfile(query_url):
+                    with open(query_url, 'r') as fpin:
+                        raw_txt = fpin.read()
+                else:
+                    raw_txt = None
+
+            if raw_txt is not None:
+                raw_dict = json.loads(raw_txt)
                 data = pds.DataFrame.from_dict({gfz_data_name:
                                                 raw_dict[gfz_data_name]})
                 if data.empty:
@@ -139,11 +162,14 @@ def json_downloads(date_array, data_path, local_file_prefix, local_date_fmt,
                 pysat.logger.info("".join(["Data not downloaded for ",
                                            dl_date.strftime("%d %b %Y"),
                                            ", date may be out of range ",
-                                           "for the database."]))
+                                           "for the database or data may ",
+                                           "have been saved to an unexpected",
+                                           " filename: {:}".format(query_url)]))
     return
 
 
-def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path):
+def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path,
+                      mock_download_dir=None):
     """Download Kp, ap, and Cp data from GFZ.
 
     Parameters
@@ -161,6 +187,17 @@ def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path):
         Specifies the instrument identification, not used.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date (following the local
+        file prefix and date format) as if they were downloaded (default=None)
+
+    Raises
+    ------
+    ValueError
+        If an unknown instrument module is supplied.
+    IOError
+        If an unknown mock download directory is supplied.
 
     Note
     ----
@@ -168,6 +205,12 @@ def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path):
     the standard pysat data paths
 
     """
+    # If a mock download directory was supplied, test to see it exists
+    if mock_download_dir is not None:
+        if not os.path.isdir(mock_download_dir):
+            raise IOError('file location is not a directory: {:}'.format(
+                mock_download_dir))
+
     # Set the page for the definitive or nowcast Kp
     burl = ''.join(['https://datapub.gfz-potsdam.de/download/10.5880.Kp.0001',
                     '/Kp_', 'nowcast' if tag == 'now' else 'definitive', '/'])
@@ -201,12 +244,22 @@ def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path):
         if fname not in dnames:
             pysat.logger.info(' '.join(('Downloading file for',
                                         dl_date.strftime('%Y'))))
-            furl = ''.join([burl, fname])
-            req = requests.get(furl)
+            if mock_download_dir is None:
+                furl = ''.join([burl, fname])
+                req = requests.get(furl)
 
-            if req.ok:
+                raw_txt = req.text if req.ok else None
+            else:
+                furl = os.path.join(mock_download_dir, fname)
+                if os.path.isfile(furl):
+                    with open(furl, "r") as fpin:
+                        raw_txt = fpin.read()
+                else:
+                    raw_txt = None
+
+            if raw_txt is not None:
                 # Split the file text into lines
-                lines = req.text.split('\n')[:-1]
+                lines = raw_txt.split('\n')[:-1]
 
                 # Remove the header
                 while lines[0].find('#') == 0:
@@ -272,7 +325,9 @@ def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path):
                 pysat.logger.info("".join(["Unable to download data for ",
                                            dl_date.strftime("%d %b %Y"),
                                            ", date may be out of range for ",
-                                           "the database."]))
+                                           "the database or data may have been",
+                                           " saved to an unexpected filename: ",
+                                           furl]))
     return
 
 

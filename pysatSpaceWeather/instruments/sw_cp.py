@@ -28,7 +28,7 @@ Examples
 --------
 ::
 
-    cp_ind = pysat.Instrument('gfz', 'cp', tag='def')
+    cp_ind = pysat.Instrument('sw', 'cp', tag='def')
     cp_ind.download(start=dt.datetime(2010, 1, 1))
     cp_ind.load(2010, 1)
 
@@ -47,8 +47,8 @@ from pysatSpaceWeather.instruments import methods
 
 platform = 'sw'
 name = 'cp'
-tags = {'def': 'Definitive Kp data from GFZ',
-        'now': 'Nowcast Kp data from GFZ'}
+tags = {'def': 'Definitive Cp data from GFZ',
+        'now': 'Nowcast Cp data from GFZ'}
 inst_ids = {'': list(tags.keys())}
 
 # ----------------------------------------------------------------------------

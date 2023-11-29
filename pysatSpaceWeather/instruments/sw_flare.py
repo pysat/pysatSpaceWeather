@@ -310,7 +310,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
     return out_files
 
 
-def download(date_array, tag, inst_id, data_path, update_files=False):
+def download(date_array, tag, inst_id, data_path, update_files=False,
+             mock_download_dir=None):
     """Download solar flare data from the appropriate repository.
 
     Parameters
@@ -325,12 +326,16 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         Path to data directory.
     update_files : bool
         Re-download data for files that already exist if True (default=False)
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Raises
     ------
     IOError
         If a problem is encountered connecting to the gateway or retrieving
-        data from the repository.
+        data from the remote or local repository.
 
     Warnings
     --------
@@ -347,13 +352,15 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         local_files = list_files(tag, inst_id, data_path)
 
         methods.swpc.old_indices_dsd_download(name, date_array, data_path,
-                                              local_files, today)
+                                              local_files, today,
+                                              mock_download_dir)
 
     elif tag == 'daily':
-        methods.swpc.daily_dsd_download(name, today, data_path)
+        methods.swpc.daily_dsd_download(name, today, data_path,
+                                        mock_download_dir)
 
     elif tag == 'prediction':
-        methods.swpc.solar_geomag_predictions_download(name, date_array,
-                                                       data_path)
+        methods.swpc.solar_geomag_predictions_download(
+            name, date_array, data_path, mock_download_dir)
 
     return

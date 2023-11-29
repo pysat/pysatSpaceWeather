@@ -358,7 +358,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
     return out_files
 
 
-def download(date_array, tag, inst_id, data_path, update_files=False):
+def download(date_array, tag, inst_id, data_path, update_files=False,
+             mock_download_dir=None):
     """Download F107 index data from the appropriate repository.
 
     Parameters
@@ -373,12 +374,16 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         Path to data directory.
     update_files : bool
         Re-download data for files that already exist if True (default=False)
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Raises
     ------
     IOError
         If a problem is encountered connecting to the gateway or retrieving
-        data from the repository.
+        data from the remote or local repository.
 
     Warnings
     --------
@@ -402,7 +407,8 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         methods.lisird.download(date_array, data_path, 'f107_monthly_',
                                 '%Y-%m', 'noaa_radio_flux', freq, update_files,
                                 {'f107_adjusted': -99999.0,
-                                 'f107_observed': -99999.0})
+                                 'f107_observed': -99999.0},
+                                mock_download_dir=mock_download_dir)
 
     elif tag == 'prelim':
         # Get the local files, to ensure that the version 1 files are
@@ -413,8 +419,9 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         for i, lfile in enumerate(local_files):
             local_files[i] = lfile[:-11]
 
-        methods.swpc.old_indices_dsd_download(name, date_array, data_path,
-                                              local_files, today)
+        methods.swpc.old_indices_dsd_download(
+            name, date_array, data_path, local_files, today,
+            mock_download_dir=mock_download_dir)
     elif tag == 'now':
         # Set the download input options
         gfz_data_name = 'F{:s}'.format(inst_id)
@@ -424,16 +431,19 @@ def download(date_array, tag, inst_id, data_path, update_files=False):
         methods.gfz.json_downloads(date_array, data_path, local_file_prefix,
                                    "%Y-%m", gfz_data_name,
                                    pds.DateOffset(months=1, seconds=-1),
-                                   update_files=update_files)
+                                   update_files=update_files,
+                                   mock_download_dir=mock_download_dir)
 
     elif tag == 'daily':
-        methods.swpc.daily_dsd_download(name, today, data_path)
+        methods.swpc.daily_dsd_download(name, today, data_path,
+                                        mock_download_dir=mock_download_dir)
 
     elif tag == 'forecast':
-        methods.swpc.solar_geomag_predictions_download(name, date_array,
-                                                       data_path)
+        methods.swpc.solar_geomag_predictions_download(
+            name, date_array, data_path, mock_download_dir=mock_download_dir)
 
     elif tag == '45day':
-        methods.swpc.recent_ap_f107_download(name, date_array, data_path)
+        methods.swpc.recent_ap_f107_download(
+            name, date_array, data_path, mock_download_dir=mock_download_dir)
 
     return

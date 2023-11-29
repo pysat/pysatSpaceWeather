@@ -3,6 +3,8 @@
 
 import importlib
 import numpy as np
+import os
+import requests
 
 import pysat
 
@@ -66,3 +68,57 @@ def get_instrument_data_path(inst_mod_name, tag='', inst_id='', **kwargs):
     del temp_inst
 
     return data_path
+
+
+def get_local_or_remote_text(url, mock_download_dir, filename):
+    """Retrieve text from a remote or local file.
+
+    Parameters
+    ----------
+    filename : str
+        Filename without any directory structure
+    url : str
+        Remote URL where file is located
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
+
+    Returns
+    -------
+    raw_txt : str or NoneType
+        All the text from the desired file or None if the file could not be
+        retrieved
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied.
+
+    """
+    if mock_download_dir is None:
+        # Set the download webpage
+        furl = ''.join([url, filename])
+        req = requests.get(furl)
+
+        if req.text.find('not found on this server') > 0:
+            # Ensure useful information about server is passed on to user
+            pysat.logger.warning('File {:} not found: {:}'.format(filename,
+                                                                  url))
+            raw_txt = None
+        else:
+            raw_txt = req.text if req.ok else None
+    else:
+        if not os.path.isdir(mock_download_dir):
+            raise IOError('file location is not a directory: {:}'.format(
+                mock_download_dir))
+
+        furl = os.path.join(mock_download_dir, filename)
+
+        if os.path.isfile(furl):
+            with open(furl, 'r') as fpin:
+                raw_txt = fpin.read()
+        else:
+            raw_txt = None
+
+    return raw_txt

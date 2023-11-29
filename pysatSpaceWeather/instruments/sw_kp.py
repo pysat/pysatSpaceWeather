@@ -366,7 +366,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
     return files
 
 
-def download(date_array, tag, inst_id, data_path):
+def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
     """Download the Kp index data from the appropriate repository.
 
     Parameters
@@ -379,6 +379,16 @@ def download(date_array, tag, inst_id, data_path):
         Specifies the instrument identification, not used.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or there is a problem
+        downloading the data.
 
     Note
     ----
@@ -404,13 +414,15 @@ def download(date_array, tag, inst_id, data_path):
                       DeprecationWarning, stacklevel=2)
     elif tag in ['def', 'now']:
         methods.gfz.kp_ap_cp_download(platform, name, date_array, tag, inst_id,
-                                      data_path)
+                                      data_path, mock_download_dir)
     elif tag == 'forecast':
-        methods.swpc.geomag_forecast_download(name, date_array, data_path)
+        methods.swpc.geomag_forecast_download(name, date_array, data_path,
+                                              mock_download_dir)
     elif tag == 'recent':
-        methods.swpc.kp_ap_recent_download(name, date_array, data_path)
+        methods.swpc.kp_ap_recent_download(name, date_array, data_path,
+                                           mock_download_dir)
     elif tag == 'prediction':
-        methods.swpc.solar_geomag_predictions_download(name, date_array,
-                                                       data_path)
+        methods.swpc.solar_geomag_predictions_download(
+            name, date_array, data_path, mock_download_dir)
 
     return

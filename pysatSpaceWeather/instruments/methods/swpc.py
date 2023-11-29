@@ -11,7 +11,6 @@ import ftplib
 import numpy as np
 import os
 import pandas as pds
-import requests
 import sys
 
 import pysat
@@ -30,7 +29,7 @@ forecast_warning = ''.join(['This routine can only download the current ',
 # ----------------------------------------------------------------------------
 # Define the module functions
 
-def daily_dsd_download(name, today, data_path):
+def daily_dsd_download(name, today, data_path, mock_download_dir=None):
     """Download the daily NOAA Daily Solar Data indices.
 
     Parameters
@@ -41,6 +40,16 @@ def daily_dsd_download(name, today, data_path):
         Datetime for current day
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the desired file
+        is missing.
 
     Note
     ----
@@ -50,31 +59,39 @@ def daily_dsd_download(name, today, data_path):
     """
     pysat.logger.info('This routine only downloads the latest 30 day file')
 
-    # Set the download webpage
-    furl = 'https://services.swpc.noaa.gov/text/daily-solar-indices.txt'
-    req = requests.get(furl)
+    # Get the file information
+    raw_txt = general.get_local_or_remote_text(
+        'https://services.swpc.noaa.gov/text/', mock_download_dir,
+        'daily-solar-indices.txt')
 
-    # Get the file paths and output names
-    file_paths = {data_name: data_path if name == data_name else
-                  general.get_instrument_data_path('sw_{:s}'.format(data_name),
-                                                   tag='daily')
-                  for data_name in ['f107', 'flare', 'ssn', 'sbfield']}
-    outfiles = {
-        data_name: os.path.join(file_paths[data_name], '_'.join([
-            data_name, 'daily', '{:s}.txt'.format(today.strftime('%Y-%m-%d'))]))
-        for data_name in file_paths.keys()}
+    if raw_txt is None:
+        pysat.logger.info("".join(["Data not downloaded for ",
+                                   "daily-solar-indices.txt, data may have ",
+                                   "been saved to an unexpected filename."]))
+    else:
+        # Get the file paths and output names
+        file_paths = {data_name: data_path if name == data_name else
+                      general.get_instrument_data_path(
+                          'sw_{:s}'.format(data_name), tag='daily')
+                      for data_name in ['f107', 'flare', 'ssn', 'sbfield']}
+        outfiles = {
+            data_name: os.path.join(file_paths[data_name], '_'.join([
+                data_name, 'daily', '{:s}.txt'.format(
+                    today.strftime('%Y-%m-%d'))]))
+            for data_name in file_paths.keys()}
 
-    # Check that the directories exist
-    for data_path in file_paths.values():
-        pysat.utils.files.check_and_make_path(data_path)
+        # Check that the directories exist
+        for data_path in file_paths.values():
+            pysat.utils.files.check_and_make_path(data_path)
 
-    # Save the output
-    rewrite_daily_solar_data_file(today.year, outfiles, req.text)
+        # Save the output
+        rewrite_daily_solar_data_file(today.year, outfiles, raw_txt)
 
     return
 
 
-def old_indices_dsd_download(name, date_array, data_path, local_files, today):
+def old_indices_dsd_download(name, date_array, data_path, local_files, today,
+                             mock_download_dir=None):
     """Download the old NOAA Daily Solar Data indices.
 
     Parameters
@@ -89,6 +106,15 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today):
         A Series containing the local filenames indexed by time.
     today : dt.datetime
         Datetime for current day
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied.
 
     Note
     ----
@@ -106,10 +132,14 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today):
     for data_path in file_paths.values():
         pysat.utils.files.check_and_make_path(data_path)
 
-    # Connect to the host, default port
-    ftp = ftplib.FTP('ftp.swpc.noaa.gov')
-    ftp.login()  # User anonymous, passwd anonymous
-    ftp.cwd('/pub/indices/old_indices')
+    if mock_download_dir is None:
+        # Connect to the host, default port
+        ftp = ftplib.FTP('ftp.swpc.noaa.gov')
+        ftp.login()  # User anonymous, passwd anonymous
+        ftp.cwd('/pub/indices/old_indices')
+    elif not os.path.isdir(mock_download_dir):
+        raise IOError('file location is not a directory: {:}'.format(
+            mock_download_dir))
 
     bad_fname = list()
 
@@ -165,37 +195,52 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today):
             # Attempt to download if the file does not exist or if the
             # file has been updated
             if rewritten or not downloaded:
-                try:
-                    sys.stdout.flush()
-                    ftp.retrbinary('RETR ' + fname,
-                                   open(saved_fname, 'wb').write)
+                if mock_download_dir is None:
+                    try:
+                        sys.stdout.flush()
+                        ftp.retrbinary('RETR ' + fname,
+                                       open(saved_fname, 'wb').write)
+                        downloaded = True
+                        pysat.logger.info(' '.join(('Downloaded file for ',
+                                                    dl_date.strftime('%x'))))
+
+                    except ftplib.error_perm as exception:
+                        # Could not fetch, so cannot rewrite
+                        rewritten = False
+
+                        # Test for an error
+                        if str(exception.args[0]).split(" ", 1)[0] != '550':
+                            raise IOError(exception)
+                        else:
+                            # File isn't actually there, try the next name.  The
+                            # extra wrapping is for Windows, which can encounter
+                            # permission errors when handling files.
+                            attempt = 0
+                            while attempt < 100:
+                                try:
+                                    os.remove(saved_fname)
+                                    attempt = 100
+                                except PermissionError:
+                                    attempt += 1
+
+                            # Save this so we don't try again. Because there are
+                            # two possible filenames for each time, it's ok if
+                            # one isn't there.  We just don't want to keep
+                            # looking for it.
+                            bad_fname.append(fname)
+                else:
+                    # Set the saved filename
+                    saved_fname = os.path.join(mock_download_dir, local_fname)
                     downloaded = True
-                    pysat.logger.info(' '.join(('Downloaded file for ',
-                                                dl_date.strftime('%x'))))
 
-                except ftplib.error_perm as exception:
-                    # Could not fetch, so cannot rewrite
-                    rewritten = False
-
-                    # Test for an error
-                    if str(exception.args[0]).split(" ", 1)[0] != '550':
-                        raise IOError(exception)
+                    if os.path.isfile(saved_fname):
+                        rewritten = True
                     else:
-                        # File isn't actually there, try the next name.  The
-                        # extra wrapping is for Windows, which can encounter
-                        # permission errors when handling files.
-                        attempt = 0
-                        while attempt < 100:
-                            try:
-                                os.remove(saved_fname)
-                                attempt = 100
-                            except PermissionError:
-                                attempt += 1
-
-                        # Save this so we don't try again. Because there are two
-                        # possible filenames for each time, it's ok if one isn't
-                        # there.  We just don't want to keep looking for it.
-                        bad_fname.append(fname)
+                        pysat.logger.info("".join([saved_fname, "is missing, ",
+                                                   "data may have been saved ",
+                                                   "to an unexpected ",
+                                                   "filename."]))
+                        rewritten = False
 
             # If the first file worked, don't try again
             if downloaded:
@@ -209,13 +254,16 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today):
                 lines = fprelim.read()
 
             rewrite_daily_solar_data_file(dl_date.year, outfiles, lines)
-            os.remove(saved_fname)
+            if mock_download_dir is None:
+                # Only remove the file if it wasn't obtained from a local dir
+                os.remove(saved_fname)
 
         # Cycle to the next date
         dl_date = vend[iname] + pds.DateOffset(days=1)
 
     # Close connection after downloading all dates
-    ftp.close()
+    if mock_download_dir is None:
+        ftp.close()
     return
 
 
@@ -334,7 +382,8 @@ def parse_daily_solar_data(data_lines, year, optical):
     return dates, values
 
 
-def solar_geomag_predictions_download(name, date_array, data_path):
+def solar_geomag_predictions_download(name, date_array, data_path,
+                                      mock_download_dir=None):
     """Download the 3-day solar-geomagnetic predictions from SWPC.
 
     Parameters
@@ -346,6 +395,16 @@ def solar_geomag_predictions_download(name, date_array, data_path):
         Array-like or index of datetimes to be downloaded.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the desired file
+        is missing.
 
     Note
     ----
@@ -367,130 +426,142 @@ def solar_geomag_predictions_download(name, date_array, data_path):
     for data_path in file_paths.values():
         pysat.utils.files.check_and_make_path(data_path)
 
-    # Download webpage
-    furl = ''.join(['https://services.swpc.noaa.gov/text/',
-                    '3-day-solar-geomag-predictions.txt'])
-    req = requests.get(furl)
+    # Get the file information
+    raw_txt = general.get_local_or_remote_text(
+        'https://services.swpc.noaa.gov/text/', mock_download_dir,
+        '3-day-solar-geomag-predictions.txt')
 
-    # Parse text to get the date the prediction was generated
-    date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
-    dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
+    if raw_txt is None:
+        pysat.logger.info("".join(["Data not downloaded for ",
+                                   "3-day-solar-geomag-predictions.txt, data ",
+                                   "may have been saved to an unexpected ",
+                                   "filename."]))
+    else:
+        # Parse text to get the date the prediction was generated
+        date_str = raw_txt.split(':Issued: ')[-1].split(' UTC')[0]
+        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
 
-    # Parse the data to get the prediction dates
-    date_strs = req.text.split(':Prediction_dates:')[-1].split('\n')[0]
-    pred_times = [dt.datetime.strptime(' '.join(date_str.split()), '%Y %b %d')
-                  for date_str in date_strs.split('  ') if len(date_str) > 0]
+        # Parse the data to get the prediction dates
+        date_strs = raw_txt.split(':Prediction_dates:')[-1].split('\n')[0]
+        pred_times = [
+            dt.datetime.strptime(' '.join(date_str.split()), '%Y %b %d')
+            for date_str in date_strs.split('  ') if len(date_str) > 0]
 
-    # Separate out the data by chunks
-    ap_raw = req.text.split(':Geomagnetic_A_indices:')[-1]
-    kp_raw = req.text.split(':Pred_Mid_k:')[-1]
-    storm_raw = req.text.split(':Prob_Mid:')[-1]
-    pc_raw = req.text.split(':Polar_cap:')[-1]
-    f107_raw = req.text.split(':10cm_flux:')[-1]
-    flare_raw = req.text.split(':Whole_Disk_Flare_Prob:')[-1]
+        # Separate out the data by chunks
+        ap_raw = raw_txt.split(':Geomagnetic_A_indices:')[-1]
+        kp_raw = raw_txt.split(':Pred_Mid_k:')[-1]
+        storm_raw = raw_txt.split(':Prob_Mid:')[-1]
+        pc_raw = raw_txt.split(':Polar_cap:')[-1]
+        f107_raw = raw_txt.split(':10cm_flux:')[-1]
+        flare_raw = raw_txt.split(':Whole_Disk_Flare_Prob:')[-1]
 
-    # Initalize the data for each data type
-    data_vals = {data_name: dict() for data_name in file_paths.keys()}
-    data_times = {data_name: pred_times for data_name in file_paths.keys()}
+        # Initalize the data for each data type
+        data_vals = {data_name: dict() for data_name in file_paths.keys()}
+        data_times = {data_name: pred_times for data_name in file_paths.keys()}
 
-    # Process the ap data
-    for line in ap_raw.split('\n'):
-        if line.find(":") == 0:
-            break
-        elif line.find("A_") == 0:
-            split_line = line.split()
-            if split_line[0] == "A_Planetary":
-                dkey = "daily_Ap"
-            else:
-                dkey = split_line[0]
-
-            data_vals['ap'][dkey] = [int(val) for val in split_line[1:]]
-
-    # Process the Kp data
-    hr_strs = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT', '15-18UT',
-               '18-21UT', '21-00UT']
-    data_times['kp'] = pds.date_range(pred_times[0], periods=24, freq='3H')
-
-    for line in kp_raw.split('\n'):
-        if line.find("Prob_Mid") >= 0:
-            break
-        elif line.find("UT") > 0:
-            split_line = line.split()
-            reg, hr = split_line[0].split('/')
-            dkey = '{:s}_lat_Kp'.format(reg)
-
-            # Initalize the Kp data for this region
-            if dkey not in data_vals['kp'].keys():
-                data_vals['kp'][dkey] = np.full(shape=(24,), fill_value=np.nan)
-
-            # Save the Kp data into the correct day and hour index
-            hr_index = hr_strs.index(hr)
-            data_vals['kp'][dkey][hr_index] = float(split_line[1])
-            data_vals['kp'][dkey][hr_index + 8] = float(split_line[2])
-            data_vals['kp'][dkey][hr_index + 16] = float(split_line[3])
-
-    # Process the storm probabilities
-    for line in storm_raw.split('\n'):
-        if line.find("Polar_cap") >= 0:
-            break
-        elif len(line) > 0:
-            split_line = line.split()
-            if split_line[0].find('/') > 0:
-                dkey = split_line[0].replace('/', '-Lat_')
-                data_vals['stormprob'][dkey] = [
-                    int(val) for val in split_line[1:]]
-
-    # Process the polar cap prediction
-    data_vals['polarcap']['absorption_forecast'] = [
-        str_val for str_val in pc_raw.split('\n')[1].split()]
-    data_times['polarcap'] = [
-        ptimes for i, ptimes in enumerate(pred_times)
-        if i < len(data_vals['polarcap']['absorption_forecast'])]
-
-    # Process the F10.7 data
-    data_vals['f107']['f107'] = [
-        int(val) for val in f107_raw.split('\n')[1].split()]
-
-    # Process the flare data
-    dkey_root = 'Whole_Disk_Flare_Prob'
-    for line in flare_raw.split('\n'):
-        if len(line) > 0 and line.find("#") < 0:
+        # Process the ap data
+        for line in ap_raw.split('\n'):
             if line.find(":") == 0:
-                dkey_root = line.split(":")[1]
-            else:
+                break
+            elif line.find("A_") == 0:
                 split_line = line.split()
-
-                if len(split_line) == 4:
-                    dkey = "_".join([dkey_root, split_line[0]])
-                    data_vals['flare'][dkey] = [
-                        int(val) for val in split_line[1:]]
+                if split_line[0] == "A_Planetary":
+                    dkey = "daily_Ap"
                 else:
-                    data_vals['flare']['{:s}_Region'.format(dkey_root)] = [
-                        int(split_line[0]), -1, -1]
-                    data_vals['flare']['{:s}_Class_C'.format(dkey_root)] = [
-                        int(split_line[1]), -1, -1]
-                    data_vals['flare']['{:s}_Class_M'.format(dkey_root)] = [
-                        int(split_line[2]), -1, -1]
-                    data_vals['flare']['{:s}_Class_X'.format(dkey_root)] = [
-                        int(split_line[3]), -1, -1]
-                    data_vals['flare']['{:s}_Class_P'.format(dkey_root)] = [
-                        int(split_line[4]), -1, -1]
+                    dkey = split_line[0]
 
-    # Save the data by type into files
-    for data_name in data_vals.keys():
-        # Put the data values into a nicer DataFrame
-        data = pds.DataFrame(data_vals[data_name], index=data_times[data_name])
+                data_vals['ap'][dkey] = [int(val) for val in split_line[1:]]
 
-        # Save the data as a CSV file
-        data_tag = 'forecast' if data_name == 'f107' else 'prediction'
-        data_file = '_'.join([data_name, data_tag,
-                              '{:s}.txt'.format(dl_date.strftime('%Y-%m-%d'))])
-        data.to_csv(os.path.join(file_paths[data_name], data_file), header=True)
+        # Process the Kp data
+        hr_strs = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT',
+                   '15-18UT', '18-21UT', '21-00UT']
+        data_times['kp'] = pds.date_range(pred_times[0], periods=24, freq='3H')
+
+        for line in kp_raw.split('\n'):
+            if line.find("Prob_Mid") >= 0:
+                break
+            elif line.find("UT") > 0:
+                split_line = line.split()
+                reg, hr = split_line[0].split('/')
+                dkey = '{:s}_lat_Kp'.format(reg)
+
+                # Initalize the Kp data for this region
+                if dkey not in data_vals['kp'].keys():
+                    data_vals['kp'][dkey] = np.full(shape=(24,),
+                                                    fill_value=np.nan)
+
+                # Save the Kp data into the correct day and hour index
+                hr_index = hr_strs.index(hr)
+                data_vals['kp'][dkey][hr_index] = float(split_line[1])
+                data_vals['kp'][dkey][hr_index + 8] = float(split_line[2])
+                data_vals['kp'][dkey][hr_index + 16] = float(split_line[3])
+
+        # Process the storm probabilities
+        for line in storm_raw.split('\n'):
+            if line.find("Polar_cap") >= 0:
+                break
+            elif len(line) > 0:
+                split_line = line.split()
+                if split_line[0].find('/') > 0:
+                    dkey = split_line[0].replace('/', '-Lat_')
+                    data_vals['stormprob'][dkey] = [
+                        int(val) for val in split_line[1:]]
+
+        # Process the polar cap prediction
+        data_vals['polarcap']['absorption_forecast'] = [
+            str_val for str_val in pc_raw.split('\n')[1].split()]
+        data_times['polarcap'] = [
+            ptimes for i, ptimes in enumerate(pred_times)
+            if i < len(data_vals['polarcap']['absorption_forecast'])]
+
+        # Process the F10.7 data
+        data_vals['f107']['f107'] = [
+            int(val) for val in f107_raw.split('\n')[1].split()]
+
+        # Process the flare data
+        dkey_root = 'Whole_Disk_Flare_Prob'
+        for line in flare_raw.split('\n'):
+            if len(line) > 0 and line.find("#") < 0:
+                if line.find(":") == 0:
+                    dkey_root = line.split(":")[1]
+                else:
+                    split_line = line.split()
+
+                    if len(split_line) == 4:
+                        dkey = "_".join([dkey_root, split_line[0]])
+                        data_vals['flare'][dkey] = [
+                            int(val) for val in split_line[1:]]
+                    else:
+                        data_vals['flare']['{:s}_Region'.format(dkey_root)] = [
+                            int(split_line[0]), -1, -1]
+                        data_vals['flare']['{:s}_Class_C'.format(dkey_root)] = [
+                            int(split_line[1]), -1, -1]
+                        data_vals['flare']['{:s}_Class_M'.format(dkey_root)] = [
+                            int(split_line[2]), -1, -1]
+                        data_vals['flare']['{:s}_Class_X'.format(dkey_root)] = [
+                            int(split_line[3]), -1, -1]
+                        data_vals['flare']['{:s}_Class_P'.format(dkey_root)] = [
+                            int(split_line[4]), -1, -1]
+
+        # Save the data by type into files
+        for data_name in data_vals.keys():
+            # Put the data values into a nicer DataFrame
+            data = pds.DataFrame(data_vals[data_name],
+                                 index=data_times[data_name])
+
+            # Save the data as a CSV file
+            data_tag = 'forecast' if data_name == 'f107' else 'prediction'
+            data_file = '_'.join([data_name, data_tag,
+                                  '{:s}.txt'.format(dl_date.strftime(
+                                      '%Y-%m-%d'))])
+            data.to_csv(os.path.join(file_paths[data_name], data_file),
+                        header=True)
 
     return
 
 
-def geomag_forecast_download(name, date_array, data_path):
+def geomag_forecast_download(name, date_array, data_path,
+                             mock_download_dir=None):
     """Download the 3-day geomagnetic Kp, ap, and storm data from SWPC.
 
     Parameters
@@ -501,6 +572,16 @@ def geomag_forecast_download(name, date_array, data_path):
         Array-like or index of datetimes to be downloaded.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the desored file
+        is missing.
 
     Note
     ----
@@ -520,88 +601,95 @@ def geomag_forecast_download(name, date_array, data_path):
     for data_path in file_paths.values():
         pysat.utils.files.check_and_make_path(data_path)
 
-    # Download webpage
-    furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
-    req = requests.get(furl)
+    # Get the file information
+    raw_txt = general.get_local_or_remote_text(
+        'https://services.swpc.noaa.gov/text/', mock_download_dir,
+        '3-day-geomag-forecast.txt')
 
-    # Parse text to get the date the prediction was generated
-    date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
-    dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
+    if raw_txt is None:
+        pysat.logger.info("".join(["Data not downloaded for ",
+                                   "3-day-geomag-forecast.txt, data may have ",
+                                   "been saved to an unexpected filename."]))
+    else:
+        # Parse text to get the date the prediction was generated
+        date_str = raw_txt.split(':Issued: ')[-1].split(' UTC')[0]
+        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
 
-    # Separate out the data by chunks
-    ap_raw = req.text.split('NOAA Ap Index Forecast')[-1]
-    kp_raw = req.text.split('NOAA Kp index forecast ')[-1]
-    storm_raw = req.text.split('NOAA Geomagnetic Activity Probabilities')[-1]
+        # Separate out the data by chunks
+        ap_raw = raw_txt.split('NOAA Ap Index Forecast')[-1]
+        kp_raw = raw_txt.split('NOAA Kp index forecast ')[-1]
+        storm_raw = raw_txt.split('NOAA Geomagnetic Activity Probabilities')[-1]
 
-    # Get dates of the forecasts
-    date_str = kp_raw[0:6] + ' ' + str(dl_date.year)
-    forecast_date = dt.datetime.strptime(date_str, '%d %b %Y')
+        # Get dates of the forecasts
+        date_str = kp_raw[0:6] + ' ' + str(dl_date.year)
+        forecast_date = dt.datetime.strptime(date_str, '%d %b %Y')
 
-    # Strings we will use to parse the downloaded text for Kp
-    lines = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT', '15-18UT',
-             '18-21UT', '21-00UT']
+        # Strings we will use to parse the downloaded text for Kp
+        lines = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT',
+                 '15-18UT', '18-21UT', '21-00UT']
 
-    # Storage for daily Kp forecasts. Get values for each day, then combine
-    # them together
-    kp_day1 = []
-    kp_day2 = []
-    kp_day3 = []
-    for line in lines:
-        raw = kp_raw.split(line)[-1].split('\n')[0]
-        cols = raw.split()
-        kp_day1.append(float(cols[-3]))
-        kp_day2.append(float(cols[-2]))
-        kp_day3.append(float(cols[-1]))
+        # Storage for daily Kp forecasts. Get values for each day, then combine
+        # them together
+        kp_day1 = []
+        kp_day2 = []
+        kp_day3 = []
+        for line in lines:
+            raw = kp_raw.split(line)[-1].split('\n')[0]
+            cols = raw.split()
+            kp_day1.append(float(cols[-3]))
+            kp_day2.append(float(cols[-2]))
+            kp_day3.append(float(cols[-1]))
 
-    kp_times = pds.date_range(forecast_date, periods=24, freq='3H')
-    kp_day = []
-    for dd in [kp_day1, kp_day2, kp_day3]:
-        kp_day.extend(dd)
+        kp_times = pds.date_range(forecast_date, periods=24, freq='3H')
+        kp_day = []
+        for dd in [kp_day1, kp_day2, kp_day3]:
+            kp_day.extend(dd)
 
-    # Put Kp data into nicer DataFrame
-    data_frames = {'kp': pds.DataFrame(kp_day, index=kp_times, columns=['Kp'])}
+        # Put Kp data into nicer DataFrame
+        data_frames = {'kp': pds.DataFrame(kp_day, index=kp_times,
+                                           columns=['Kp'])}
 
-    # Parse the Ap data
-    ap_times = pds.date_range(dl_date - dt.timedelta(days=1), periods=5,
-                              freq='1D')
-    obs_line = ap_raw.split('Observed Ap')[-1].split('\n')[0]
-    est_line = ap_raw.split('Estimated Ap')[-1].split('\n')[0]
-    pred_line = ap_raw.split('Predicted Ap')[-1].split('\n')[0]
-    ap_vals = [int(obs_line[-3:]), int(est_line[-3:])]
+        # Parse the Ap data
+        ap_times = pds.date_range(dl_date - dt.timedelta(days=1), periods=5,
+                                  freq='1D')
+        obs_line = ap_raw.split('Observed Ap')[-1].split('\n')[0]
+        est_line = ap_raw.split('Estimated Ap')[-1].split('\n')[0]
+        pred_line = ap_raw.split('Predicted Ap')[-1].split('\n')[0]
+        ap_vals = [int(obs_line[-3:]), int(est_line[-3:])]
 
-    for ap_val in pred_line.split()[-1].split('-'):
-        ap_vals.append(int(ap_val))
+        for ap_val in pred_line.split()[-1].split('-'):
+            ap_vals.append(int(ap_val))
 
-    # Put the Ap data into a nicer DataFrame
-    data_frames['ap'] = pds.DataFrame(ap_vals, index=ap_times,
-                                      columns=['daily_Ap'])
+        # Put the Ap data into a nicer DataFrame
+        data_frames['ap'] = pds.DataFrame(ap_vals, index=ap_times,
+                                          columns=['daily_Ap'])
 
-    # Parse the storm probabilities
-    storm_dict = {}
-    for storm_line in storm_raw.split('\n')[1:5]:
-        storm_split = storm_line.split()
+        # Parse the storm probabilities
+        storm_dict = {}
+        for storm_line in storm_raw.split('\n')[1:5]:
+            storm_split = storm_line.split()
 
-        # Build the storm data column name
-        dkey = '_'.join(storm_split[:-1])
+            # Build the storm data column name
+            dkey = '_'.join(storm_split[:-1])
 
-        # Assign the storm probabilities
-        storm_dict[dkey] = [int(sp) for sp in storm_split[-1].split('/')]
+            # Assign the storm probabilities
+            storm_dict[dkey] = [int(sp) for sp in storm_split[-1].split('/')]
 
-    # Put the storm probabilities into a nicer DataFrame
-    storm_times = pds.date_range(forecast_date, periods=3, freq='1D')
-    data_frames['stormprob'] = pds.DataFrame(storm_dict, index=storm_times)
+        # Put the storm probabilities into a nicer DataFrame
+        storm_times = pds.date_range(forecast_date, periods=3, freq='1D')
+        data_frames['stormprob'] = pds.DataFrame(storm_dict, index=storm_times)
 
-    # Save the data files
-    for data_name in data_frames.keys():
-        filename = '{:s}_forecast_{:s}.txt'.format(data_name, dl_date.strftime(
-            '%Y-%m-%d'))
-        data_frames[data_name].to_csv(os.path.join(
-            file_paths[data_name], filename), header=True)
+        # Save the data files
+        for data_name in data_frames.keys():
+            filename = '{:s}_forecast_{:s}.txt'.format(
+                data_name, dl_date.strftime('%Y-%m-%d'))
+            data_frames[data_name].to_csv(os.path.join(
+                file_paths[data_name], filename), header=True)
 
     return
 
 
-def kp_ap_recent_download(name, date_array, data_path):
+def kp_ap_recent_download(name, date_array, data_path, mock_download_dir=None):
     """Download recent Kp and ap data from SWPC.
 
     Parameters
@@ -612,6 +700,16 @@ def kp_ap_recent_download(name, date_array, data_path):
         Array-like or index of datetimes to be downloaded.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the desired file
+        is missing.
 
     Note
     ----
@@ -631,74 +729,81 @@ def kp_ap_recent_download(name, date_array, data_path):
     for data_path in file_paths.values():
         pysat.utils.files.check_and_make_path(data_path)
 
-    # Download webpage
-    rurl = ''.join(('https://services.swpc.noaa.gov/text/',
-                    'daily-geomagnetic-indices.txt'))
-    req = requests.get(rurl)
+    # Get the file information
+    raw_txt = general.get_local_or_remote_text(
+        'https://services.swpc.noaa.gov/text/', mock_download_dir,
+        'daily-geomagnetic-indices.txt')
 
-    # Parse text to get the date the prediction was generated
-    date_str = req.text.split(':Issued: ')[-1].split('\n')[0]
-    dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
+    if raw_txt is None:
+        pysat.logger.info("".join(["Data not downloaded for ",
+                                   "daily-geomagnetic-indices.txt, data may ",
+                                   "have been saved to an unexpected ",
+                                   "filename."]))
+    else:
+        # Parse text to get the date the prediction was generated
+        date_str = raw_txt.split(':Issued: ')[-1].split('\n')[0]
+        dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
 
-    # Data is the forecast value for the next three days
-    raw_data = req.text.split('#  Date ')[-1]
+        # Data is the forecast value for the next three days
+        raw_data = raw_txt.split('#  Date ')[-1]
 
-    # Keep only the middle bits that matter
-    raw_data = raw_data.split('\n')[1:-1]
+        # Keep only the middle bits that matter
+        raw_data = raw_data.split('\n')[1:-1]
 
-    # Hold times from the file
-    times = []
+        # Hold times from the file
+        times = []
 
-    # Holds Kp and Ap values for each station
-    sub_kps = [[], [], []]
-    sub_aps = [[], [], []]
+        # Holds Kp and Ap values for each station
+        sub_kps = [[], [], []]
+        sub_aps = [[], [], []]
 
-    # Iterate through file lines and parse out the info we want
-    for line in raw_data:
-        times.append(dt.datetime.strptime(line[0:10], '%Y %m %d'))
+        # Iterate through file lines and parse out the info we want
+        for line in raw_data:
+            times.append(dt.datetime.strptime(line[0:10], '%Y %m %d'))
 
-        # Pick out Kp values for each of the three columns. The columns
-        # used to all have integer values, but now some have floats.
-        kp_sub_lines = [line[17:33], line[40:56], line[63:]]
-        ap_sub_lines = [line[10:17], line[33:40], line[56:63]]
-        for i, sub_line in enumerate(kp_sub_lines):
-            # Process the Kp data, which has 3-hour values
-            split_sub = sub_line.split()
-            for ihr in np.arange(8):
-                if sub_line.find('.') < 0:
-                    # These are integer values
-                    sub_kps[i].append(
-                        int(sub_line[(ihr * 2):((ihr + 1) * 2)]))
-                else:
-                    # These are float values
-                    sub_kps[i].append(np.float64(split_sub[ihr]))
+            # Pick out Kp values for each of the three columns. The columns
+            # used to all have integer values, but now some have floats.
+            kp_sub_lines = [line[17:33], line[40:56], line[63:]]
+            ap_sub_lines = [line[10:17], line[33:40], line[56:63]]
+            for i, sub_line in enumerate(kp_sub_lines):
+                # Process the Kp data, which has 3-hour values
+                split_sub = sub_line.split()
+                for ihr in np.arange(8):
+                    if sub_line.find('.') < 0:
+                        # These are integer values
+                        sub_kps[i].append(
+                            int(sub_line[(ihr * 2):((ihr + 1) * 2)]))
+                    else:
+                        # These are float values
+                        sub_kps[i].append(np.float64(split_sub[ihr]))
 
-            # Process the Ap data, which has daily values
-            sub_aps[i].append(np.int64(ap_sub_lines[i]))
+                # Process the Ap data, which has daily values
+                sub_aps[i].append(np.int64(ap_sub_lines[i]))
 
-    # Create times on 3 hour cadence
-    kp_times = pds.date_range(times[0], periods=(8 * 30), freq='3H')
+        # Create times on 3 hour cadence
+        kp_times = pds.date_range(times[0], periods=(8 * 30), freq='3H')
 
-    # Put both data sets into DataFrames
-    data = {'kp': pds.DataFrame({'mid_lat_Kp': sub_kps[0],
-                                 'high_lat_Kp': sub_kps[1],
-                                 'Kp': sub_kps[2]}, index=kp_times),
-            'ap': pds.DataFrame({'mid_lat_Ap': sub_aps[0],
-                                 'high_lat_Ap': sub_aps[1],
-                                 'daily_Ap': sub_aps[2]}, index=times)}
+        # Put both data sets into DataFrames
+        data = {'kp': pds.DataFrame({'mid_lat_Kp': sub_kps[0],
+                                     'high_lat_Kp': sub_kps[1],
+                                     'Kp': sub_kps[2]}, index=kp_times),
+                'ap': pds.DataFrame({'mid_lat_Ap': sub_aps[0],
+                                     'high_lat_Ap': sub_aps[1],
+                                     'daily_Ap': sub_aps[2]}, index=times)}
 
-    # Write out the data sets as files
-    for dkey in data.keys():
-        data_file = '{:s}_recent_{:s}.txt'.format(dkey,
-                                                  dl_date.strftime('%Y-%m-%d'))
+        # Write out the data sets as files
+        for dkey in data.keys():
+            data_file = '{:s}_recent_{:s}.txt'.format(
+                dkey, dl_date.strftime('%Y-%m-%d'))
 
-        data[dkey].to_csv(os.path.join(file_paths[dkey], data_file),
-                          header=True)
+            data[dkey].to_csv(os.path.join(file_paths[dkey], data_file),
+                              header=True)
 
     return
 
 
-def recent_ap_f107_download(name, date_array, data_path):
+def recent_ap_f107_download(name, date_array, data_path,
+                            mock_download_dir=None):
     """Download 45-day ap and F10.7 data from SWPC.
 
     Parameters
@@ -709,6 +814,16 @@ def recent_ap_f107_download(name, date_array, data_path):
         Array-like or index of datetimes to be downloaded.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the desored file
+        is missing.
 
     Note
     ----
@@ -728,39 +843,45 @@ def recent_ap_f107_download(name, date_array, data_path):
     for data_path in file_paths.values():
         pysat.utils.files.check_and_make_path(data_path)
 
-    # Set the download webpage
-    furl = 'https://services.swpc.noaa.gov/text/45-day-ap-forecast.txt'
-    req = requests.get(furl)
+    # Get the file information
+    raw_txt = general.get_local_or_remote_text(
+        'https://services.swpc.noaa.gov/text/', mock_download_dir,
+        '45-day-ap-forecast.txt')
 
-    # Parse text to get the date the prediction was generated
-    date_str = req.text.split(':Issued: ')[-1].split(' UTC')[0]
-    dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
+    if raw_txt is None:
+        pysat.logger.info("".join(["Data not downloaded for ",
+                                   "45-day-ap-forecast.txt, data may have been",
+                                   " saved to an unexpected filename."]))
+    else:
+        # Parse text to get the date the prediction was generated
+        date_str = raw_txt.split(':Issued: ')[-1].split(' UTC')[0]
+        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
 
-    # Get to the forecast data
-    raw_data = req.text.split('45-DAY AP FORECAST')[-1]
+        # Get to the forecast data
+        raw_data = raw_txt.split('45-DAY AP FORECAST')[-1]
 
-    # Grab Ap part
-    raw_ap = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[0]
-    raw_ap = raw_ap.split('\n')[1:-1]
+        # Grab Ap part
+        raw_ap = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[0]
+        raw_ap = raw_ap.split('\n')[1:-1]
 
-    # Get the F107
-    raw_f107 = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[-1]
-    raw_f107 = raw_f107.split('\n')[1:-4]
+        # Get the F107
+        raw_f107 = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[-1]
+        raw_f107 = raw_f107.split('\n')[1:-4]
 
-    # Parse the data
-    ap_times, ap = parse_45day_block(raw_ap)
-    f107_times, f107 = parse_45day_block(raw_f107)
+        # Parse the data
+        ap_times, ap = parse_45day_block(raw_ap)
+        f107_times, f107 = parse_45day_block(raw_f107)
 
-    # Save the data in DataFrames
-    data = {'ap': pds.DataFrame(ap, index=ap_times, columns=['daily_Ap']),
-            'f107': pds.DataFrame(f107, index=f107_times, columns=['f107'])}
+        # Save the data in DataFrames
+        data = {'ap': pds.DataFrame(ap, index=ap_times, columns=['daily_Ap']),
+                'f107': pds.DataFrame(f107, index=f107_times, columns=['f107'])}
 
-    # Write out the data files
-    for data_name in data.keys():
-        file_name = '{:s}_45day_{:s}.txt'.format(data_name,
-                                                 dl_date.strftime('%Y-%m-%d'))
-        data[data_name].to_csv(os.path.join(file_paths[data_name], file_name),
-                               header=True)
+        # Write out the data files
+        for data_name in data.keys():
+            file_name = '{:s}_45day_{:s}.txt'.format(
+                data_name, dl_date.strftime('%Y-%m-%d'))
+            data[data_name].to_csv(os.path.join(file_paths[data_name],
+                                                file_name), header=True)
 
     return
 

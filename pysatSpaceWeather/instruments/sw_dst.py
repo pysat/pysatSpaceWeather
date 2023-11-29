@@ -31,6 +31,7 @@ import ftplib
 import numpy as np
 import os
 import pandas as pds
+import shutil
 
 import pysat
 
@@ -53,7 +54,7 @@ tomorrow = today + dt.timedelta(days=1)
 # ----------------------------------------------------------------------------
 # Instrument test attributes
 
-_test_dates = {'': {'noaa': dt.datetime(2007, 1, 1), 'lasp': today}}
+_test_dates = {'': {'noaa': dt.datetime(2000, 1, 1), 'lasp': today}}
 
 # Other tags assumed to be True
 _test_download_ci = {'': {'noaa': False}}
@@ -239,7 +240,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
     return files
 
 
-def download(date_array, tag, inst_id, data_path):
+def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
     """Download the Dst index data from the appropriate repository.
 
     Parameters
@@ -252,19 +253,37 @@ def download(date_array, tag, inst_id, data_path):
         Instrument ID, not used.
     data_path : str
         Path to data directory.
+        If not None, will process any files with the correct name and date
+        as if they were downloaded
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied.
 
     Note
     ----
     Called by pysat. Not intended for direct use by user.
 
     """
-    if tag == 'noaa':
-        # Connect to host, default port
-        ftp = ftplib.FTP('ftp.ngdc.noaa.gov')
+    # If a mock download directory was supplied, test to see it exists
+    if mock_download_dir is not None:
+        if not os.path.isdir(mock_download_dir):
+            raise IOError('file location is not a directory: {:}'.format(
+                mock_download_dir))
 
-        # User anonymous, passwd anonymous@
-        ftp.login()
-        ftp.cwd('/STP/GEOMAGNETIC_DATA/INDICES/DST')
+    if tag == 'noaa':
+        if mock_download_dir is None:
+            # Connect to host, default port
+            ftp = ftplib.FTP('ftp.ngdc.noaa.gov')
+
+            # User anonymous, passwd anonymous@
+            ftp.login()
+            ftp.cwd('/STP/GEOMAGNETIC_DATA/INDICES/DST')
 
         # Data stored by year. Only download for unique set of input years.
         years = np.array([date.year for date in date_array])
@@ -273,22 +292,34 @@ def download(date_array, tag, inst_id, data_path):
             fname_root = 'dst{year:04d}.txt'
             fname = fname_root.format(year=year)
             saved_fname = os.path.join(data_path, fname)
-            try:
-                pysat.logger.info('Downloading file for {year:04d}'.format(
-                    year=year))
-                with open(saved_fname, 'wb') as fp:
-                    ftp.retrbinary('RETR ' + fname, fp.write)
-            except ftplib.error_perm as exception:
-                if str(exception.args[0]).split(" ", 1)[0] != '550':
-                    raise
+            if mock_download_dir is None:
+                try:
+                    pysat.logger.info('Downloading file for {year:04d}'.format(
+                        year=year))
+                    with open(saved_fname, 'wb') as fp:
+                        ftp.retrbinary('RETR ' + fname, fp.write)
+                except ftplib.error_perm as exception:
+                    if str(exception.args[0]).split(" ", 1)[0] != '550':
+                        raise exception
+                    else:
+                        # File not present
+                        os.remove(saved_fname)
+                        pysat.logger.info(
+                            'File not available for {:04d}'.format(year))
+            else:
+                # Get the local file, if it exists
+                down_fname = os.path.join(mock_download_dir, fname)
+                if os.path.isfile(down_fname):
+                    shutil.copyfile(down_fname, saved_fname)
                 else:
-                    # File not present
-                    os.remove(saved_fname)
-                    pysat.logger.info('File not available for {:04d}'.format(
-                        year))
+                    pysat.logger.info("".join(["Data not downloaded for ",
+                                               down_fname, ", data may have ",
+                                               "been saved to an unexpected ",
+                                               "filename."]))
 
-        ftp.close()
+        if mock_download_dir is None:
+            ftp.close()
     elif tag == 'lasp':
-        lasp.prediction_downloads(name, tag, data_path)
+        lasp.prediction_downloads(name, tag, data_path, mock_download_dir)
 
     return

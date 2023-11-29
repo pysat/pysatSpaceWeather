@@ -10,7 +10,7 @@ import requests
 import pysat
 
 
-def prediction_downloads(name, tag, data_path):
+def prediction_downloads(name, tag, data_path, mock_download_dir=None):
     """Download LASP 96-hour prediction data.
 
     Parameters
@@ -21,31 +21,60 @@ def prediction_downloads(name, tag, data_path):
         Instrument tag, used to create a descriptive file name.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date (following the local
+        file prefix and date format) as if they were downloaded (default=None)
 
     Raises
     ------
     IOError
-        If the data link has an unexpected format
+        If the data link has an unexpected format or an unknown mock download
+        directory is supplied.
 
     """
-
-    # Set the remote data variables
-    url = ''.join(['https://lasp.colorado.edu/space_weather/dsttemerin/',
-                   name.lower(), '_last_96_hrs.txt'])
     times = list()
     data_dict = {name.lower(): []}
+    fname = ''.join([name.lower(), '_last_96_hrs.txt'])
 
-    # Download the webpage
-    req = requests.get(url)
+    if mock_download_dir is None:
+        # Set the remote data variables
+        url = ''.join(['https://lasp.colorado.edu/space_weather/dsttemerin/',
+                       fname])
 
-    # Test to see if the file was found on the server
-    if req.text.find('not found on this server') > 0:
-        pysat.logger.warning(''.join(['LASP last 96 hour Dst file not ',
-                                      'found on server: ', url]))
+        # Download the webpage
+        req = requests.get(url)
+
+        # Test to see if the file was found on the server
+        if req.text.find('not found on this server') > 0:
+            pysat.logger.warning(''.join(['LASP last 96 hour Dst file not ',
+                                          'found on server: ', url]))
+            raw_txt = None
+        else:
+            raw_txt = req.text
     else:
+        # If a mock download directory was supplied, test to see it exists
+        if mock_download_dir is not None:
+            if not os.path.isdir(mock_download_dir):
+                raise IOError('file location is not a directory: {:}'.format(
+                    mock_download_dir))
+
+        # Get the data from the mock download directory
+        url = os.path.join(mock_download_dir, fname)
+        if os.path.isfile(url):
+            with open(url, 'r') as fpin:
+                raw_txt = fpin.read()
+        else:
+            pysat.logger.warning(''.join(['LASP last 96 hour file not found in',
+                                          'the local directory: ', url,
+                                          ", data may have been saved to an ",
+                                          "unexpected filename"]))
+            raw_txt = None
+
+    if raw_txt is not None:
         # Split the file into lines, removing the header and
         # trailing empty line
-        file_lines = req.text.split('\n')[1:-1]
+        file_lines = raw_txt.split('\n')[1:-1]
 
         # Format the data
         for line in file_lines:

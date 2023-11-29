@@ -139,7 +139,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
     return files
 
 
-def download(date_array, tag, inst_id, data_path):
+def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
     """Download the AE index data from the appropriate repository.
 
     Parameters
@@ -152,17 +152,22 @@ def download(date_array, tag, inst_id, data_path):
         Instrument ID, not used.
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
 
     Raises
     ------
     IOError
-        If the data link has an unexpected format
+        If the data link has an unexpected format or an unknown mock download
+        directory is supplied.
 
     Note
     ----
     Called by pysat. Not intended for direct use by user.
 
     """
-    lasp.prediction_downloads(name, tag, data_path)
+    lasp.prediction_downloads(name, tag, data_path, mock_download_dir)
 
     return

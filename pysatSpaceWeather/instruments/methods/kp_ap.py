@@ -584,12 +584,11 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                                    "provide starting and ending times")))
 
     # Initialize the output instrument
-    kp_inst = pysat.Instrument(labels=all_inst[0].meta_labels)
+    kp_inst = pysat.Instrument()
     kp_inst.inst_module = pysat_sw.instruments.sw_kp
     kp_inst.tag = tag
     kp_inst.date = start
     kp_inst.doy = np.int64(start.strftime("%j"))
-    kp_inst.meta = pysat.Meta(labels=kp_inst.meta_labels)
     initialize_kp_metadata(kp_inst.meta, 'Kp', fill_val=fill_val)
 
     kp_times = list()

@@ -1,4 +1,13 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-.
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# This work was supported by the Office of Naval Research.
+# ----------------------------------------------------------------------------
 """Supports ACE Magnetometer data.
 
 Properties

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysatSpaceWeather"
-version = "0.0.10"
+version = "0.1.0"
 description = 'pysat support for Space Weather Indices'
 readme = "README.md"
 requires-python = ">=3.6"
@@ -13,7 +13,7 @@ authors = [
     {name = "Angeline Burrell", email = "pysat.developers@gmail.com"}
 ]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Topic :: Scientific/Engineering :: Astronomy",
   "Topic :: Scientific/Engineering :: Physics",
   "Topic :: Scientific/Engineering :: Atmospheric Science",

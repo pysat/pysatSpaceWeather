@@ -21,6 +21,13 @@ indices as pysat.Instrument objects.
    history.rst
 
 
+.. admonition:: DISTRIBUTION STATEMENT A: Approved for public release.
+		Distribution is unlimited.
+
+    This work was supported by the Office of Naval Research.
+
+
+
 Indices and tables
 ==================
 

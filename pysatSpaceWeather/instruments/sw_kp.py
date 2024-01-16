@@ -126,16 +126,6 @@ def init(self):
     self.references = methods.kp_ap.references(self.name, self.tag)
     pysat.logger.info(self.acknowledgements)
 
-    if self.tag in ["def", "now"]:
-        # This tag loads more than just Kp data, and the behaviour will be
-        # deprecated in v0.1.0
-        warnings.warn("".join(["Upcoming structural changes will prevent ",
-                               "Instruments from loading multiple data sets ",
-                               "in one Instrument. In version 0.1.0+ the Ap ",
-                               "and Cp data will be accessable from the ",
-                               "`sw_ap` and `sw_cp` Instruments."]),
-                      DeprecationWarning, stacklevel=2)
-
     return
 
 

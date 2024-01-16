@@ -136,26 +136,6 @@ def init(self):
     if self.tag == 'historic':
         self.lasp_stime = lasp_stime
 
-    # Raise Deprecation warnings
-    if self.tag in ['daily', 'prelim']:
-        # This tag loads more than just F10.7 data, and the behaviour will be
-        # deprecated in v0.1.0
-        warnings.warn("".join(["Upcoming structural changes will prevent ",
-                               "Instruments from loading multiple data sets in",
-                               " one Instrument. In version 0.1.0+ the SSN, ",
-                               "solar flare, and solar mean field data will be",
-                               " accessable from the `sw_ssn`, `sw_flare`, ",
-                               "and `sw_sbfield` Instruments."]),
-                      DeprecationWarning, stacklevel=2)
-    elif self.tag == '45day':
-        # This tag loads more than just F10.7 data, and the behaviour will be
-        # deprecated in v0.1.0
-        warnings.warn("".join(["Upcoming structural changes will prevent ",
-                               "Instruments from loading multiple data sets in",
-                               " one Instrument. In version 0.1.0+ the Ap will",
-                               " be accessable from the `sw_ap` Instrument."]),
-                      DeprecationWarning, stacklevel=2)
-
     return
 
 

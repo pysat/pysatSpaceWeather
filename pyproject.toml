@@ -65,7 +65,7 @@ doc = [
   "numpydoc",
   "pyproject_parser",
   "sphinx",
-  "sphinx_rtd_theme >= 1.2.2"
+  "sphinx_rtd_theme >= 1.2.2,<2.0.0"
 ]
 
 [project.urls]

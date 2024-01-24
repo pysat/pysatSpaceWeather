@@ -84,7 +84,7 @@ AE
 ^^^
 
 AE is an auroral electrojet index that reflects the level of magnetic deflection
-in the auroral zone, due to the difference between the eastward and westward
+in the auroral zone due to the difference between the eastward and westward
 electroject currents at Earth.  Real-time predictions (last 96 hours) are
 provided by
 `LASP <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_.
@@ -132,7 +132,7 @@ Ap
 ^^^
 
 Ap is a geomagnetic index that reflects the magnitude of geomagnetic
-disturbances at Earth, but unlike the Kp uses a linear scale.  Historic, recent
+disturbances at Earth but unlike Kp uses a linear scale.  Historic, recent
 (last 30 days), and forecasted values are available from 
 `GFZ <https://www.gfz-potsdam.de/en/kp-index/>`_ and the
 `SWPC Forecasts page <https://www.swpc.noaa.gov/forecasts>`_.
@@ -148,7 +148,7 @@ apo
 ^^^
 
 apo is a linear (half)-hourly, planetary, open-ended, geomagnetic index that
-reflects the magnitude of geomagnetic disturbances at Earth. It is like Ap, but
+reflects the magnitude of geomagnetic disturbances at Earth. It is like Ap but
 does not have an upper limit. Values from 1995 onwards are available from 
 `GFZ <https://kp.gfz-potsdam.de/en/hp30-hp60>`_.
 
@@ -214,7 +214,7 @@ Historic indices, real-time indices, and forecasted indices are available from
 Solar Flares
 ^^^^^^^^^^^^
 
-Solar flares have been monitored for decades, and the data has been compiled
+Solar flares have been monitored for decades and the data has been compiled
 into standard measurements from different data sets. Historic indices,
 real-time indices, and forecasted indices are available from
 `SWPC <https://www.swpc.noaa.gov/phenomena>`_.
@@ -229,8 +229,8 @@ real-time indices, and forecasted indices are available from
 Hpo
 ^^^
 
-Hpo is a (half)-Hourly, Planetary, Open-ended, geomagnetic index that
-reflects the magnitude of geomagnetic disturbances at Earth. It is like Kp, but
+Hpo is a (half)-Hourly, planetary, open-ended, geomagnetic index that
+reflects the magnitude of geomagnetic disturbances at Earth. It is like Kp but
 does not have an upper limit. Values from 1995 onwards are available from 
 `GFZ <https://kp.gfz-potsdam.de/en/hp30-hp60>`_.
 
@@ -276,7 +276,7 @@ Polar Cap
 
 Polar cap indices have been developed to provide information about high-latitude
 conditions and inform ionospheric space weather models. Currently, this
-Instrument provides absorption predictions from SWPC.
+:py:class:`~pysat._instrument.Instrument` provides absorption predictions from SWPC.
 
 .. automodule:: pysatSpaceWeather.instruments.sw_polarcap
    :members:

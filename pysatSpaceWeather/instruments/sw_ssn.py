@@ -284,11 +284,11 @@ def download(date_array, tag, inst_id, data_path, update_files=False,
     data_path : str
         Path to data directory.
     update_files : bool
-        Re-download data for files that already exist if True (default=False)
+        Re-download data for files that already exist if True. (default=False)
     mock_download_dir : str or NoneType
         Local directory with downloaded files or None. If not None, will
         process any files with the correct name and date as if they were
-        downloaded (default=None)
+        downloaded. (default=None)
 
     Raises
     ------

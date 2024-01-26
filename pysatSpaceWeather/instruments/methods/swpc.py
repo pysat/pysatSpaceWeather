@@ -41,7 +41,7 @@ def daily_dsd_download(name, today, data_path, mock_download_dir=None):
     name : str
         Instrument name, expects one of 'f107', 'flare', 'ssn', or 'sbfield'.
     today : dt.datetime
-        Datetime for current day
+        Datetime for current day.
     data_path : str
         Path to data directory.
     mock_download_dir : str or NoneType

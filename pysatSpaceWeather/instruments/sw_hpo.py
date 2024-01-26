@@ -91,9 +91,9 @@ def load(fnames, tag='', inst_id=''):
     Parameters
     ----------
     fnames : pandas.Series
-        Series of filenames
+        Series of filenames.
     tag : str
-        Instrument tag (default='')
+        Instrument tag. (default='')
     inst_id : str
         Instrument ID, not used. (default='')
 

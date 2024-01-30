@@ -584,7 +584,7 @@ def geomag_forecast_download(name, date_array, data_path,
     Raises
     ------
     IOError
-        If an unknown mock download directory is supplied or the desored file
+        If an unknown mock download directory is supplied or the desired file
         is missing.
 
     Note
@@ -958,7 +958,7 @@ def list_files(name, tag, inst_id, data_path, format_str=None):
 
     # Pad list of files data to include most recent file under tomorrow
     if not files.empty:
-        pds_offset = pds.DateOffset(days=1)
+        pds_offset = dt.timedelta(days=1)
         files.loc[files.index[-1] + pds_offset] = files.values[-1]
         files.loc[files.index[-1] + pds_offset] = files.values[-1]
 

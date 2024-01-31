@@ -15,6 +15,7 @@ Programs
 --------
  - NSF 125908, AGS-1651393
  - Naval Research Laboratory N00173191G016 and N0017322P0744
+ - The Space Precipitation Impacts (SPI) project at Goddard Space Flight Center through the Heliophysics Internal Science Funding Model
 
 Disclaimers
 ===========

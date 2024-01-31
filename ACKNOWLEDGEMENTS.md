@@ -5,11 +5,12 @@ for pysatSpaceWeather development.
 
 Institutions
 ------------
+ - Catholic University of America (CUA)
  - Cosmic Studio
  - Defense Advanced Research Projects Agency (DARPA) Defense Sciences Office
- - Office of Naval Research (ONR)
  - National Aeronautics and Space Administration (NASA)
  - National Science Foundation (NSF)
+ - Office of Naval Research (ONR)
 
 Programs
 --------

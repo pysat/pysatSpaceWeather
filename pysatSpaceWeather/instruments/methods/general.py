@@ -6,7 +6,6 @@
 #
 # DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
 # unlimited.
-# This work was supported by the Office of Naval Research.
 # ----------------------------------------------------------------------------
 """Provides routines that support general space weather instruments."""
 

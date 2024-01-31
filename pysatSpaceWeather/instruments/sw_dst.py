@@ -6,7 +6,6 @@
 #
 # DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
 # unlimited.
-# This work was supported by the Office of Naval Research.
 # ----------------------------------------------------------------------------
 """Supports Dst values. Downloads data from NGDC.
 
@@ -25,13 +24,6 @@ inst_id
 Note
 ----
 Will only work until 2057.
-
-This material is based upon work supported by the
-National Science Foundation under Grant Number 1259508.
-
-Any opinions, findings, and conclusions or recommendations expressed in this
-material are those of the author(s) and do not necessarily reflect the views
-of the National Science Foundation.
 
 """
 

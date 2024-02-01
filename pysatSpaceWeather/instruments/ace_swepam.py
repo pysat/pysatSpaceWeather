@@ -6,7 +6,6 @@
 #
 # DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
 # unlimited.
-# This work was supported by the Office of Naval Research.
 # ----------------------------------------------------------------------------
 """Supports ACE Solar Wind Electron Proton Alpha Monitor data.
 

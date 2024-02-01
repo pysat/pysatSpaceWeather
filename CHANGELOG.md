@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added new examples to the documentation
   * Added new test attributes for clean messages to the ACE instruments
   * Added the ability to 'download' files from a local directory
+  * Added an acknowledgements file with detailed funding information
 * Maintenance
   * Updated package documentation, yamls, and other supporting files
   * Updated the LISIRD download routine to reflect new behaviour

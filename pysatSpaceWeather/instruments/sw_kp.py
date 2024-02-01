@@ -6,7 +6,6 @@
 #
 # DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
 # unlimited.
-# This work was supported by the Office of Naval Research.
 # ----------------------------------------------------------------------------
 """Supports Kp index values.
 
@@ -64,13 +63,6 @@ The 'forecast', 'prediction', and 'recent' tags load Kp data for a specific
 period of time. Loading multiple files, loading multiple days, the data padding
 feature, and multi_file_day feature available from the pyast.Instrument object
 is not appropriate for these tags data.
-
-This material is based upon work supported by the
-National Science Foundation under Grant Number 1259508.
-
-Any opinions, findings, and conclusions or recommendations expressed in this
-material are those of the author(s) and do not necessarily reflect the views
-of the National Science Foundation.
 
 """
 

@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[0.1.0] - 2023-XX-XX
+[0.1.0] - 2024-02-16
 --------------------
 * Enhancements
   * Changed downloads to write files across multiple Instruments when the

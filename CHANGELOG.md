@@ -23,6 +23,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Removed try/except loop that was a fix for pysat < 3.1.0
   * Updated 'use_header' kwarg use for pysat 3.2.0 changes
   * Updated code headers to include license, reference, and pub release info
+  * Updated the supported python versions
 
 [0.0.10] - 2023-06-01
 ---------------------

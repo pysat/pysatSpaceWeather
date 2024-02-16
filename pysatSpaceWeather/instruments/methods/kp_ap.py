@@ -3,8 +3,11 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
-"""Provides routines to support the geomagnetic indeces, Kp and Ap."""
+"""Provides routines to support the geomagnetic indices, Kp and Ap."""
 
 import datetime as dt
 import numpy as np
@@ -14,6 +17,8 @@ import pandas as pds
 import pysat
 
 import pysatSpaceWeather as pysat_sw
+from pysatSpaceWeather.instruments.methods import gfz
+from pysatSpaceWeather.instruments.methods import swpc
 
 
 # --------------------------------------------------------------------------
@@ -30,15 +35,14 @@ def acknowledgements(name, tag):
         Instrument tag.
 
     """
-    swpc = ''.join(['Prepared by the U.S. Dept. of Commerce, NOAA, Space ',
-                    'Weather Prediction Center'])
-    gfz = ''.join(['CC BY 4.0, The Kp index was introduced by Bartels (1949) ',
-                   'and is produced by Geomagnetic Observatory Niemegk, GFZ ',
-                   'German Research Centre for Geosciences.  Please cite the',
-                   " references in the 'references' attribute"])
 
     ackn = {'kp': {'': 'Provided by GFZ German Research Centre for Geosciences',
-                   'forecast': swpc, 'recent': swpc, 'def': gfz, 'now': gfz}}
+                   'forecast': swpc.ackn, 'recent': swpc.ackn, 'def': gfz.ackn,
+                   'now': gfz.ackn, 'prediction': swpc.ackn},
+            'ap': {'forecast': swpc.ackn, 'recent': swpc.ackn,
+                   'prediction': swpc.ackn, '45day': swpc.ackn,
+                   'def': gfz.ackn, 'now': gfz.ackn},
+            'cp': {'def': gfz.ackn, 'now': gfz.ackn}}
 
     return ackn[name][tag]
 
@@ -76,18 +80,14 @@ def references(name, tag):
                                    "K-derived planetary indices: description ",
                                    "and availability, Rev. Geophys. 29, 3, ",
                                    "415-432, 1991."])])
-    gfz_refs = '\n'.join([''.join(["Matzka, J., Bronkalla, O., Tornow, K., ",
-                                   "Elger, K. and Stolle, C., 2021. ",
-                                   "Geomagnetic Kp index. V. 1.0. GFZ Data ",
-                                   "Services, doi:10.5880/Kp.0001"]),
-                          ''.join(["Matzka, J., Stolle, C., Yamazaki, Y., ",
-                                   "Bronkalla, O. and Morschhauser, A., 2021. ",
-                                   "The geomagnetic Kp index and derived ",
-                                   "indices of geomagnetic activity. Space ",
-                                   "Weather,doi:10.1029/2020SW002641"])])
 
     refs = {'kp': {'': gen_refs, 'forecast': gen_refs, 'recent': gen_refs,
-                   'def': gfz_refs, 'now': gfz_refs}}
+                   'prediction': gen_refs, 'def': gfz.geoind_refs,
+                   'now': gfz.geoind_refs},
+            'ap': {'recent': gen_refs, 'forecast': gen_refs, '45day': gen_refs,
+                   'prediction': gen_refs, 'def': gfz.geoind_refs,
+                   'now': gfz.geoind_refs},
+            'cp': {'def': gfz.geoind_refs, 'now': gfz.geoind_refs}}
 
     return refs[name][tag]
 
@@ -135,6 +135,43 @@ def initialize_ap_metadata(meta, data_key, fill_val=-1):
                       meta.labels.desc: "ap (equivalent range) index",
                       meta.labels.min_val: 0,
                       meta.labels.max_val: 400,
+                      meta.labels.fill_val: fill_val}
+
+    return
+
+
+def initialize_bartel_metadata(meta, data_key, fill_val=-1):
+    """Initialize the Bartel rotation meta data using our knowledge of the data.
+
+    Parameters
+    ----------
+    meta : pysat._meta.Meta
+        Pysat Metadata
+    data_key : str
+        String denoting the data key
+    fill_val : int or float
+        File-specific fill value (default=-1)
+
+    """
+
+    if data_key.find('solar_rotation_num') >= 0:
+        units = ''
+        bname = 'Bartels solar rotation number'
+        desc = 'A sequence of 27-day intervals counted from February 8, 1832'
+        max_val = np.inf
+    elif data_key.find('day_within') >= 0:
+        units = 'day'
+        bname = 'Days within Bartels solar rotation'
+        desc = 'Number of day within the Bartels solar rotation',
+        max_val = 27
+    else:
+        raise ValueError('unknown data key: {:}'.format(data_key))
+
+    meta[data_key] = {meta.labels.units: units,
+                      meta.labels.name: bname,
+                      meta.labels.desc: desc,
+                      meta.labels.min_val: 1,
+                      meta.labels.max_val: max_val,
                       meta.labels.fill_val: fill_val}
 
     return
@@ -204,7 +241,7 @@ def convert_3hr_kp_to_ap(kp_inst, var_name='Kp'):
 
 
 def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
-                  running_name=None):
+                  running_name=None, min_periods=8):
     """Calculate the daily Ap index from the 3hr ap index.
 
     Parameters
@@ -218,6 +255,9 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
     running_name : str or NoneType
         Column name for daily running average of ap, not output if None
         (default=None)
+    min_periods : int
+        Mininmum number of observations needed to output an average value
+        (default=8)
 
     Raises
     ------
@@ -242,7 +282,8 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
         raise ValueError("daily Ap column name already exists: " + daily_name)
 
     # Calculate the daily mean value
-    ap_mean = ap_inst[ap_name].rolling(window='1D', min_periods=8).mean()
+    ap_mean = ap_inst[ap_name].rolling(window='1D',
+                                       min_periods=min_periods).mean()
 
     if running_name is not None:
         ap_inst[running_name] = ap_mean
@@ -334,15 +375,14 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
     if kp_inst.empty:
         load_kwargs = {'date': inst.index[0], 'end_date': inst.index[-1],
                        'verifyPad': True}
-        if Version(pysat.__version__) > Version('3.0.1'):
+
+        # TODO(#131): Remove version check after minimum version supported
+        # is 3.2.0
+        if all([Version(pysat.__version__) > Version('3.0.1'),
+                Version(pysat.__version__) < Version('3.2.0')]):
             load_kwargs['use_header'] = True
 
-        # TODO(#117): This gets around a bug in pysat that will be fixed in
-        # pysat version 3.1.0+
-        try:
-            kp_inst.load(**load_kwargs)
-        except TypeError:
-            pass
+        kp_inst.load(**load_kwargs)
 
     if kp_inst.empty:
         raise IOError(
@@ -397,9 +437,9 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap', kp_name='Kp'):
 
     # Set the metadata
     meta = pysat.Meta()
-    meta[kp_name] = initialize_kp_metadata(meta, 'Kp', fill_val)
-    meta[meta.labels.desc] = 'Kp converted from {:}'.format(ap_name)
-    meta[meta.labels.notes] = ''.join(
+    initialize_kp_metadata(meta, 'Kp', fill_val)
+    meta['Kp', meta.labels.desc] = 'Kp converted from {:}'.format(ap_name)
+    meta['Kp', meta.labels.notes] = ''.join(
         ['Kp converted from ', ap_name, 'as described at: ',
          'https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html'])
 
@@ -547,12 +587,19 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                                    "provide starting and ending times")))
 
     # Initialize the output instrument
-    kp_inst = pysat.Instrument(labels=all_inst[0].meta_labels)
+    # TODO(#136): Remove if/else when pysat is 3.2.0+
+    if hasattr(all_inst[0], "meta_labels"):
+        meta_kwargs = {"labels": all_inst[0].meta_labels}
+        kp_inst = pysat.Instrument(labels=all_inst[0].meta_labels)
+    else:
+        meta_kwargs = all_inst[0].meta_kwargs
+        kp_inst = pysat.Instrument(meta_kwargs=meta_kwargs)
+
     kp_inst.inst_module = pysat_sw.instruments.sw_kp
     kp_inst.tag = tag
     kp_inst.date = start
     kp_inst.doy = np.int64(start.strftime("%j"))
-    kp_inst.meta = pysat.Meta(labels=kp_inst.meta_labels)
+    kp_inst.meta = pysat.Meta(**meta_kwargs)
     initialize_kp_metadata(kp_inst.meta, 'Kp', fill_val=fill_val)
 
     kp_times = list()
@@ -564,7 +611,11 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
         # Load and save the standard data for as many times as possible
         if inst_flag == 'standard':
             load_kwargs = {'date': itime}
-            if Version(pysat.__version__) > Version('3.0.1'):
+
+            # TODO(#131): Remove version check after minimum version supported
+            # is 3.2.0
+            if all([Version(pysat.__version__) > Version('3.0.1'),
+                    Version(pysat.__version__) < Version('3.2.0')]):
                 load_kwargs['use_header'] = True
 
             standard_inst.load(**load_kwargs)
@@ -594,7 +645,11 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
             for filename in files:
                 if filename is not None:
                     load_kwargs = {'fname': filename}
-                    if Version(pysat.__version__) > Version('3.0.1'):
+
+                    # TODO(#131): Remove version check after minimum version
+                    # supported is 3.2.0
+                    if all([Version(pysat.__version__) > Version('3.0.1'),
+                            Version(pysat.__version__) < Version('3.2.0')]):
                         load_kwargs['use_header'] = True
                     recent_inst.load(**load_kwargs)
 
@@ -630,7 +685,11 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
             for filename in files:
                 if filename is not None:
                     load_kwargs = {'fname': filename}
-                    if Version(pysat.__version__) > Version('3.0.1'):
+
+                    # TODO(#131): Remove version check after minimum version
+                    # supported is 3.2.0
+                    if all([Version(pysat.__version__) > Version('3.0.1'),
+                            Version(pysat.__version__) < Version('3.2.0')]):
                         load_kwargs['use_header'] = True
                     forecast_inst.load(**load_kwargs)
 

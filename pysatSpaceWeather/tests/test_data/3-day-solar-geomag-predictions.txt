@@ -1,0 +1,68 @@
+:Product: 3-day Space Weather Predictions daypre.txt
+:Issued: 2023 Oct 31 2200 UTC
+# Prepared by the US Dept. of Commerce, NOAA, Space Weather Prediction Center
+# Product description and SWPC contact on the Web
+# http://www.swpc.noaa.gov/wwire.html
+#
+#             3-day Space Weather Predictions
+#
+:Prediction_dates:   2023 Nov 01   2023 Nov 02   2023 Nov 03
+:Geomagnetic_A_indices:
+A_Fredericksburg          8             6             6
+A_Planetary               8             5             5
+#
+# Predicted 3-hour Middle latitude k-indices
+:Pred_Mid_k:
+Mid/00-03UT               2             2             2
+Mid/03-06UT               3             2             1
+Mid/06-09UT               2             2             2
+Mid/09-12UT               2             1             1
+Mid/12-15UT               2             2             2
+Mid/15-18UT               2             1             1
+Mid/18-21UT               2             1             2
+Mid/21-00UT               2             2             2
+#
+# Predicted 3-hour High latitude k-indices
+:Pred_High_k:
+High/00-03UT              2             1             1
+High/03-06UT              2             1             1
+High/06-09UT              3             1             1
+High/09-12UT              3             2             2
+High/12-15UT              3             2             2
+High/15-18UT              2             1             1
+High/18-21UT              2             1             1
+High/21-00UT              1             1             1
+#
+# Probability of Geomagnetic conditions at Middle Latitude
+:Prob_Mid:
+Mid/Active               15            10            10
+Mid/Minor_Storm           5             5             5
+Mid/Major-Severe_Storm    1             1             1
+#
+# Probability of Geomagnetic conditions at High Latitudes
+:Prob_High:
+High/Active              15            15            15
+High/Minor_Storm         20            20            20
+High/Major-Severe_Storm  20            15            15
+#
+# Polar Cap Absorption Forecast
+:Polar_cap:
+                      green
+#
+# Solar
+:10cm_flux:
+                        148           148           150
+#
+:Whole_Disk_Flare_Prob:
+Class_M                  25            25            25
+Class_X                   5             5             5
+Proton                    1             1             1
+#
+# Region Flare Probabilities for 2023 Nov 01
+# Region     Class C      M             X             P
+:Reg_Prob: 2023 Oct 31
+  3472         15         1             1             1
+  3473         20         5             1             1
+  3474         50        15             5             1
+  3476         10         1             1             1
+  3477         15         5             1             1

@@ -1,4 +1,12 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-.
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Supports Dst values. Downloads data from NGDC.
 
 Properties
@@ -8,21 +16,14 @@ platform
 name
     'dst'
 tag
-    'noaa' - Historic Dst data coalated by and maintained by NOAA/NCEI
-    'lasp' - Predicted Dst from real-time ACE or DSCOVR provided by LASP
+    - 'noaa' Historic Dst data coalated by and maintained by NOAA/NCEI
+    - 'lasp' Predicted Dst from real-time ACE or DSCOVR provided by LASP
 inst_id
-    ''
+    - ''
 
 Note
 ----
 Will only work until 2057.
-
-This material is based upon work supported by the
-National Science Foundation under Grant Number 1259508.
-
-Any opinions, findings, and conclusions or recommendations expressed in this
-material are those of the author(s) and do not necessarily reflect the views
-of the National Science Foundation.
 
 """
 
@@ -31,11 +32,12 @@ import ftplib
 import numpy as np
 import os
 import pandas as pds
-import requests
+import shutil
 
 import pysat
 
 from pysatSpaceWeather.instruments.methods import dst as mm_dst
+from pysatSpaceWeather.instruments.methods import lasp
 
 # ----------------------------------------------------------------------------
 # Instrument attributes
@@ -53,7 +55,7 @@ tomorrow = today + dt.timedelta(days=1)
 # ----------------------------------------------------------------------------
 # Instrument test attributes
 
-_test_dates = {'': {'noaa': dt.datetime(2007, 1, 1), 'lasp': today}}
+_test_dates = {'': {'noaa': dt.datetime(2000, 1, 1), 'lasp': today}}
 
 # Other tags assumed to be True
 _test_download_ci = {'': {'noaa': False}}
@@ -239,7 +241,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
     return files
 
 
-def download(date_array, tag, inst_id, data_path):
+def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
     """Download the Dst index data from the appropriate repository.
 
     Parameters
@@ -252,19 +254,37 @@ def download(date_array, tag, inst_id, data_path):
         Instrument ID, not used.
     data_path : str
         Path to data directory.
+        If not None, will process any files with the correct name and date
+        as if they were downloaded.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded. (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied.
 
     Note
     ----
     Called by pysat. Not intended for direct use by user.
 
     """
-    if tag == 'noaa':
-        # Connect to host, default port
-        ftp = ftplib.FTP('ftp.ngdc.noaa.gov')
+    # If a mock download directory was supplied, test to see it exists
+    if mock_download_dir is not None:
+        if not os.path.isdir(mock_download_dir):
+            raise IOError('file location is not a directory: {:}'.format(
+                mock_download_dir))
 
-        # User anonymous, passwd anonymous@
-        ftp.login()
-        ftp.cwd('/STP/GEOMAGNETIC_DATA/INDICES/DST')
+    if tag == 'noaa':
+        if mock_download_dir is None:
+            # Connect to host, default port
+            ftp = ftplib.FTP('ftp.ngdc.noaa.gov')
+
+            # User anonymous, passwd anonymous@
+            ftp.login()
+            ftp.cwd('/STP/GEOMAGNETIC_DATA/INDICES/DST')
 
         # Data stored by year. Only download for unique set of input years.
         years = np.array([date.year for date in date_array])
@@ -273,61 +293,34 @@ def download(date_array, tag, inst_id, data_path):
             fname_root = 'dst{year:04d}.txt'
             fname = fname_root.format(year=year)
             saved_fname = os.path.join(data_path, fname)
-            try:
-                pysat.logger.info('Downloading file for {year:04d}'.format(
-                    year=year))
-                with open(saved_fname, 'wb') as fp:
-                    ftp.retrbinary('RETR ' + fname, fp.write)
-            except ftplib.error_perm as exception:
-                if str(exception.args[0]).split(" ", 1)[0] != '550':
-                    raise
+            if mock_download_dir is None:
+                try:
+                    pysat.logger.info('Downloading file for {year:04d}'.format(
+                        year=year))
+                    with open(saved_fname, 'wb') as fp:
+                        ftp.retrbinary('RETR ' + fname, fp.write)
+                except ftplib.error_perm as exception:
+                    if str(exception.args[0]).split(" ", 1)[0] != '550':
+                        raise exception
+                    else:
+                        # File not present
+                        os.remove(saved_fname)
+                        pysat.logger.info(
+                            'File not available for {:04d}'.format(year))
+            else:
+                # Get the local file, if it exists
+                down_fname = os.path.join(mock_download_dir, fname)
+                if os.path.isfile(down_fname):
+                    shutil.copyfile(down_fname, saved_fname)
                 else:
-                    # File not present
-                    os.remove(saved_fname)
-                    pysat.logger.info('File not available for {:04d}'.format(
-                        year))
+                    pysat.logger.info("".join(["Data not downloaded for ",
+                                               down_fname, ", data may have ",
+                                               "been saved to an unexpected ",
+                                               "filename."]))
 
-        ftp.close()
+        if mock_download_dir is None:
+            ftp.close()
     elif tag == 'lasp':
-        # Set the remote data variables
-        url = ''.join(['https://lasp.colorado.edu/space_weather/dsttemerin/',
-                       'dst_last_96_hrs.txt'])
-        times = list()
-        data_dict = {'dst': []}
-
-        # Download the webpage
-        req = requests.get(url)
-
-        # Test to see if the file was found on the server
-        if req.text.find('not found on this server') > 0:
-            pysat.logger.warning(''.join(['LASP last 96 hour Dst file not ',
-                                          'found on server: ', url]))
-        else:
-            # Split the file into lines, removing the header and
-            # trailing empty line
-            file_lines = req.text.split('\n')[1:-1]
-
-            # Format the data
-            for line in file_lines:
-                # Split the line on whitespace
-                line_cols = line.split()
-
-                if len(line_cols) != 2:
-                    raise IOError(''.join(['unexpected line encountered in ',
-                                           'file retrieved from ', url, ':\n',
-                                           line]))
-
-                # Format the time and Dst values
-                times.append(dt.datetime.strptime(line_cols[0],
-                                                  '%Y/%j-%H:%M:%S'))
-                data_dict['dst'].append(np.float64(line_cols[1]))
-
-        # Re-cast the data as a pandas DataFrame
-        data = pds.DataFrame(data_dict, index=times)
-
-        # Write out as a file
-        file_base = '_'.join(['sw', 'dst', tag, today.strftime('%Y-%m-%d')])
-        file_name = os.path.join(data_path, '{:s}.txt'.format(file_base))
-        data.to_csv(file_name)
+        lasp.prediction_downloads(name, tag, data_path, mock_download_dir)
 
     return

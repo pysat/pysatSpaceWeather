@@ -3,6 +3,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Provides general routines for the ACE space weather instruments."""
 
@@ -10,11 +13,15 @@ import datetime as dt
 import numpy as np
 import os
 import pandas as pds
-import requests
 
 import pysat
 
+from pysatSpaceWeather.instruments.methods import general
+
 logger = pysat.logger
+clean_warn = {'dusty': [('logger', 'WARN',
+                         "unused clean level 'dusty', reverting to 'clean'",
+                         'clean')]}
 
 
 def acknowledgements():
@@ -153,7 +160,8 @@ def list_files(name, tag='', inst_id='', data_path='', format_str=None):
     return files
 
 
-def download(date_array, name, tag='', inst_id='', data_path='', now=None):
+def download(date_array, name, tag='', inst_id='', data_path='', now=None,
+             mock_download_dir=None):
     """Download the requested ACE Space Weather data.
 
     Parameters
@@ -171,6 +179,16 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None):
     now : dt.datetime or NoneType
         Current universal time, if None this is determined for each
         download. (default=None)
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded (default=None)
+
+    Raises
+    ------
+    IOError
+        If an unknown mock download directory is supplied or the file format
+        changes.
 
     Note
     ----
@@ -182,7 +200,6 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None):
     - File requested not available on server
 
     """
-
     # Ensure now is up-to-date, if desired
     if now is None:
         now = dt.datetime.utcnow()
@@ -193,9 +210,12 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None):
         file_fmt = "{:s}-{:s}.txt".format("ace", "magnetometer"
                                           if name == "mag" else name)
 
-        if(len(date_array) > 1 or date_array[0].year != now.year
-           or date_array[0].month != now.month or date_array[0].day != now.day):
-            logger.warning('real-time data only available for current day')
+        if any([len(date_array) > 1, date_array[0].year != now.year,
+                date_array[0].month != now.month,
+                date_array[0].day != now.day]):
+            logger.warning(''.join(['real-time data only available for current',
+                                    ' day, data in this file will have the ',
+                                    'wrong date.']))
     else:
         data_rate = 1 if name in ['mag', 'swepam'] else 5
         file_fmt = '_'.join(["%Y%m%d", "ace", name,
@@ -217,19 +237,23 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None):
 
     # Cycle through all the dates
     for dl_date in date_array:
-        # Download webpage
-        furl = ''.join((url[tag], dl_date.strftime(file_fmt)))
-        req = requests.get(furl)
+        # Get the file text from the remote or local destination
+        raw_data = general.get_local_or_remote_text(url[tag], mock_download_dir,
+                                                    dl_date.strftime(file_fmt))
 
-        # Split the file at the last header line and then by new line markers
-        raw_data = req.text.split('#-----------------')[-1]
-        raw_data = raw_data.split('\n')[1:]  # Remove the last header line
-
-        # Test to see if the file was found on the server
-        if ' '.join(raw_data).find('not found on this server') > 0:
-            logger.warning('File for {:} not found on server: {:}'.format(
-                dl_date.strftime("%d %b %Y"), furl))
+        if raw_data is None:
+            pysat.logger.info("".join(["Data not downloaded for ",
+                                       dl_date.strftime(file_fmt), ", date may",
+                                       " be out of range for the database or ",
+                                       "data may have been saved to an ",
+                                       "unexpected filename. Check URL: ",
+                                       url[tag], ", or directory: ",
+                                       repr(mock_download_dir)]))
         else:
+            # Split the file at the last header line and the new line markers
+            raw_data = raw_data.split('#-----------------')[-1]
+            raw_data = raw_data.split('\n')[1:]  # Remove the last header line
+
             # Parse the file, treating the 4 time columns separately
             data_dict = {col: list() for col in data_cols[name]}
             times = list()
@@ -237,8 +261,8 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None):
             for raw_line in raw_data:
                 split_line = raw_line.split()
                 if len(split_line) == nsplit:
-                    times.append(dt.datetime.strptime(' '.join(split_line[:4]),
-                                                      '%Y %m %d %H%M'))
+                    times.append(dt.datetime.strptime(
+                        ' '.join(split_line[:4]), '%Y %m %d %H%M'))
                     for i, col in enumerate(data_cols[name]):
                         # Convert to a number and save
                         #
@@ -247,8 +271,9 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None):
                         data_dict[col].append(float(split_line[4 + i]))
                 else:
                     if len(split_line) > 0:
-                        raise IOError(''.join(['unexpected line encoutered in ',
-                                               furl, ":\n", raw_line]))
+                        raise IOError(''.join([
+                            'unexpected line encoutered in ', url[tag], "/",
+                            dl_date.strftime(file_fmt), ":\n", raw_line]))
 
             # Put data into nicer DataFrame
             data = pds.DataFrame(data_dict, index=times)

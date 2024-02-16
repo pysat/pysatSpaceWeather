@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Test suite for F10.7 methods."""
 
@@ -109,14 +112,14 @@ class TestSWF107(object):
         assert 'f107a' in self.testInst.meta.keys()
 
         # Assert the finite values have realistic means
-        assert(np.nanmin(self.testInst['f107a'])
-               > np.nanmin(self.testInst['f107']))
-        assert(np.nanmax(self.testInst['f107a'])
-               < np.nanmax(self.testInst['f107']))
+        assert (np.nanmin(self.testInst['f107a'])
+                > np.nanmin(self.testInst['f107']))
+        assert (np.nanmax(self.testInst['f107a'])
+                < np.nanmax(self.testInst['f107']))
 
         # Assert the expected number of fill values
-        assert(len(self.testInst['f107a'][np.isnan(self.testInst['f107a'])])
-               == 40)
+        assert (len(self.testInst['f107a'][np.isnan(self.testInst['f107a'])])
+                == 40)
         return
 
 
@@ -131,13 +134,19 @@ class TestSWF107Combine(object):
 
         # Set combination testing input
         self.test_day = dt.datetime(2019, 3, 16)
+        inst_id = {tag: '' for tag in sw_f107.tags.keys()}
+        inst_id['now'] = 'obs'
         self.combine_inst = {tag: pysat.Instrument(inst_module=sw_f107, tag=tag,
+                                                   inst_id=inst_id[tag],
                                                    update_files=True)
                              for tag in sw_f107.tags.keys()}
         self.combine_times = {"start": self.test_day - dt.timedelta(days=30),
                               "stop": self.test_day + dt.timedelta(days=3)}
         self.load_kwargs = {}
-        if Version(pysat.__version__) > Version('3.0.1'):
+
+        # TODO(#131): Remove version check after min version supported is 3.2.0
+        if all([Version(pysat.__version__) > Version('3.0.1'),
+                Version(pysat.__version__) < Version('3.2.0')]):
             self.load_kwargs['use_header'] = True
 
         return

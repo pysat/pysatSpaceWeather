@@ -3,6 +3,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Supports the MgII core-to-wing ratio index.
 
@@ -255,7 +258,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
     return out_files
 
 
-def download(date_array, tag, inst_id, data_path):
+def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
     """Download MGII core-to-wing index data from the appropriate repository.
 
     Parameters
@@ -268,12 +271,16 @@ def download(date_array, tag, inst_id, data_path):
         Specifies the ID for the Instrument (not used).
     data_path : str
         Path to data directory.
+    mock_download_dir : str or NoneType
+        Local directory with downloaded files or None. If not None, will
+        process any files with the correct name and date as if they were
+        downloaded. (default=None)
 
     Raises
     ------
     IOError
         If a problem is encountered connecting to the gateway or retrieving
-        data from the repository.
+        data from the remote or local repository.
 
     """
 
@@ -298,6 +305,6 @@ def download(date_array, tag, inst_id, data_path):
 
     # Download the desired data
     lisird.download(date_array, data_path, local_file_prefix, local_date_fmt,
-                    lisird_data_name, freq)
+                    lisird_data_name, freq, mock_download_dir=mock_download_dir)
 
     return

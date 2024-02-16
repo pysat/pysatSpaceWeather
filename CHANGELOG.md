@@ -3,6 +3,28 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.1.0] - 2024-02-16
+--------------------
+* Enhancements
+  * Changed downloads to write files across multiple Instruments when the
+    remote files contain a mix of data products
+  * Added new instruments: sw_ae, sw_al, sw_au, sw_ap, sw_apo, sw_cp, sw_flare,
+    sw_hpo, sw_polar-cap, sw_sbfield, sw_ssn, and sw_storm-prob
+  * Added new data sources (tag 'now') for the F10.7 from GFZ
+  * Created a general download routine for the GFZ and LASP data
+  * Added new examples to the documentation
+  * Added new test attributes for clean messages to the ACE instruments
+  * Added the ability to 'download' files from a local directory
+  * Added an acknowledgements file with detailed funding information
+* Maintenance
+  * Updated package documentation, yamls, and other supporting files
+  * Updated the LISIRD download routine to reflect new behaviour
+  * Changed F10.7 daily test day to ensure new pysat padding tests work
+  * Removed try/except loop that was a fix for pysat < 3.1.0
+  * Updated 'use_header' kwarg use for pysat 3.2.0 changes
+  * Updated code headers to include license, reference, and pub release info
+  * Updated the supported python versions
+
 [0.0.10] - 2023-06-01
 ---------------------
 * Maintenance

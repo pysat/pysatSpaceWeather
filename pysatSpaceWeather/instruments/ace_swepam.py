@@ -1,4 +1,12 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-.
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Supports ACE Solar Wind Electron Proton Alpha Monitor data.
 
 Properties
@@ -67,6 +75,10 @@ now = dt.datetime.utcnow()
 # Set test dates (first level: inst_id, second level: tag)
 _test_dates = {inst_id: {'realtime': dt.datetime(now.year, now.month, now.day),
                          'historic': dt.datetime(2009, 1, 1)}
+               for inst_id in inst_ids.keys()}
+
+# Set clean warning tests
+_clean_warn = {inst_id: {tag: mm_ace.clean_warn for tag in inst_ids[inst_id]}
                for inst_id in inst_ids.keys()}
 
 # ----------------------------------------------------------------------------

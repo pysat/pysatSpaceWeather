@@ -35,6 +35,28 @@ F \ :sub:`10.7`\  data obtained from multiple sources.
 .. automodule:: pysatSpaceWeather.instruments.methods.f107
    :members:
 
+
+General
+-------
+
+General functions that are useful across platforms.
+
+
+.. automodule:: pysatSpaceWeather.instruments.methods.general
+   :members:
+
+
+GFZ
+---
+
+Supports the German Research Centre for Geosciences at Potsdam (GFZ) data
+products.
+
+
+.. automodule:: pysatSpaceWeather.instruments.methods.gfz
+   :members:
+
+
 Kp and Ap
 ---------
 Supports the Kp instrument by providing reference and acknowledgement
@@ -53,4 +75,13 @@ Contains functions to support LASP Interactive Solar IRradiance Datacenter
 
 
 .. automodule:: pysatSpaceWeather.instruments.methods.lisird
+   :members:
+
+SWPC
+----
+
+Supports the Space Weather Prediction Center (SWPC) data products.
+
+
+.. automodule:: pysatSpaceWeather.instruments.methods.swpc
    :members:

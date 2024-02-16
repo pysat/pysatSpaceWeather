@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Integration and unit test suite for ACE methods."""
 
@@ -47,6 +50,16 @@ class TestACEMethods(object):
         assert str(kerr.value).find('unknown ACE instrument') >= 0
         return
 
+    def test_clean_bad_inst(self):
+        """Test AttributeError is raised with a non-ACE instrument."""
+        inst = pysat.Instrument('pysat', 'testing')
+
+        with pytest.raises(AttributeError) as aerr:
+            mm_ace.clean(inst)
+
+        assert str(aerr.value).find("Can't apply ACE cleaning to platform") >= 0
+        return
+
 
 @pytest.mark.skipif(Version(pysat.__version__) < Version('3.0.2'),
                     reason="Requires time routine available in pysat 3.0.2+")
@@ -55,7 +68,14 @@ class TestACESWEPAMMethods(object):
 
     def setup_method(self):
         """Create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', use_header=True)
+
+        # TODO(#131): Remove version check after min version supported is 3.2.0
+        inst_kwargs = dict()
+        if all([Version(pysat.__version__) > Version('3.0.1'),
+                Version(pysat.__version__) < Version('3.2.0')]):
+            inst_kwargs['use_header'] = True
+
+        self.testInst = pysat.Instrument('pysat', 'testing', **inst_kwargs)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
 
         self.omni_keys = ['sw_proton_dens_norm', 'sw_ion_temp_norm']

@@ -102,7 +102,7 @@ _test_dates = {'': {'def': dt.datetime(2009, 1, 1),
                     'forecast': tomorrow,
                     'prediction': tomorrow,
                     'recent': today,
-                    '45day': tomorrow}}
+                    '45day': today}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods

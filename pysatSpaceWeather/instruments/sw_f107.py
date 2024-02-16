@@ -109,7 +109,7 @@ _test_dates = {'': {'historic': dt.datetime(2009, 1, 1),
                     'prelim': dt.datetime(2009, 1, 1),
                     'daily': today,
                     'forecast': tomorrow,
-                    '45day': tomorrow},
+                    '45day': today},
                'obs': {'now': dt.datetime(2009, 1, 1)},
                'adj': {'now': dt.datetime(2009, 1, 1)}}
 

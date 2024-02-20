@@ -1,4 +1,12 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-.
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Supports Dst values. Downloads data from NGDC.
 
 Properties
@@ -16,13 +24,6 @@ inst_id
 Note
 ----
 Will only work until 2057.
-
-This material is based upon work supported by the
-National Science Foundation under Grant Number 1259508.
-
-Any opinions, findings, and conclusions or recommendations expressed in this
-material are those of the author(s) and do not necessarily reflect the views
-of the National Science Foundation.
 
 """
 
@@ -254,11 +255,11 @@ def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
     data_path : str
         Path to data directory.
         If not None, will process any files with the correct name and date
-        as if they were downloaded
+        as if they were downloaded.
     mock_download_dir : str or NoneType
         Local directory with downloaded files or None. If not None, will
         process any files with the correct name and date as if they were
-        downloaded (default=None)
+        downloaded. (default=None)
 
     Raises
     ------

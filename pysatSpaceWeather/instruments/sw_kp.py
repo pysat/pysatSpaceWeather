@@ -1,4 +1,12 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-.
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Supports Kp index values.
 
 Properties
@@ -56,13 +64,6 @@ period of time. Loading multiple files, loading multiple days, the data padding
 feature, and multi_file_day feature available from the pyast.Instrument object
 is not appropriate for these tags data.
 
-This material is based upon work supported by the
-National Science Foundation under Grant Number 1259508.
-
-Any opinions, findings, and conclusions or recommendations expressed in this
-material are those of the author(s) and do not necessarily reflect the views
-of the National Science Foundation.
-
 """
 
 import datetime as dt
@@ -116,16 +117,6 @@ def init(self):
     self.acknowledgements = methods.kp_ap.acknowledgements(self.name, self.tag)
     self.references = methods.kp_ap.references(self.name, self.tag)
     pysat.logger.info(self.acknowledgements)
-
-    if self.tag in ["def", "now"]:
-        # This tag loads more than just Kp data, and the behaviour will be
-        # deprecated in v0.1.0
-        warnings.warn("".join(["Upcoming structural changes will prevent ",
-                               "Instruments from loading multiple data sets ",
-                               "in one Instrument. In version 0.1.0+ the Ap ",
-                               "and Cp data will be accessable from the ",
-                               "`sw_ap` and `sw_cp` Instruments."]),
-                      DeprecationWarning, stacklevel=2)
 
     return
 

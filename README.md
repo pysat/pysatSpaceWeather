@@ -48,7 +48,8 @@ a local install use the "--user" flag after "install".
 
 ```
 cd pysatSpaceWeather/
-python setup.py install
+python -m build .
+pip install .
 ```
 
 # Examples

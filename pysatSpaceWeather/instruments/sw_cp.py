@@ -1,4 +1,12 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-.
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Supports Cp index values.
 
 Properties
@@ -92,9 +100,9 @@ def load(fnames, tag='', inst_id=''):
     Parameters
     ----------
     fnames : pandas.Series
-        Series of filenames
+        Series of filenames.
     tag : str
-        Instrument tag (default='')
+        Instrument tag. (default='')
     inst_id : str
         Instrument ID, not used. (default='')
 

@@ -3,6 +3,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Supports F10.7 index values.
 
@@ -69,7 +72,6 @@ import datetime as dt
 import numpy as np
 import os
 import pandas as pds
-import warnings
 
 import pysat
 
@@ -107,7 +109,7 @@ _test_dates = {'': {'historic': dt.datetime(2009, 1, 1),
                     'prelim': dt.datetime(2009, 1, 1),
                     'daily': today,
                     'forecast': tomorrow,
-                    '45day': tomorrow},
+                    '45day': today},
                'obs': {'now': dt.datetime(2009, 1, 1)},
                'adj': {'now': dt.datetime(2009, 1, 1)}}
 
@@ -131,26 +133,6 @@ def init(self):
     # Define the historic F10.7 starting time
     if self.tag == 'historic':
         self.lasp_stime = lasp_stime
-
-    # Raise Deprecation warnings
-    if self.tag in ['daily', 'prelim']:
-        # This tag loads more than just F10.7 data, and the behaviour will be
-        # deprecated in v0.1.0
-        warnings.warn("".join(["Upcoming structural changes will prevent ",
-                               "Instruments from loading multiple data sets in",
-                               " one Instrument. In version 0.1.0+ the SSN, ",
-                               "solar flare, and solar mean field data will be",
-                               " accessable from the `sw_ssn`, `sw_flare`, ",
-                               "and `sw_sbfield` Instruments."]),
-                      DeprecationWarning, stacklevel=2)
-    elif self.tag == '45day':
-        # This tag loads more than just F10.7 data, and the behaviour will be
-        # deprecated in v0.1.0
-        warnings.warn("".join(["Upcoming structural changes will prevent ",
-                               "Instruments from loading multiple data sets in",
-                               " one Instrument. In version 0.1.0+ the Ap will",
-                               " be accessable from the `sw_ap` Instrument."]),
-                      DeprecationWarning, stacklevel=2)
 
     return
 

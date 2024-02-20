@@ -19,6 +19,12 @@ indices as pysat.Instrument objects.
    examples.rst
    develop_guide.rst
    history.rst
+   acknowledgements.rst
+
+
+.. admonition:: DISTRIBUTION STATEMENT A: Approved for public release.
+		Distribution is unlimited.
+
 
 
 Indices and tables

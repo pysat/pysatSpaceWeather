@@ -1,4 +1,12 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-.
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Supports solar magnetic field values.
 
 Properties
@@ -243,7 +251,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False,
     mock_download_dir : str or NoneType
         Local directory with downloaded files or None. If not None, will
         process any files with the correct name and date as if they were
-        downloaded (default=None)
+        downloaded. (default=None)
 
     Raises
     ------

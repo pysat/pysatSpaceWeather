@@ -3,6 +3,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Provides routines that support SWPC space weather instruments."""
 
@@ -37,7 +40,7 @@ def daily_dsd_download(name, today, data_path, mock_download_dir=None):
     name : str
         Instrument name, expects one of 'f107', 'flare', 'ssn', or 'sbfield'.
     today : dt.datetime
-        Datetime for current day
+        Datetime for current day.
     data_path : str
         Path to data directory.
     mock_download_dir : str or NoneType
@@ -580,7 +583,7 @@ def geomag_forecast_download(name, date_array, data_path,
     Raises
     ------
     IOError
-        If an unknown mock download directory is supplied or the desored file
+        If an unknown mock download directory is supplied or the desired file
         is missing.
 
     Note
@@ -954,7 +957,7 @@ def list_files(name, tag, inst_id, data_path, format_str=None):
 
     # Pad list of files data to include most recent file under tomorrow
     if not files.empty:
-        pds_offset = pds.DateOffset(days=1)
+        pds_offset = dt.timedelta(days=1)
         files.loc[files.index[-1] + pds_offset] = files.values[-1]
         files.loc[files.index[-1] + pds_offset] = files.values[-1]
 

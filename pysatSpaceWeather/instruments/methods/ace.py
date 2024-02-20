@@ -3,6 +3,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Provides general routines for the ACE space weather instruments."""
 
@@ -212,7 +215,7 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None,
                 date_array[0].day != now.day]):
             logger.warning(''.join(['real-time data only available for current',
                                     ' day, data in this file will have the ',
-                                    'wrong date']))
+                                    'wrong date.']))
     else:
         data_rate = 1 if name in ['mag', 'swepam'] else 5
         file_fmt = '_'.join(["%Y%m%d", "ace", name,

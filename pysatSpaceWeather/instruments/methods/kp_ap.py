@@ -3,6 +3,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Provides routines to support the geomagnetic indices, Kp and Ap."""
 
@@ -584,11 +587,19 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                                    "provide starting and ending times")))
 
     # Initialize the output instrument
-    kp_inst = pysat.Instrument()
+    # TODO(#136): Remove if/else when pysat is 3.2.0+
+    if hasattr(all_inst[0], "meta_labels"):
+        meta_kwargs = {"labels": all_inst[0].meta_labels}
+        kp_inst = pysat.Instrument(labels=all_inst[0].meta_labels)
+    else:
+        meta_kwargs = all_inst[0].meta_kwargs
+        kp_inst = pysat.Instrument(meta_kwargs=meta_kwargs)
+
     kp_inst.inst_module = pysat_sw.instruments.sw_kp
     kp_inst.tag = tag
     kp_inst.date = start
     kp_inst.doy = np.int64(start.strftime("%j"))
+    kp_inst.meta = pysat.Meta(**meta_kwargs)
     initialize_kp_metadata(kp_inst.meta, 'Kp', fill_val=fill_val)
 
     kp_times = list()

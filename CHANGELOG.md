@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Maintenance
   * Removed unneeded keyword arguments from Kp method functions
+  * Added `verify=False` to GFZ requests
 
 [0.1.0] - 2024-02-16
 --------------------

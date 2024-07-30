@@ -128,7 +128,7 @@ def json_downloads(date_array, data_path, local_file_prefix, local_date_fmt,
                     query_url = '{:s}&status=def'.format(query_url)
 
                 # The data is returned as a JSON file
-                req = requests.get(query_url)
+                req = requests.get(query_url, verify=False)
 
                 # Process the JSON file
                 if req.text.find('Gateway Timeout') >= 0:
@@ -249,7 +249,7 @@ def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path,
                                         dl_date.strftime('%Y'))))
             if mock_download_dir is None:
                 furl = ''.join([burl, fname])
-                req = requests.get(furl)
+                req = requests.get(furl, verify=False)
 
                 raw_txt = req.text if req.ok else None
             else:

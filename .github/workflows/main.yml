@@ -16,13 +16,13 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12"]
         numpy_ver: ["latest"]
         test_config: ["latest"]
         include:
           # NEP29 compliance settings
-          - python-version: "3.9"
-            numpy_ver: "1.23"
+          - python-version: "3.10"
+            numpy_ver: "1.24"
             os: ubuntu-latest
             test_config: "NEP29"
           # Operational compliance settings
@@ -72,11 +72,13 @@ jobs:
     - name: Test with pytest
       run: pytest
 
-    - name: Publish results to coveralls
-      env:
-        GITHUB_TOKEN: ${{ secrets.github_token }}
-        COVERALLS_PARALLEL: true
-      run: coveralls --rcfile=pyproject.toml --service=github
+    - name: Coveralls Parallel
+      uses: coverallsapp/github-actions@v2.3.0
+      with:
+        flag-name: run=${{ join(matrix.*, '-') }}
+	parallel: true
+	format: cobertura
+	debug: true
 
   finish:
     name: Finish Coverage Analysis
@@ -84,8 +86,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        pip install --upgrade coveralls
-        coveralls --service=github --finish
+      uses: coverallsapp/github-action@v2.3.0
+      with:
+        parallel-finished: true

@@ -318,6 +318,7 @@ def rewrite_daily_solar_data_file(year, outfiles, lines):
 
         # Write out as a file
         data.to_csv(outfiles[data_name], header=True)
+        pysat.logger.info('Wrote: {:}'.format(outfiles[data_name]))
 
     return
 

@@ -306,9 +306,9 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
                         index=[ap_mean.index[0] - pds.DateOffset(hours=3)])
 
     # Extract the mean that only uses data for one day
-    ap_sel = ap_pad.combine_first(ap_mean[[i for i, tt in
-                                           enumerate(ap_mean.index)
-                                           if tt.hour == 21]])
+    ap_sel = ap_pad.combine_first(ap_mean.iloc[[i for i, tt in
+                                                enumerate(ap_mean.index)
+                                                if tt.hour == 21]])
 
     # Backfill this data
     ap_data = ap_sel.resample('3H').bfill()
@@ -665,9 +665,12 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                 good_vals = recent_inst['Kp'][good_times] != local_fill_val
 
                 # Save output data and cycle time
-                kp_times.extend(list(recent_inst.index[good_times][good_vals]))
-                kp_values.extend(list(recent_inst['Kp'][good_times][good_vals]))
-                itime = kp_times[-1] + pds.DateOffset(hours=3)
+                if len(good_vals):
+                    kp_times.extend(list(
+                        recent_inst.index[good_times][good_vals]))
+                    kp_values.extend(list(
+                        recent_inst['Kp'][good_times][good_vals]))
+                    itime = kp_times[-1] + pds.DateOffset(hours=3)
 
             inst_flag = 'forecast' if forecast_inst is not None else None
             notes += "{:})".format(itime.date())
@@ -751,7 +754,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     # Resample the output data, filling missing values
     if (date_range.shape != kp_inst.index.shape
             or abs(date_range - kp_inst.index).max().total_seconds() > 0.0):
-        kp_inst.data = kp_inst.data.resample(freq).fillna(method=None)
+        kp_inst.data = kp_inst.data.resample(freq).ffill()
         if np.isfinite(fill_val):
             kp_inst.data[np.isnan(kp_inst.data)] = fill_val
 

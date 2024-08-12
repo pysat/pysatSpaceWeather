@@ -181,4 +181,5 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 # Links to ignore when checking for stability
 linkcheck_ignore = ['https://lasp.colorado.edu/space_weather/dsttemerin/',
-                    'https://*QUERY']
+                    'https://*QUERY',
+                    'https://datapub.gfz-potsdam.de/download/10.5880.Kp.0001/*']

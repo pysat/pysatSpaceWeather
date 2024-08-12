@@ -76,9 +76,9 @@ jobs:
       uses: coverallsapp/github-actions@v2.3.0
       with:
         flag-name: run=${{ join(matrix.*, '-') }}
-	parallel: true
-	format: cobertura
-	debug: true
+        parallel: true
+        format: cobertura
+        debug: true
 
   finish:
     name: Finish Coverage Analysis

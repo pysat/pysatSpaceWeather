@@ -7,7 +7,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Maintenance
   * Removed unneeded keyword arguments from Kp method functions
+  * Replaces `fillna` with `ffill`
+  * Implemented `iloc` in pandas Series and DataFrame index access
   * Added `verify=False` to GFZ requests
+  * Updated documentation links and fixed intersphinx mapping
 
 [0.1.0] - 2024-02-16
 --------------------

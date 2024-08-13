@@ -754,7 +754,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     # Resample the output data, filling missing values
     if (date_range.shape != kp_inst.index.shape
             or abs(date_range - kp_inst.index).max().total_seconds() > 0.0):
-        kp_inst.data = kp_inst.data.resample(freq).ffill()
+        kp_inst.data = kp_inst.data.resample(freq).asfreq()
         if np.isfinite(fill_val):
             kp_inst.data[np.isnan(kp_inst.data)] = fill_val
 

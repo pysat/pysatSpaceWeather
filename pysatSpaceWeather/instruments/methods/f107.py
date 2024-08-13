@@ -375,12 +375,15 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     freq = pysat.utils.time.calc_freq(f107_inst.index)
     if freq != "86400S":
         # Resample to the desired frequency
-        f107_fill = f107_fill.resample(freq).asfreq()
+        if pds.to_timedelta(freq) < pds.to_timedelta("86400S"):
+            f107_fill = f107_fill.resample(freq).ffill()
+        else:
+            f107_fill = f107_fill.resample(freq).asfreq()
 
         # Save the output in a list
         f107a = list(f107_fill[f107a_name])
 
-        # Fill any dates that fall
+        # Fill any dates that fall just outside of the range
         time_ind = pds.date_range(f107_fill.index[0], f107_inst.index[-1],
                                   freq=freq)
         for itime in time_ind[f107_fill.index.shape[0]:]:

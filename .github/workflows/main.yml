@@ -92,4 +92,3 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         parallel-finished: true
-        carryforward: "ubuntu-latest-3.12-latest-latest,ubuntu-latest-3.11-latest-latest,macos-latest-3.12-latest-latest,macos-latest-3.11-latest-latest,windows-latest-3.12-latest-latest,windows-latest-3.11-latest-latest,3.10-1.24-ubuntu-latest-NEP29"

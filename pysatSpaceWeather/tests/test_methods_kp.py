@@ -395,7 +395,7 @@ class TestSWKp(object):
         """Test conversion of ap to Kp where ap is not an exact Kp value."""
 
         kp_ap.convert_3hr_kp_to_ap(self.testInst)
-        new_val = self.testInst['3hr_ap'][8] + 1
+        new_val = self.testInst['3hr_ap']iloc[8] + 1
         self.testInst.data.at[self.testInst.index[8], '3hr_ap'] = new_val
         kp_out, kp_meta = kp_ap.convert_ap_to_kp(self.testInst['3hr_ap'])
 

@@ -70,7 +70,7 @@ jobs:
       run: flake8 . --count --exit-zero --max-complexity=10 --statistics
 
     - name: Test with pytest
-      run: pytest --cov=pysatSpaceWeather
+      run: pytest --cov=pysatSpaceWeather --cov-report xml
 
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@v2

@@ -73,7 +73,6 @@ Source = "https://github.com/pysat/pysatSpaceWeather"
 [tool.coverage.report]
 
 [tool.pytest.ini_options]
-addopts = "--cov=pysatSpaceWeather"
 markers = [
   "all_inst",
   "download",

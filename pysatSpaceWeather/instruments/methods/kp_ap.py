@@ -311,7 +311,7 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
                                                 if tt.hour == 21]])
 
     # Backfill this data
-    ap_data = ap_sel.resample('3H').bfill()
+    ap_data = ap_sel.resample('3h').bfill()
 
     # Save the output for the original time range
     ap_inst[daily_name] = pds.Series(ap_data[1:], index=ap_data.index[1:])

@@ -36,8 +36,7 @@ def acknowledgements(name, tag):
 
     """
 
-    ackn = {'kp': {'': 'Provided by GFZ German Research Centre for Geosciences',
-                   'forecast': swpc.ackn, 'recent': swpc.ackn, 'def': gfz.ackn,
+    ackn = {'kp': {'forecast': swpc.ackn, 'recent': swpc.ackn, 'def': gfz.ackn,
                    'now': gfz.ackn, 'prediction': swpc.ackn},
             'ap': {'forecast': swpc.ackn, 'recent': swpc.ackn,
                    'prediction': swpc.ackn, '45day': swpc.ackn,
@@ -81,7 +80,7 @@ def references(name, tag):
                                    "and availability, Rev. Geophys. 29, 3, ",
                                    "415-432, 1991."])])
 
-    refs = {'kp': {'': gen_refs, 'forecast': gen_refs, 'recent': gen_refs,
+    refs = {'kp': {'forecast': gen_refs, 'recent': gen_refs,
                    'prediction': gen_refs, 'def': gfz.geoind_refs,
                    'now': gfz.geoind_refs},
             'ap': {'recent': gen_refs, 'forecast': gen_refs, '45day': gen_refs,
@@ -363,8 +362,9 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
     Default max and min values accept all Kp, so changing only one will cause
     the filter to act as a high- or low-pass function.
 
-    This routine is written for standard Kp data (tag=''), not the forecast or
-    recent data.  However, it will work with these Kp data if they are supplied.
+    This routine is written for standard Kp data (tags of 'def', 'now'), not
+    the forecast or recent data.  However, it will work with these Kp data if
+    they are supplied.
 
     """
     # Load the desired data

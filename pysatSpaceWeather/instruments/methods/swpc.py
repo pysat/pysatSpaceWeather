@@ -318,6 +318,7 @@ def rewrite_daily_solar_data_file(year, outfiles, lines):
 
         # Write out as a file
         data.to_csv(outfiles[data_name], header=True)
+        pysat.logger.info('Wrote: {:}'.format(outfiles[data_name]))
 
     return
 
@@ -478,7 +479,7 @@ def solar_geomag_predictions_download(name, date_array, data_path,
         # Process the Kp data
         hr_strs = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT',
                    '15-18UT', '18-21UT', '21-00UT']
-        data_times['kp'] = pds.date_range(pred_times[0], periods=24, freq='3H')
+        data_times['kp'] = pds.date_range(pred_times[0], periods=24, freq='3h')
 
         for line in kp_raw.split('\n'):
             if line.find("Prob_Mid") >= 0:
@@ -643,7 +644,7 @@ def geomag_forecast_download(name, date_array, data_path,
             kp_day2.append(float(cols[-2]))
             kp_day3.append(float(cols[-1]))
 
-        kp_times = pds.date_range(forecast_date, periods=24, freq='3H')
+        kp_times = pds.date_range(forecast_date, periods=24, freq='3h')
         kp_day = []
         for dd in [kp_day1, kp_day2, kp_day3]:
             kp_day.extend(dd)
@@ -784,7 +785,7 @@ def kp_ap_recent_download(name, date_array, data_path, mock_download_dir=None):
                 sub_aps[i].append(np.int64(ap_sub_lines[i]))
 
         # Create times on 3 hour cadence
-        kp_times = pds.date_range(times[0], periods=(8 * 30), freq='3H')
+        kp_times = pds.date_range(times[0], periods=(8 * 30), freq='3h')
 
         # Put both data sets into DataFrames
         data = {'kp': pds.DataFrame({'mid_lat_Kp': sub_kps[0],

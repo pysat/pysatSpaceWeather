@@ -304,7 +304,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     # Resample the output data, filling missing values
     if (date_range.shape != f107_inst.index.shape
             or abs(date_range - f107_inst.index).max().total_seconds() > 0.0):
-        f107_inst.data = f107_inst.data.resample(freq).fillna(method=None)
+        f107_inst.data = f107_inst.data.resample(freq).asfreq()
         if np.isfinite(fill_val):
             f107_inst.data[np.isnan(f107_inst.data)] = fill_val
 
@@ -354,7 +354,7 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     #
     # Ensure the data are evenly sampled at a daily frequency, since this is
     # how often F10.7 is calculated.
-    f107_fill = f107_inst.data.resample('1D').fillna(method=None)
+    f107_fill = f107_inst.data.resample('1D').asfreq()
 
     # Replace the time index with an ordinal
     time_ind = f107_fill.index
@@ -373,14 +373,14 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
 
     # Resample to the original frequency, if it is not equal to 1 day
     freq = pysat.utils.time.calc_freq(f107_inst.index)
-    if freq != "86400S":
+    if freq != "86400s":
         # Resample to the desired frequency
         f107_fill = f107_fill.resample(freq).ffill()
 
         # Save the output in a list
         f107a = list(f107_fill[f107a_name])
 
-        # Fill any dates that fall
+        # Fill any dates that fall just outside of the range
         time_ind = pds.date_range(f107_fill.index[0], f107_inst.index[-1],
                                   freq=freq)
         for itime in time_ind[f107_fill.index.shape[0]:]:

@@ -399,7 +399,7 @@ def download(date_array, tag, inst_id, data_path, update_files=False,
 
         # Cut the date from the end of the local files
         for i, lfile in enumerate(local_files):
-            local_files[i] = lfile[:-11]
+            local_files.iloc[i] = lfile[:-11]
 
         methods.swpc.old_indices_dsd_download(
             name, date_array, data_path, local_files, today,

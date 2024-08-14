@@ -40,7 +40,8 @@ class TestGFZMethods(object):
         """Test the download doesn't work for an incorrect Instrument."""
         with pytest.raises(ValueError) as verr:
             gfz.kp_ap_cp_download('platform', 'name', 'tag', 'inst_id',
-                                  [dt.datetime.utcnow()], 'data/path')
+                                  [dt.datetime.now(tz=dt.timezone.utc)],
+                                  'data/path')
 
         assert str(verr).find('Unknown Instrument module') >= 0
         return

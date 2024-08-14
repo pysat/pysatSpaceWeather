@@ -540,9 +540,12 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     Note
     ----
     Merging prioritizes the standard data, then the recent data, and finally
-    the forecast data
+    the forecast data.
 
-    Will not attempt to download any missing data, but will load data
+    Will not attempt to download any missing data, but will load data.
+
+    If no data is present, but dates are provided, supplies a series of fill
+    values.
 
     """
 
@@ -636,7 +639,10 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
         if inst_flag == 'recent':
             # Determine which files should be loaded
             if len(recent_inst.index) == 0:
-                files = np.unique(recent_inst.files.files[itime:stop])
+                if len(recent_inst.files.files) > 0:
+                    files = np.unique(recent_inst.files.files[itime:stop])
+                else:
+                    files = [None]  # No files available
             else:
                 files = [None]  # No load needed, if already initialized
 
@@ -658,11 +664,14 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                                                                itime.date())
 
                 # Determine which times to save
-                local_fill_val = recent_inst.meta[
-                    'Kp', recent_inst.meta.labels.fill_val]
-                good_times = ((recent_inst.index >= itime)
-                              & (recent_inst.index < stop))
-                good_vals = recent_inst['Kp'][good_times] != local_fill_val
+                if recent_inst.empty:
+                    good_vals = []
+                else:
+                    local_fill_val = recent_inst.meta[
+                        'Kp', recent_inst.meta.labels.fill_val]
+                    good_times = ((recent_inst.index >= itime)
+                                  & (recent_inst.index < stop))
+                    good_vals = recent_inst['Kp'][good_times] != local_fill_val
 
                 # Save output data and cycle time
                 if len(good_vals):
@@ -679,7 +688,10 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
         if inst_flag == "forecast":
             # Determine which files should be loaded
             if len(forecast_inst.index) == 0:
-                files = np.unique(forecast_inst.files.files[itime:stop])
+                if len(forecast_inst.files.files) > 0:
+                    files = np.unique(forecast_inst.files.files[itime:stop])
+                else:
+                    files = [None]  # No files have been downloaded
             else:
                 files = [None]  # No load needed, if already initialized
 
@@ -701,18 +713,22 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                                                                itime.date())
 
                 # Determine which times to save
-                local_fill_val = forecast_inst.meta[
-                    'Kp', forecast_inst.meta.labels.fill_val]
-                good_times = ((forecast_inst.index >= itime)
-                              & (forecast_inst.index < stop))
-                good_vals = forecast_inst['Kp'][good_times] != local_fill_val
+                if not forecast_inst.empty:
+                    local_fill_val = forecast_inst.meta[
+                        'Kp', forecast_inst.meta.labels.fill_val]
+                    good_times = ((forecast_inst.index >= itime)
+                                  & (forecast_inst.index < stop))
+                    good_vals = forecast_inst['Kp'][
+                        good_times] != local_fill_val
 
-                # Save desired data and cycle time
-                new_times = list(forecast_inst.index[good_times][good_vals])
-                kp_times.extend(new_times)
-                new_vals = list(forecast_inst['Kp'][good_times][good_vals])
-                kp_values.extend(new_vals)
-                itime = kp_times[-1] + pds.DateOffset(hours=3)
+                    # Save desired data
+                    new_times = list(forecast_inst.index[good_times][good_vals])
+                    kp_times.extend(new_times)
+                    new_vals = list(forecast_inst['Kp'][good_times][good_vals])
+                    kp_values.extend(new_vals)
+
+                    # Cycle time
+                    itime = kp_times[-1] + pds.DateOffset(hours=3)
             notes += "{:})".format(itime.date())
 
             inst_flag = None

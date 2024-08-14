@@ -11,7 +11,6 @@
 
 import datetime as dt
 import numpy as np
-from packaging.version import Version
 import pandas as pds
 
 import pysat
@@ -375,13 +374,6 @@ def filter_geomag(inst, min_kp=0, max_kp=9, filter_time=24, kp_inst=None,
     if kp_inst.empty:
         load_kwargs = {'date': inst.index[0], 'end_date': inst.index[-1],
                        'verifyPad': True}
-
-        # TODO(#131): Remove version check after minimum version supported
-        # is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            load_kwargs['use_header'] = True
-
         kp_inst.load(**load_kwargs)
 
     if kp_inst.empty:
@@ -613,15 +605,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     while itime < stop and inst_flag is not None:
         # Load and save the standard data for as many times as possible
         if inst_flag == 'standard':
-            load_kwargs = {'date': itime}
-
-            # TODO(#131): Remove version check after minimum version supported
-            # is 3.2.0
-            if all([Version(pysat.__version__) > Version('3.0.1'),
-                    Version(pysat.__version__) < Version('3.2.0')]):
-                load_kwargs['use_header'] = True
-
-            standard_inst.load(**load_kwargs)
+            standard_inst.load(date=itime)
 
             if notes.find("standard") < 0:
                 notes += " the {:} source ({:} to ".format(inst_flag,
@@ -650,14 +634,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
             # data
             for filename in files:
                 if filename is not None:
-                    load_kwargs = {'fname': filename}
-
-                    # TODO(#131): Remove version check after minimum version
-                    # supported is 3.2.0
-                    if all([Version(pysat.__version__) > Version('3.0.1'),
-                            Version(pysat.__version__) < Version('3.2.0')]):
-                        load_kwargs['use_header'] = True
-                    recent_inst.load(**load_kwargs)
+                    recent_inst.load(fname=filename)
 
                 if notes.find("recent") < 0:
                     notes += " the {:} source ({:} to ".format(inst_flag,
@@ -699,14 +676,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
             # data
             for filename in files:
                 if filename is not None:
-                    load_kwargs = {'fname': filename}
-
-                    # TODO(#131): Remove version check after minimum version
-                    # supported is 3.2.0
-                    if all([Version(pysat.__version__) > Version('3.0.1'),
-                            Version(pysat.__version__) < Version('3.2.0')]):
-                        load_kwargs['use_header'] = True
-                    forecast_inst.load(**load_kwargs)
+                    forecast_inst.load(fname=filename)
 
                 if notes.find("forecast") < 0:
                     notes += " the {:} source ({:} to ".format(inst_flag,

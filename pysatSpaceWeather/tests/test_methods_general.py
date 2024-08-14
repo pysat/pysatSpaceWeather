@@ -9,26 +9,18 @@
 """Integration and unit test suite for ACE methods."""
 
 import numpy as np
-from packaging.version import Version
+
 import pysat
-import pytest
 
 from pysatSpaceWeather.instruments.methods import general
 
 
-@pytest.mark.skipif(Version(pysat.__version__) < Version('3.0.2'),
-                    reason="Test setup requires pysat 3.0.2+")
 class TestGeneralMethods(object):
     """Test class for general methods."""
 
     def setup_method(self):
         """Create a clean testing setup."""
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        inst_kwargs = dict()
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            inst_kwargs['use_header'] = True
-        self.testInst = pysat.Instrument('pysat', 'testing', **inst_kwargs)
+        self.testInst = pysat.Instrument('pysat', 'testing')
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
         return
 

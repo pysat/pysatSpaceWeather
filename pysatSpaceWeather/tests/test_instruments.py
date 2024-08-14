@@ -21,7 +21,6 @@ import os
 import pytest
 import sys
 import tempfile
-import warnings
 
 # Make sure to import your instrument library here
 import pysatSpaceWeather

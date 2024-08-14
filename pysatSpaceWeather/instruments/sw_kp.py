@@ -89,7 +89,7 @@ tags = {'': 'Deprecated, mixed definitive and nowcast Kp data from GFZ',
 inst_ids = {'': list(tags.keys())}
 
 # Generate todays date to support loading forecast data
-now = dt.datetime.utcnow()
+now = dt.datetime.now(tz=dt.timezone.utc)
 today = dt.datetime(now.year, now.month, now.day)
 
 # ----------------------------------------------------------------------------

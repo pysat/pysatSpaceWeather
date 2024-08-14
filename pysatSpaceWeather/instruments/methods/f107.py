@@ -117,9 +117,12 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     Notes
     -----
     Merging prioritizes the standard data, then the 45day data, and finally
-    the forecast data
+    the forecast data.
 
-    Will not attempt to download any missing data, but will load data
+    Will not attempt to download any missing data, but will load data.
+
+    If no data is present, but dates are provided, supplies a series of fill
+    values.
 
     """
 
@@ -211,7 +214,10 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         if inst_flag == "forecast":
             # Determine which files should be loaded
             if len(forecast_inst.index) == 0:
-                files = np.unique(forecast_inst.files.files[itime:stop])
+                if len(forecast_inst.files.files) > 0:
+                    files = np.unique(forecast_inst.files.files[itime:stop])
+                else:
+                    files = [None]  # No load, because no files are available
             else:
                 files = [None]  # No load needed, if already initialized
 
@@ -233,16 +239,17 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                     notes += " the {:} source ({:} to ".format(inst_flag,
                                                                itime.date())
 
-                # Check in case there was a problem with the standard data
-                if fill_val is None:
-                    f107_inst.meta = forecast_inst.meta
-                    fill_val = f107_inst.meta['f107'][
-                        f107_inst.meta.labels.fill_val]
-
                 # Determine which times to save
                 if forecast_inst.empty:
                     good_vals = []
                 else:
+                    # Check in case there was a problem with the standard data
+                    if fill_val is None:
+                        f107_inst.meta = forecast_inst.meta
+                        fill_val = f107_inst.meta['f107'][
+                            f107_inst.meta.labels.fill_val]
+
+                    # Get the good times and values
                     good_times = ((forecast_inst.index >= itime)
                                   & (forecast_inst.index < stop))
                     good_vals = forecast_inst['f107'][good_times] != fill_val

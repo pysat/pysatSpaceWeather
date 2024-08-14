@@ -12,6 +12,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added `verify=False` to GFZ requests
   * Updated documentation links and fixed intersphinx mapping
   * Replaced `utcnow` with `now` and the UTC timezone
+* Bugs
+  * Fixed errors introduced by assuming files will be present when combining
+    F10.7 or Kp data in `combine_f107` and `combine_kp` functions.
 
 [0.1.0] - 2024-02-16
 --------------------

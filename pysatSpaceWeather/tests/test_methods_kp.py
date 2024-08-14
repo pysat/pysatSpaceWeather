@@ -591,6 +591,27 @@ class TestSwKpCombine(object):
         del combo_in, kp_inst
         return
 
+    def test_combine_kp_no_data_no_files(self):
+        """Test combine_kp without data or files for the specified times."""
+
+        # Unset the file list for the instrument
+        self.combine['forecast_inst'].files.files = pds.Series([])
+
+        # Set the function inputs
+        combo_in = {kk: self.combine['forecast_inst'] for kk in
+                    ['standard_inst', 'recent_inst', 'forecast_inst']}
+        combo_in['start'] = dt.datetime(2014, 2, 19)
+        combo_in['stop'] = dt.datetime(2014, 2, 24)
+
+        # Run the method
+        kp_inst = kp_ap.combine_kp(**combo_in)
+
+        # Test the output
+        assert kp_inst.data.isnull().all()["Kp"]
+
+        del combo_in, kp_inst
+        return
+
     def test_combine_kp_inst_time(self):
         """Test combine_kp when times are provided through the instruments."""
 

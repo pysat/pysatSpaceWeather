@@ -203,6 +203,27 @@ class TestSWF107Combine(object):
         del combo_in, f107_inst
         return
 
+    def test_combine_f107_no_data_no_files(self):
+        """Test `combine_f107` without data or files for the specified times."""
+
+        # Unset the file list for the instrument
+        self.combine_inst['forecast'].files.files = pds.Series([])
+
+        # Set the function inputs
+        combo_in = {kk: self.combine_inst['forecast'] for kk in
+                    ['standard_inst', 'forecast_inst']}
+        combo_in['start'] = dt.datetime(2014, 2, 19)
+        combo_in['stop'] = dt.datetime(2014, 2, 24)
+
+        # Run the method
+        f107_inst = mm_f107.combine_f107(**combo_in)
+
+        # Test the output
+        assert f107_inst.data.isnull().all()["f107"]
+
+        del combo_in, f107_inst
+        return
+
     def test_combine_f107_inst_time(self):
         """Test `combine_f107` with times provided through datasets."""
 

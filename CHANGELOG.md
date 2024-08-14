@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Implemented `iloc` in pandas Series and DataFrame index access
   * Added `verify=False` to GFZ requests
   * Updated documentation links and fixed intersphinx mapping
+  * Replaced `utcnow` with `now` and the UTC timezone
 
 [0.1.0] - 2024-02-16
 --------------------

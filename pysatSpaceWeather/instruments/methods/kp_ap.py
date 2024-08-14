@@ -582,13 +582,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                                    "provide starting and ending times")))
 
     # Initialize the output instrument
-    # TODO(#136): Remove if/else when pysat is 3.2.0+
-    if hasattr(all_inst[0], "meta_labels"):
-        meta_kwargs = {"labels": all_inst[0].meta_labels}
-        kp_inst = pysat.Instrument(labels=all_inst[0].meta_labels)
-    else:
-        meta_kwargs = all_inst[0].meta_kwargs
-        kp_inst = pysat.Instrument(meta_kwargs=meta_kwargs)
+    meta_kwargs = all_inst[0].meta_kwargs
+    kp_inst = pysat.Instrument(meta_kwargs=meta_kwargs)
 
     kp_inst.inst_module = pysat_sw.instruments.sw_kp
     kp_inst.tag = tag

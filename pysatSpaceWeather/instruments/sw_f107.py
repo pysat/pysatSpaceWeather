@@ -95,7 +95,7 @@ inst_ids = {'': [tag for tag in tags.keys() if tag != 'now'], 'obs': ['now'],
 
 # Dict keyed by inst_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
-now = dt.datetime.utcnow()
+now = dt.datetime.now(tz=dt.timezone.utc)
 today = dt.datetime(now.year, now.month, now.day)
 tomorrow = today + dt.timedelta(days=1)
 
@@ -157,7 +157,7 @@ def load(fnames, tag='', inst_id=''):
     tag : str
         Instrument tag. (default='')
     inst_id : str
-        Instrument ID, not used. (default='')
+        Instrument ID. (default='')
 
     Returns
     -------
@@ -263,8 +263,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None):
 
     Returns
     -------
-    out_files : pysat._files.Files
-        A class containing the verified available files
+    out_files : pds.Series
+        A Series containing the verified available files
 
     Note
     ----

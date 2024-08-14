@@ -202,7 +202,7 @@ def download(date_array, name, tag='', inst_id='', data_path='', now=None,
     """
     # Ensure now is up-to-date, if desired
     if now is None:
-        now = dt.datetime.utcnow()
+        now = dt.datetime.now(tz=dt.timezone.utc)
 
     # Define the file information for each data type and check the
     # date range

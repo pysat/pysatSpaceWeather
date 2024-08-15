@@ -65,7 +65,7 @@ zenodo = json.loads(open('../.zenodo.json').read())
 author = ', '.join([auth['name'] for auth in zenodo['creators']])
 description = 'Tools for space weather indices.'
 category = 'Space Physics'
-copyright = ', '.join(['2022', author])
+copyright = ', '.join(['2024', author])
 
 # The short X.Y version
 version = info.project['version'].base_version

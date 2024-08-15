@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.2.0] - 2024-XX-XX
 --------------------
+* Enhancements
+  * Added an instrument for the daily Nobeyama Radio Polarimeters solar flux
 * Maintenance
   * Removed unneeded keyword arguments from Kp method functions
   * Replaces `fillna` with `asfreq` to maintain the same behaviour

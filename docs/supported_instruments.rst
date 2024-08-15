@@ -66,6 +66,30 @@ Supports ACE Solar Wind Electron Proton Alpha Monitor data.
    :members:
 
 
+.. _norp-inst:
+NoRP
+----
+
+The Nobeyama Radio Polarameters (NoRP) platform encompasses solar flux
+measurements provided by the Japanese Solar Science Observatory.
+`NoRP <https://solar.nro.nao.ac.jp/norp/index.html>`_ provides
+additional information and processing tools on their website.
+
+.. _norp-rf-inst:
+
+RF
+^^^
+
+RF is the radio flux measured from the sun at different wavelengths.  This
+provides a different measure of solar activity and has been corrected to be
+in solar flux units at 1 AU.  The daily data set currently starts in Nov 1951
+and is updated to extend to the current period, but not in real-time.
+
+
+.. automodule:: pysatSpaceWeather.instruments.norp_rf
+   :members:
+
+
 .. _sw-inst:
 SW
 ---

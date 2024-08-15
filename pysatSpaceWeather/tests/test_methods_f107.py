@@ -10,7 +10,6 @@
 
 import datetime as dt
 import numpy as np
-from packaging.version import Version
 
 import pandas as pds
 import pysat
@@ -142,12 +141,6 @@ class TestSWF107Combine(object):
                              for tag in sw_f107.tags.keys()}
         self.combine_times = {"start": self.test_day - dt.timedelta(days=30),
                               "stop": self.test_day + dt.timedelta(days=3)}
-        self.load_kwargs = {}
-
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            self.load_kwargs['use_header'] = True
 
         return
 
@@ -155,7 +148,6 @@ class TestSWF107Combine(object):
         """Clean up previous testing setup."""
         pysat.params.data['data_dirs'] = self.saved_path
         del self.combine_inst, self.test_day, self.combine_times
-        del self.load_kwargs
         return
 
     def test_combine_f107_none(self):
@@ -229,9 +221,8 @@ class TestSWF107Combine(object):
 
         self.combine_inst['historic'].load(
             date=self.combine_inst['historic'].lasp_stime,
-            end_date=self.combine_times['start'], **self.load_kwargs)
-        self.combine_inst['forecast'].load(date=self.test_day,
-                                           **self.load_kwargs)
+            end_date=self.combine_times['start'])
+        self.combine_inst['forecast'].load(date=self.test_day)
 
         f107_inst = mm_f107.combine_f107(self.combine_inst['historic'],
                                          self.combine_inst['forecast'])

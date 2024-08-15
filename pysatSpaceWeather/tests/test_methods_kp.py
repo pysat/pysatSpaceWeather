@@ -10,7 +10,6 @@
 
 import datetime as dt
 import numpy as np
-from packaging.version import Version
 
 import pandas as pds
 import pysat
@@ -28,22 +27,12 @@ class TestKpInitMetadata(object):
         """Create a clean testing setup."""
         self.test_function = kp_ap.initialize_kp_metadata
 
-        inst_dict = {'num_samples': 12}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            inst_dict['use_header'] = True
-
         # Load a test instrument
+        inst_dict = {'num_samples': 12}
         self.testInst = pysat.Instrument('pysat', 'testing', **inst_dict)
         test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
         load_kwargs = {'date': test_time}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            load_kwargs['use_header'] = True
-
         self.testInst.load(**load_kwargs)
 
         # Create Kp data
@@ -132,22 +121,12 @@ class TestApInitMetadata(TestKpInitMetadata):
         """Create a clean testing setup."""
         self.test_function = kp_ap.initialize_ap_metadata
 
-        inst_dict = {'num_samples': 12}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            inst_dict['use_header'] = True
-
         # Load a test instrument
+        inst_dict = {'num_samples': 12}
         self.testInst = pysat.Instrument('pysat', 'testing', **inst_dict)
         test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
         load_kwargs = {'date': test_time}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            load_kwargs['use_header'] = True
-
         self.testInst.load(**load_kwargs)
 
         # Create Kp data
@@ -187,22 +166,12 @@ class TestBartelInitMetadata(TestKpInitMetadata):
         """Create a clean testing setup."""
         self.test_function = kp_ap.initialize_bartel_metadata
 
-        inst_dict = {'num_samples': 12}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            inst_dict['use_header'] = True
-
         # Load a test instrument
+        inst_dict = {'num_samples': 12}
         self.testInst = pysat.Instrument('pysat', 'testing', **inst_dict)
         test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
         load_kwargs = {'date': test_time}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            load_kwargs['use_header'] = True
-
         self.testInst.load(**load_kwargs)
 
         # Create Kp data
@@ -291,22 +260,13 @@ class TestSWKp(object):
 
     def setup_method(self):
         """Create a clean testing setup."""
-        inst_dict = {'num_samples': 12}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            inst_dict['use_header'] = True
 
         # Load a test instrument
+        inst_dict = {'num_samples': 12}
         self.testInst = pysat.Instrument('pysat', 'testing', **inst_dict)
         test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
         load_kwargs = {'date': test_time}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            load_kwargs['use_header'] = True
-
         self.testInst.load(**load_kwargs)
 
         # Create Kp data
@@ -508,10 +468,6 @@ class TestSwKpCombine(object):
         # Set combination testing input
         test_day = dt.datetime(2019, 3, 18)
         idict = {'inst_module': sw_kp, 'update_files': True}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            idict['use_header'] = True
 
         self.combine = {"standard_inst": pysat.Instrument(tag="def", **idict),
                         "recent_inst": pysat.Instrument(tag="recent", **idict),
@@ -521,10 +477,6 @@ class TestSwKpCombine(object):
                         "stop": test_day + dt.timedelta(days=3),
                         "fill_val": -1}
         self.load_kwargs = {"date": test_day}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            self.load_kwargs['use_header'] = True
 
         return
 
@@ -716,20 +668,10 @@ class TestSWAp(object):
     def setup_method(self):
         """Create a clean testing setup."""
         inst_dict = {'num_samples': 10}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            inst_dict['use_header'] = True
-
         self.test_inst = pysat.Instrument('pysat', 'testing', **inst_dict)
         test_time = pysat.instruments.pysat_testing._test_dates['']['']
 
         load_kwargs = {'date': test_time}
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            load_kwargs['use_header'] = True
-
         self.test_inst.load(**load_kwargs)
 
         # Create 3 hr Ap data

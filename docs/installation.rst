@@ -24,7 +24,7 @@ Python 3.6 and 3.9+.
  ============== =================
  Common modules Community modules
  ============== =================
-  netCDF4        pysat >= 3.1.0
+  netCDF4        pysat >= 3.2.0
   numpy
   pandas
   requests

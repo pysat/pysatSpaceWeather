@@ -12,7 +12,6 @@
 
 import datetime as dt
 import numpy as np
-from packaging.version import Version
 
 import pandas as pds
 import pysat
@@ -172,12 +171,6 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                 # Set the load kwargs, which vary by pysat version and tag
                 load_kwargs = {'date': itime}
 
-                # TODO(#131): Remove version check after minimum version
-                # supported is 3.2.0
-                if all([Version(pysat.__version__) > Version('3.0.1'),
-                        Version(pysat.__version__) < Version('3.2.0')]):
-                    load_kwargs['use_header'] = True
-
                 if standard_inst.tag == 'daily':
                     # Add 30 days
                     load_kwargs['date'] += dt.timedelta(days=30)
@@ -225,15 +218,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
             # data
             for filename in files:
                 if filename is not None:
-                    load_kwargs = {'fname': filename}
-
-                    # TODO(#131): Remove version check after minimum version
-                    # supported is 3.2.0
-                    if all([Version(pysat.__version__) > Version('3.0.1'),
-                            Version(pysat.__version__) < Version('3.2.0')]):
-                        load_kwargs['use_header'] = True
-
-                    forecast_inst.load(**load_kwargs)
+                    forecast_inst.load(fname=filename)
 
                 if notes.find("forecast") < 0:
                     notes += " the {:} source ({:} to ".format(inst_flag,

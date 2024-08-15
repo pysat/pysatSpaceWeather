@@ -43,7 +43,7 @@ dependencies = [
   "numpy",
   "packaging",
   "pandas",
-  "pysat>=3.1.0",
+  "pysat>=3.2.0",
   "requests",
   "xarray"]
 

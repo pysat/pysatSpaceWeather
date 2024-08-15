@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[0.1.X] - 2024-XX-XX
+[0.2.0] - 2024-XX-XX
 --------------------
 * Maintenance
   * Removed unneeded keyword arguments from Kp method functions
@@ -12,6 +12,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added `verify=False` to GFZ requests
   * Updated documentation links and fixed intersphinx mapping
   * Replaced `utcnow` with `now` and the UTC timezone
+  * Removed support for deprecated Kp tag, ''
+  * Updated minimum supported pysat version to 3.2.0+.
 * Bugs
   * Fixed errors introduced by assuming files will be present when combining
     F10.7 or Kp data in `combine_f107` and `combine_kp` functions.

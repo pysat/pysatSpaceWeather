@@ -972,7 +972,7 @@ def list_files(name, tag, inst_id, data_path, format_str=None):
 
 
 def find_issue_date(file_txt, date_fmt="%H%M UT %d %b %Y"):
-    """Find the issue date for a SWPC file.
+    r"""Find the issue date for a SWPC file.
 
     Parameters
     ----------

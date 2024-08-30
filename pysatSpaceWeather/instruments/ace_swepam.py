@@ -67,7 +67,7 @@ tags = {'realtime': 'Real-time data from the SWPC',
 inst_ids = {inst_id: [tag for tag in tags.keys()] for inst_id in ['']}
 
 # Define today's date
-now = dt.datetime.utcnow()
+now = dt.datetime.now(tz=dt.timezone.utc)
 
 # ----------------------------------------------------------------------------
 # Instrument test attributes

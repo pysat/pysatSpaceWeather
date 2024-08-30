@@ -8,7 +8,6 @@
 # ----------------------------------------------------------------------------
 """Integration and unit test suite for ACE methods."""
 
-from packaging.version import Version
 import pytest
 
 import pysat
@@ -61,21 +60,12 @@ class TestACEMethods(object):
         return
 
 
-@pytest.mark.skipif(Version(pysat.__version__) < Version('3.0.2'),
-                    reason="Requires time routine available in pysat 3.0.2+")
 class TestACESWEPAMMethods(object):
     """Test class for ACE SWEPAM methods."""
 
     def setup_method(self):
         """Create a clean testing setup."""
-
-        # TODO(#131): Remove version check after min version supported is 3.2.0
-        inst_kwargs = dict()
-        if all([Version(pysat.__version__) > Version('3.0.1'),
-                Version(pysat.__version__) < Version('3.2.0')]):
-            inst_kwargs['use_header'] = True
-
-        self.testInst = pysat.Instrument('pysat', 'testing', **inst_kwargs)
+        self.testInst = pysat.Instrument('pysat', 'testing')
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
 
         self.omni_keys = ['sw_proton_dens_norm', 'sw_ion_temp_norm']

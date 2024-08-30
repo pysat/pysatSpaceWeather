@@ -3,6 +3,23 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.2.0] - 2024-08-30
+--------------------
+* Enhancements
+  * Added an instrument for the daily Nobeyama Radio Polarimeters solar flux
+* Maintenance
+  * Removed unneeded keyword arguments from Kp method functions
+  * Replaces `fillna` with `asfreq` to maintain the same behaviour
+  * Implemented `iloc` in pandas Series and DataFrame index access
+  * Added `verify=False` to GFZ requests
+  * Updated documentation links and fixed intersphinx mapping
+  * Replaced `utcnow` with `now` and the UTC timezone
+  * Removed support for deprecated Kp tag, ''
+  * Updated minimum supported pysat version to 3.2.0+.
+* Bugs
+  * Fixed errors introduced by assuming files will be present when combining
+    F10.7 or Kp data in `combine_f107` and `combine_kp` functions.
+
 [0.1.0] - 2024-02-16
 --------------------
 * Enhancements

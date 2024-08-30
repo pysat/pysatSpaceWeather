@@ -65,7 +65,7 @@ zenodo = json.loads(open('../.zenodo.json').read())
 author = ', '.join([auth['name'] for auth in zenodo['creators']])
 description = 'Tools for space weather indices.'
 category = 'Space Physics'
-copyright = ', '.join(['2022', author])
+copyright = ', '.join(['2024', author])
 
 # The short X.Y version
 version = info.project['version'].base_version
@@ -177,8 +177,9 @@ epub_copyright = copyright
 epub_exclude_files = ['search.html']
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {'<name>': ('https://docs.python.org/', None)}
 
 # Links to ignore when checking for stability
 linkcheck_ignore = ['https://lasp.colorado.edu/space_weather/dsttemerin/',
-                    'https://*QUERY']
+                    'https://*QUERY',
+                    'https://datapub.gfz-potsdam.de/download/10.5880.Kp.0001/*']

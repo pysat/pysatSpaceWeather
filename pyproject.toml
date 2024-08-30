@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysatSpaceWeather"
-version = "0.1.0"
+version = "0.2.0"
 description = 'pysat support for Space Weather Indices'
 readme = "README.md"
 requires-python = ">=3.6"
@@ -22,7 +22,6 @@ classifiers = [
   "Natural Language :: English",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.6",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -44,13 +43,12 @@ dependencies = [
   "numpy",
   "packaging",
   "pandas",
-  "pysat>=3.1.0",
+  "pysat>=3.2.0",
   "requests",
   "xarray"]
 
 [project.optional-dependencies]
 test = [
-  "coveralls < 3.3",
   "flake8",
   "flake8-docstrings",
   "hacking >= 1.0",
@@ -65,7 +63,7 @@ doc = [
   "numpydoc",
   "pyproject_parser",
   "sphinx",
-  "sphinx_rtd_theme >= 1.2.2,<2.0.0"
+  "sphinx_rtd_theme >= 1.2.2, < 2.0.0"
 ]
 
 [project.urls]
@@ -75,7 +73,6 @@ Source = "https://github.com/pysat/pysatSpaceWeather"
 [tool.coverage.report]
 
 [tool.pytest.ini_options]
-addopts = "--cov=pysatSpaceWeather"
 markers = [
   "all_inst",
   "download",

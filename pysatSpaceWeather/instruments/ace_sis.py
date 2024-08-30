@@ -68,7 +68,7 @@ tags = {'realtime': 'Real-time data from the SWPC',
 inst_ids = {inst_id: [tag for tag in tags.keys()] for inst_id in ['']}
 
 # Define today's date
-now = dt.datetime.utcnow()
+now = dt.datetime.now(tz=dt.timezone.utc)
 
 # ----------------------------------------------------------------------------
 # Instrument test attributes
@@ -115,8 +115,10 @@ def clean(self):
 
     # Evaluate the different proton fluxes. Replace bad values with NaN and
     # times with no valid data
-    self.data['int_pflux_10MeV'][self.data['status_10'] > max_status] = np.nan
-    self.data['int_pflux_30MeV'][self.data['status_30'] > max_status] = np.nan
+    self.data['int_pflux_10MeV'] = self.data['int_pflux_10MeV'].where(
+        (self.data['status_10'] <= max_status), other=np.nan)
+    self.data['int_pflux_30MeV'] = self.data['int_pflux_30MeV'].where(
+        (self.data['status_30'] <= max_status), other=np.nan)
 
     eval_cols = ['int_pflux_10MeV', 'int_pflux_30MeV']
 

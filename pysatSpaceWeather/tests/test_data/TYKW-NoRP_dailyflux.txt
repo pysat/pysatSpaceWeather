@@ -1,0 +1,7 @@
+TYKW-NoRP solar daily flux (1951-11-02 -- 1951-11-06)
+Date,1 GHz,2 GHz,3.75 GHz,9.4 GHz
+"1951-11-02",NaN,NaN,NaN,NaN
+"1951-11-03",NaN,NaN,NaN,NaN
+"1951-11-04",NaN,NaN,NaN,NaN
+"1951-11-05",NaN,NaN,NaN,NaN
+"1951-11-06",NaN,NaN,115.000,NaN

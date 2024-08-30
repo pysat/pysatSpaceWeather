@@ -12,7 +12,6 @@
 
 import datetime as dt
 import numpy as np
-from packaging.version import Version
 
 import pandas as pds
 import pysat
@@ -117,9 +116,12 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     Notes
     -----
     Merging prioritizes the standard data, then the 45day data, and finally
-    the forecast data
+    the forecast data.
 
-    Will not attempt to download any missing data, but will load data
+    Will not attempt to download any missing data, but will load data.
+
+    If no data is present, but dates are provided, supplies a series of fill
+    values.
 
     """
 
@@ -169,12 +171,6 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                 # Set the load kwargs, which vary by pysat version and tag
                 load_kwargs = {'date': itime}
 
-                # TODO(#131): Remove version check after minimum version
-                # supported is 3.2.0
-                if all([Version(pysat.__version__) > Version('3.0.1'),
-                        Version(pysat.__version__) < Version('3.2.0')]):
-                    load_kwargs['use_header'] = True
-
                 if standard_inst.tag == 'daily':
                     # Add 30 days
                     load_kwargs['date'] += dt.timedelta(days=30)
@@ -211,7 +207,10 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         if inst_flag == "forecast":
             # Determine which files should be loaded
             if len(forecast_inst.index) == 0:
-                files = np.unique(forecast_inst.files.files[itime:stop])
+                if len(forecast_inst.files.files) > 0:
+                    files = np.unique(forecast_inst.files.files[itime:stop])
+                else:
+                    files = [None]  # No load, because no files are available
             else:
                 files = [None]  # No load needed, if already initialized
 
@@ -219,30 +218,23 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
             # data
             for filename in files:
                 if filename is not None:
-                    load_kwargs = {'fname': filename}
-
-                    # TODO(#131): Remove version check after minimum version
-                    # supported is 3.2.0
-                    if all([Version(pysat.__version__) > Version('3.0.1'),
-                            Version(pysat.__version__) < Version('3.2.0')]):
-                        load_kwargs['use_header'] = True
-
-                    forecast_inst.load(**load_kwargs)
+                    forecast_inst.load(fname=filename)
 
                 if notes.find("forecast") < 0:
                     notes += " the {:} source ({:} to ".format(inst_flag,
                                                                itime.date())
 
-                # Check in case there was a problem with the standard data
-                if fill_val is None:
-                    f107_inst.meta = forecast_inst.meta
-                    fill_val = f107_inst.meta['f107'][
-                        f107_inst.meta.labels.fill_val]
-
                 # Determine which times to save
                 if forecast_inst.empty:
                     good_vals = []
                 else:
+                    # Check in case there was a problem with the standard data
+                    if fill_val is None:
+                        f107_inst.meta = forecast_inst.meta
+                        fill_val = f107_inst.meta['f107'][
+                            f107_inst.meta.labels.fill_val]
+
+                    # Get the good times and values
                     good_times = ((forecast_inst.index >= itime)
                                   & (forecast_inst.index < stop))
                     good_vals = forecast_inst['f107'][good_times] != fill_val
@@ -304,7 +296,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     # Resample the output data, filling missing values
     if (date_range.shape != f107_inst.index.shape
             or abs(date_range - f107_inst.index).max().total_seconds() > 0.0):
-        f107_inst.data = f107_inst.data.resample(freq).fillna(method=None)
+        f107_inst.data = f107_inst.data.resample(freq).asfreq()
         if np.isfinite(fill_val):
             f107_inst.data[np.isnan(f107_inst.data)] = fill_val
 
@@ -354,7 +346,7 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     #
     # Ensure the data are evenly sampled at a daily frequency, since this is
     # how often F10.7 is calculated.
-    f107_fill = f107_inst.data.resample('1D').fillna(method=None)
+    f107_fill = f107_inst.data.resample('1D').asfreq()
 
     # Replace the time index with an ordinal
     time_ind = f107_fill.index
@@ -373,14 +365,14 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
 
     # Resample to the original frequency, if it is not equal to 1 day
     freq = pysat.utils.time.calc_freq(f107_inst.index)
-    if freq != "86400S":
+    if freq != "86400s":
         # Resample to the desired frequency
         f107_fill = f107_fill.resample(freq).ffill()
 
         # Save the output in a list
         f107a = list(f107_fill[f107a_name])
 
-        # Fill any dates that fall
+        # Fill any dates that fall just outside of the range
         time_ind = pds.date_range(f107_fill.index[0], f107_inst.index[-1],
                                   freq=freq)
         for itime in time_ind[f107_fill.index.shape[0]:]:

@@ -66,6 +66,30 @@ Supports ACE Solar Wind Electron Proton Alpha Monitor data.
    :members:
 
 
+.. _norp-inst:
+NoRP
+----
+
+The Nobeyama Radio Polarameters (NoRP) platform encompasses solar flux
+measurements provided by the Japanese Solar Science Observatory.
+`NoRP <https://solar.nro.nao.ac.jp/norp/index.html>`_ provides
+additional information and processing tools on their website.
+
+.. _norp-rf-inst:
+
+RF
+^^^
+
+RF is the radio flux measured from the sun at different wavelengths.  This
+provides a different measure of solar activity and has been corrected to be
+in solar flux units at 1 AU.  The daily data set currently starts in Nov 1951
+and is updated to extend to the current period, but not in real-time.
+
+
+.. automodule:: pysatSpaceWeather.instruments.norp_rf
+   :members:
+
+
 .. _sw-inst:
 SW
 ---
@@ -179,10 +203,9 @@ Dst
 ^^^
 
 The Disturbance Storm Time (Dst) Index is a measure of magnetic activity
-associated with the ring current.  The National Geophysical Data Center (NGDC)
-maintains the
-`current database <https://www.ngdc.noaa.gov/stp/geomag/dst.html>`_ from which
-the historic Dst is downloaded.
+associated with the ring current.  The National Centers for Environmental
+Information (NCEI), formerly the National Geophysical Data Center (NGDC),
+maintains the current database from which the historic Dst is downloaded.
 `LASP <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_
 performs the calculates and provides the predicted Dst for the last 96 hours.
 You can learn more about the Dst Index at the

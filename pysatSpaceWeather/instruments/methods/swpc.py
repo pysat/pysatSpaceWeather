@@ -77,10 +77,16 @@ def daily_dsd_download(name, today, data_path, mock_download_dir=None):
                       general.get_instrument_data_path(
                           'sw_{:s}'.format(data_name), tag='daily')
                       for data_name in ['f107', 'flare', 'ssn', 'sbfield']}
+
+        # Try and obtain the file date; otherwise assume it was issued today
+        fdate = find_issue_date(raw_txt)
+        if fdate is None:
+            fdate = today
+
         outfiles = {
             data_name: os.path.join(file_paths[data_name], '_'.join([
                 data_name, 'daily', '{:s}.txt'.format(
-                    today.strftime('%Y-%m-%d'))]))
+                    fdate.strftime('%Y-%m-%d'))]))
             for data_name in file_paths.keys()}
 
         # Check that the directories exist
@@ -88,7 +94,7 @@ def daily_dsd_download(name, today, data_path, mock_download_dir=None):
             pysat.utils.files.check_and_make_path(data_path)
 
         # Save the output
-        rewrite_daily_solar_data_file(today.year, outfiles, raw_txt)
+        rewrite_daily_solar_data_file(fdate.year, outfiles, raw_txt)
 
     return
 
@@ -442,8 +448,7 @@ def solar_geomag_predictions_download(name, date_array, data_path,
                                    "filename."]))
     else:
         # Parse text to get the date the prediction was generated
-        date_str = raw_txt.split(':Issued: ')[-1].split(' UTC')[0]
-        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
+        dl_date = find_issue_date(raw_txt, '%Y %b %d %H%M UTC')
 
         # Parse the data to get the prediction dates
         date_strs = raw_txt.split(':Prediction_dates:')[-1].split('\n')[0]
@@ -616,8 +621,7 @@ def geomag_forecast_download(name, date_array, data_path,
                                    "been saved to an unexpected filename."]))
     else:
         # Parse text to get the date the prediction was generated
-        date_str = raw_txt.split(':Issued: ')[-1].split(' UTC')[0]
-        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
+        dl_date = find_issue_date(raw_txt, '%Y %b %d %H%M UTC')
 
         # Separate out the data by chunks
         ap_raw = raw_txt.split('NOAA Ap Index Forecast')[-1]
@@ -745,8 +749,7 @@ def kp_ap_recent_download(name, date_array, data_path, mock_download_dir=None):
                                    "filename."]))
     else:
         # Parse text to get the date the prediction was generated
-        date_str = raw_txt.split(':Issued: ')[-1].split('\n')[0]
-        dl_date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
+        dl_date = find_issue_date(raw_txt)
 
         # Data is the forecast value for the next three days
         raw_data = raw_txt.split('#  Date ')[-1]
@@ -858,8 +861,7 @@ def recent_ap_f107_download(name, date_array, data_path,
                                    " saved to an unexpected filename."]))
     else:
         # Parse text to get the date the prediction was generated
-        date_str = raw_txt.split(':Issued: ')[-1].split(' UTC')[0]
-        dl_date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
+        dl_date = find_issue_date(raw_txt, '%Y %b %d %H%M UTC')
 
         # Get to the forecast data
         raw_data = raw_txt.split('45-DAY AP FORECAST')[-1]
@@ -879,6 +881,10 @@ def recent_ap_f107_download(name, date_array, data_path,
         # Save the data in DataFrames
         data = {'ap': pds.DataFrame(ap, index=ap_times, columns=['daily_Ap']),
                 'f107': pds.DataFrame(f107, index=f107_times, columns=['f107'])}
+
+        # Ensure there is a download date
+        if dl_date is None:
+            dl_date = ap_times[0]
 
         # Write out the data files
         for data_name in data.keys():
@@ -963,3 +969,43 @@ def list_files(name, tag, inst_id, data_path, format_str=None):
         files.loc[files.index[-1] + pds_offset] = files.values[-1]
 
     return files
+
+
+def find_issue_date(file_txt, date_fmt="%H%M UT %d %b %Y"):
+    r"""Find the issue date for a SWPC file.
+
+    Parameters
+    ----------
+    file_txt : str
+        String containing all text in a file.
+    date_fmt : str
+        Expected date format (default='%H%M UT %d %b %Y')
+
+    Returns
+    -------
+    dl_date : dt.datetime or NoneType
+        Datetime object with time that the file was issued or None if an
+        error is encountered
+
+    Note
+    ----
+    Assumes the file has a line formatted as: ':Issued: <date_fmt>\n'
+
+    """
+    dl_date = None
+
+    # Parse text to get the date the prediction was generated
+    if file_txt.find(':Issued:') >= 0:
+        date_str = file_txt.split(':Issued: ')[-1].split('\n')[0]
+
+        try:
+            dl_date = dt.datetime.strptime(date_str, date_fmt)
+        except Exception as err:
+            pysat.logger.critical(''.join(['Unexpected issued date format ',
+                                           repr(date_str), ' did not match ',
+                                           date_fmt, '; failed with error: ',
+                                           repr(err)]))
+    else:
+        pysat.logger.critical('Unable to find issue line in file')
+
+    return dl_date

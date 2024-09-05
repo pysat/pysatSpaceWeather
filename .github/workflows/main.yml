@@ -8,7 +8,7 @@ on:
   pull_request:
   push:
   schedule:
-    - cron: "0 3 * * 1"  # Runs 03:00 UT on Mondays 
+    - cron: "0 3 * * 1"  # Runs 03:00 UT on Mondays
 
 jobs:
   build:
@@ -43,6 +43,7 @@ jobs:
     - name: Install Operational dependencies
       if: ${{ matrix.test_config == 'Ops'}}
       run: |
+        pip install --upgrade pip
         pip install numpy==${{ matrix.numpy_ver }}
         pip install -r requirements.txt
         pip install -r test_requirements.txt

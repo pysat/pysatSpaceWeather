@@ -43,11 +43,10 @@ jobs:
     - name: Install Operational dependencies
       if: ${{ matrix.test_config == 'Ops'}}
       run: |
-        pip install --upgrade pip
-        pip install numpy==${{ matrix.numpy_ver }}
-        pip install -r requirements.txt
-        pip install -r test_requirements.txt
-        pip install .
+        python -m pip install numpy==${{ matrix.numpy_ver }}
+        python -m pip install -r requirements.txt
+        python -m pip install -r test_requirements.txt
+        python -m pip install .
 
     - name: Install NEP29 dependencies
       if: ${{ matrix.test_config == 'NEP29'}}

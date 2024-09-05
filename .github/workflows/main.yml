@@ -47,6 +47,7 @@ jobs:
         python -m pip install -r requirements.txt
         python -m pip install -r test_requirements.txt
         python -m pip install .
+        pip list -v
 
     - name: Install NEP29 dependencies
       if: ${{ matrix.test_config == 'NEP29'}}
@@ -61,6 +62,7 @@ jobs:
     - name: Set up pysat
       run: |
         mkdir pysatData
+        pip list -v
         python -c "import pysat; pysat.params['data_dirs'] = 'pysatData'"
 
     - name: Test PEP8 compliance

@@ -63,6 +63,7 @@ jobs:
       run: |
         mkdir pysatData
         pip list -v
+        python -c "import pandas; print(pandas.__version__)"
         python -c "import pysat; pysat.params['data_dirs'] = 'pysatData'"
 
     - name: Test PEP8 compliance

@@ -3,6 +3,11 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[X.X.X] - 20XX-XX-XX
+--------------------
+* Maintenance
+  * Updated Ops tests to new lower limit of Python 3.9 and removed 3.6 support
+
 [0.2.0] - 2024-08-30
 --------------------
 * Enhancements

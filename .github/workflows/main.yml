@@ -44,9 +44,7 @@ jobs:
       if: ${{ matrix.test_config == 'Ops'}}
       run: |
         pip install numpy==${{ matrix.numpy_ver }}
-        pip install -r requirements.txt
-        pip install -r test_requirements.txt
-        pip install .
+        pip install --upgrade-strategy only-if-needed .[test]
 
     - name: Install NEP29 dependencies
       if: ${{ matrix.test_config == 'NEP29'}}

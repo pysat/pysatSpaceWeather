@@ -16,6 +16,7 @@ import pandas as pds
 import pysat
 
 import pysatSpaceWeather as pysat_sw
+from pysatSpaceWeather.instruments.methods import general
 from pysatSpaceWeather.instruments.methods import gfz
 from pysatSpaceWeather.instruments.methods import swpc
 
@@ -600,7 +601,9 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     while itime < stop and inst_flag is not None:
         # Load and save the standard data for as many times as possible
         if inst_flag == 'standard':
-            standard_inst.load(date=itime)
+            # Test to see if data loading is needed
+            if not np.any(standard_inst.index == itime):
+                standard_inst.load(date=itime)
 
             if notes.find("standard") < 0:
                 notes += " the {:} source ({:} to ".format(inst_flag,
@@ -610,9 +613,23 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                 inst_flag = 'forecast' if recent_inst is None else 'recent'
                 notes += "{:})".format(itime.date())
             else:
-                kp_times.extend(list(standard_inst.index))
-                kp_values.extend(list(standard_inst['Kp']))
-                itime = kp_times[-1] + pds.DateOffset(hours=3)
+                local_fill_val = standard_inst.meta[
+                        'Kp', standard_inst.meta.labels.fill_val]
+                good_times = ((standard_inst.index >= itime)
+                              & (standard_inst.index < stop))
+                good_vals = np.array([
+                    ~general.is_fill_val(val, local_fill_val)
+                    for val in standard_inst['Kp'][good_times]])
+                new_times = list(standard_inst.index[good_times][good_vals])
+
+                if len(new_times) > 0:
+                    kp_times.extend(new_times)
+                    kp_values.extend(list(
+                        standard_inst['Kp'][good_times][good_vals]))
+                    itime = kp_times[-1] + pds.DateOffset(hours=3)
+                else:
+                    inst_flag = 'forecast' if recent_inst is None else 'recent'
+                    notes += "{:})".format(itime.date())
 
         # Load and save the recent data for as many times as possible
         if inst_flag == 'recent':
@@ -637,18 +654,20 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
 
                 # Determine which times to save
                 if recent_inst.empty:
-                    good_vals = []
+                    new_times = []
                 else:
                     local_fill_val = recent_inst.meta[
                         'Kp', recent_inst.meta.labels.fill_val]
                     good_times = ((recent_inst.index >= itime)
                                   & (recent_inst.index < stop))
-                    good_vals = recent_inst['Kp'][good_times] != local_fill_val
+                    good_vals = np.array([
+                        ~general.is_fill_val(val, local_fill_val)
+                        for val in recent_inst['Kp'][good_times]])
+                    new_times = list(recent_inst.index[good_times][good_vals])
 
                 # Save output data and cycle time
-                if len(good_vals):
-                    kp_times.extend(list(
-                        recent_inst.index[good_times][good_vals]))
+                if len(new_times) > 0:
+                    kp_times.extend(new_times)
                     kp_values.extend(list(
                         recent_inst['Kp'][good_times][good_vals]))
                     itime = kp_times[-1] + pds.DateOffset(hours=3)
@@ -683,17 +702,21 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                         'Kp', forecast_inst.meta.labels.fill_val]
                     good_times = ((forecast_inst.index >= itime)
                                   & (forecast_inst.index < stop))
-                    good_vals = forecast_inst['Kp'][
-                        good_times] != local_fill_val
+                    good_vals = np.array([
+                        ~general.is_fill_val(val, local_fill_val)
+                        for val in forecast_inst['Kp'][good_times]])
 
                     # Save desired data
                     new_times = list(forecast_inst.index[good_times][good_vals])
-                    kp_times.extend(new_times)
-                    new_vals = list(forecast_inst['Kp'][good_times][good_vals])
-                    kp_values.extend(new_vals)
 
-                    # Cycle time
-                    itime = kp_times[-1] + pds.DateOffset(hours=3)
+                    if len(new_times) > 0:
+                        kp_times.extend(new_times)
+                        new_vals = list(forecast_inst['Kp'][good_times][
+                            good_vals])
+                        kp_values.extend(new_vals)
+
+                        # Cycle time
+                        itime = kp_times[-1] + pds.DateOffset(hours=3)
             notes += "{:})".format(itime.date())
 
             inst_flag = None
@@ -708,6 +731,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
 
     if len(kp_times) == 0:
         kp_times = date_range
+
+    raise RuntimeError(start, end_date, stop, freq, date_range)
 
     if date_range[0] < kp_times[0]:
         # Extend the time and value arrays from their beginning with fill

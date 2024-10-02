@@ -193,7 +193,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                     fill_val = f107_inst.meta['f107'][
                         f107_inst.meta.labels.fill_val]
 
-                good_vals = np.array([~is_fill_val(val, fill_val) for val
+                good_vals = np.array([not is_fill_val(val, fill_val) for val
                                       in standard_inst['f107'][good_times]])
                 new_times = list(standard_inst.index[good_times][good_vals])
             else:
@@ -243,7 +243,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                     good_times = ((forecast_inst.index >= itime)
                                   & (forecast_inst.index < stop))
                     good_vals = np.array([
-                        ~is_fill_val(val, fill_val) for val
+                        not is_fill_val(val, fill_val) for val
                         in forecast_inst['f107'][good_times]])
 
                 # Save desired data and cycle time

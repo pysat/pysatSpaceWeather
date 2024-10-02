@@ -618,7 +618,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                 good_times = ((standard_inst.index >= itime)
                               & (standard_inst.index < stop))
                 good_vals = np.array([
-                    ~general.is_fill_val(val, local_fill_val)
+                    not general.is_fill_val(val, local_fill_val)
                     for val in standard_inst['Kp'][good_times]])
                 new_times = list(standard_inst.index[good_times][good_vals])
 
@@ -661,7 +661,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                     good_times = ((recent_inst.index >= itime)
                                   & (recent_inst.index < stop))
                     good_vals = np.array([
-                        ~general.is_fill_val(val, local_fill_val)
+                        not general.is_fill_val(val, local_fill_val)
                         for val in recent_inst['Kp'][good_times]])
                     new_times = list(recent_inst.index[good_times][good_vals])
 
@@ -703,7 +703,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                     good_times = ((forecast_inst.index >= itime)
                                   & (forecast_inst.index < stop))
                     good_vals = np.array([
-                        ~general.is_fill_val(val, local_fill_val)
+                        not general.is_fill_val(val, local_fill_val)
                         for val in forecast_inst['Kp'][good_times]])
 
                     # Save desired data
@@ -731,8 +731,6 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
 
     if len(kp_times) == 0:
         kp_times = date_range
-
-    raise RuntimeError(start, end_date, stop, freq, date_range)
 
     if date_range[0] < kp_times[0]:
         # Extend the time and value arrays from their beginning with fill

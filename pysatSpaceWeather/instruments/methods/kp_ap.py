@@ -614,7 +614,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                 notes += "{:})".format(itime.date())
             else:
                 local_fill_val = standard_inst.meta[
-                        'Kp', standard_inst.meta.labels.fill_val]
+                    'Kp', standard_inst.meta.labels.fill_val]
                 good_times = ((standard_inst.index >= itime)
                               & (standard_inst.index < stop))
                 good_vals = np.array([

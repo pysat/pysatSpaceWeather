@@ -34,12 +34,17 @@ def is_fill_val(data, fill_val):
 
     """
 
-    if np.isnan(fill_val):
-        is_fill = np.isnan(data)
-    elif np.isfinite(fill_val):
+    try:
+        # NaN and finite evaluation will fail for non-numeric types
+        if np.isnan(fill_val):
+            is_fill = np.isnan(data)
+        elif np.isfinite(fill_val):
+            is_fill = data == fill_val
+        else:
+            is_fill = ~np.isfinite(data)
+    except TypeError:
+        # Use equality for string and similar types
         is_fill = data == fill_val
-    else:
-        is_fill = ~np.isfinite(data)
 
     return is_fill
 

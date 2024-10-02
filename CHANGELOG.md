@@ -3,10 +3,16 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[X.X.X] - 20XX-XX-XX
+[0.2.1] - 2024-10-XX
 --------------------
+* Enhancements
+  * Added a utility function for evaluating fill values of different types
 * Maintenance
   * Updated Ops tests to new lower limit of Python 3.9 and removed 3.6 support
+* Bugs
+  * Fixed error in mock downloading F10.7 prelim files
+  * Fixed combine_kp to consider desired time limits and fill values when
+    loading the standard dataset
 
 [0.2.0] - 2024-08-30
 --------------------

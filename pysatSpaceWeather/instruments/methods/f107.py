@@ -245,11 +245,10 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                     good_vals = np.array([
                         not is_fill_val(val, fill_val) for val
                         in forecast_inst['f107'][good_times]])
+                    new_times = list(forecast_inst.index[good_times][good_vals])
 
                 # Save desired data and cycle time
-                if len(good_vals) > 0:
-                    new_times = list(
-                        forecast_inst.index[good_times][good_vals])
+                if len(new_times) > 0:
                     f107_times.extend(new_times)
                     new_vals = list(
                         forecast_inst['f107'][good_times][good_vals])
@@ -273,8 +272,6 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     if len(f107_times) == 0:
         f107_times = date_range
-
-    date_range = pds.date_range(start=start, end=end_date, freq=freq)
 
     if date_range[0] < f107_times[0]:
         # Extend the time and value arrays from their beginning with fill

@@ -17,6 +17,38 @@ import requests
 import pysat
 
 
+def is_fill_val(data, fill_val):
+    """Evaluate whether or not a value is a fill value.
+
+    Parameters
+    ----------
+    data : int, float, or str
+        Data value
+    fill_val : int, float, or str
+        Fill value
+
+    Returns
+    -------
+    is_fill : bool
+        True if the data is equal to the fill value, False if it is not.
+
+    """
+
+    try:
+        # NaN and finite evaluation will fail for non-numeric types
+        if np.isnan(fill_val):
+            is_fill = np.isnan(data)
+        elif np.isfinite(fill_val):
+            is_fill = data == fill_val
+        else:
+            is_fill = ~np.isfinite(data)
+    except TypeError:
+        # Use equality for string and similar types
+        is_fill = data == fill_val
+
+    return is_fill
+
+
 def preprocess(inst):
     """Preprocess the meta data by replacing the file fill values with NaN.
 

@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[0.2.1] - 2024-10-XX
+[0.2.1] - 2024-11-18
 --------------------
 * Enhancements
   * Added a utility function for evaluating fill values of different types

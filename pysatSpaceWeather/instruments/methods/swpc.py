@@ -240,9 +240,9 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today,
                 else:
                     # Set the saved filename
                     saved_fname = os.path.join(mock_download_dir, local_fname)
-                    downloaded = True
 
                     if os.path.isfile(saved_fname):
+                        downloaded = True
                         rewritten = True
                     else:
                         pysat.logger.info("".join([saved_fname, "is missing, ",
@@ -273,6 +273,7 @@ def old_indices_dsd_download(name, date_array, data_path, local_files, today,
     # Close connection after downloading all dates
     if mock_download_dir is None:
         ftp.close()
+
     return
 
 

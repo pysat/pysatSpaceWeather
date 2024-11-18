@@ -17,6 +17,7 @@ import pandas as pds
 import pysat
 
 import pysatSpaceWeather as pysat_sw
+from pysatSpaceWeather.instruments.methods.general import is_fill_val
 
 
 def acknowledgements(tag):
@@ -162,7 +163,6 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     # Cycle through the desired time range
     itime = dt.datetime(start.year, start.month, start.day)
-
     while itime < stop and inst_flag is not None:
         # Load and save the standard data for as many times as possible
         if inst_flag == 'standard':
@@ -193,8 +193,13 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                     fill_val = f107_inst.meta['f107'][
                         f107_inst.meta.labels.fill_val]
 
-                good_vals = standard_inst['f107'][good_times] != fill_val
+                good_vals = np.array([not is_fill_val(val, fill_val) for val
+                                      in standard_inst['f107'][good_times]])
                 new_times = list(standard_inst.index[good_times][good_vals])
+            else:
+                new_times = []
+
+            if len(new_times) > 0:
                 f107_times.extend(new_times)
                 new_vals = list(standard_inst['f107'][good_times][good_vals])
                 f107_values.extend(new_vals)
@@ -237,12 +242,14 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                     # Get the good times and values
                     good_times = ((forecast_inst.index >= itime)
                                   & (forecast_inst.index < stop))
-                    good_vals = forecast_inst['f107'][good_times] != fill_val
+                    good_vals = np.array([
+                        not is_fill_val(val, fill_val) for val
+                        in forecast_inst['f107'][good_times]])
 
                 # Save desired data and cycle time
                 if len(good_vals) > 0:
-                    new_times = list(
-                        forecast_inst.index[good_times][good_vals])
+                    new_times = list(forecast_inst.index[good_times][
+                        good_vals])
                     f107_times.extend(new_times)
                     new_vals = list(
                         forecast_inst['f107'][good_times][good_vals])
@@ -266,8 +273,6 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     if len(f107_times) == 0:
         f107_times = date_range
-
-    date_range = pds.date_range(start=start, end=end_date, freq=freq)
 
     if date_range[0] < f107_times[0]:
         # Extend the time and value arrays from their beginning with fill

@@ -22,8 +22,8 @@ indices as pysat.Instrument objects.
    acknowledgements.rst
 
 
-.. admonition::
-   Review Status for Classified or Controlled Information by NRL:
+.. admonition:: Review Status for Classified or Controlled Information by NRL
+
    DISTRIBUTION STATEMENT A: Approved for public release.
    Distribution is unlimited.
 

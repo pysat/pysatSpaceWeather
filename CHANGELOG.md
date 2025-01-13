@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed error in mock downloading F10.7 prelim files
   * Fixed combine_kp to consider desired time limits and fill values when
     loading the standard dataset
+  * Updated controlled information statement for clarity and accuracy
 
 [0.2.0] - 2024-08-30
 --------------------

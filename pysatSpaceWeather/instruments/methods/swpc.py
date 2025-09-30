@@ -875,7 +875,7 @@ def recent_ap_f107_download(name, date_array, data_path,
 
         # Get the F107
         raw_f107 = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[-1]
-        raw_f107 = raw_f107.split('\n')[1:-4]
+        raw_f107 = raw_f107.split('\n')[1:10]
 
         # Parse the data
         ap_times, ap = parse_45day_block(raw_ap)

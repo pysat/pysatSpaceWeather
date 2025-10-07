@@ -286,7 +286,7 @@ def download(date_array, tag, inst_id, data_path, mock_download_dir=None):
 
             # User anonymous, passwd anonymous@
             ftp.login()
-            ftp.cwd('/STP/GEOMAGNETIC_DATA/INDICES/DST')
+            ftp.cwd('/STP/space-weather/geomagnetic-data/INDICES/DST')
 
         # Data stored by year. Only download for unique set of input years.
         years = np.array([date.year for date in date_array])

@@ -3,6 +3,12 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.2.2] - 2025-10-XX
+--------------------
+* Bugs
+  * Fixed the remote location where NOAA Dst files are located
+  * Fixed error in loading the 45-day F10.7 forecasts
+
 [0.2.1] - 2024-11-18
 --------------------
 * Enhancements

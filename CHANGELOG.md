@@ -3,6 +3,14 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[0.2.2] - 2025-10-17
+--------------------
+* Maintenance
+  * Updated Ops tests to Python 3.12, NEP 29, and added Python 3.13 support
+* Bugs
+  * Fixed the remote location where NOAA Dst files are located
+  * Fixed error in loading the 45-day F10.7 forecasts
+
 [0.2.1] - 2024-11-18
 --------------------
 * Enhancements
@@ -13,6 +21,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed error in mock downloading F10.7 prelim files
   * Fixed combine_kp to consider desired time limits and fill values when
     loading the standard dataset
+  * Updated controlled information statement for clarity and accuracy
 
 [0.2.0] - 2024-08-30
 --------------------

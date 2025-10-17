@@ -4,6 +4,8 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.3986138
 #
+# Review Status for Classified or Controlled Information by NRL
+# -------------------------------------------------------------
 # DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
 # unlimited.
 # ----------------------------------------------------------------------------
@@ -46,6 +48,21 @@ class TestInstruments(clslib.InstLibTests):
     instrument test class.
 
     """
+
+    def test_45day_forecast_data_length(self):
+        """Test that the downloaded 45-day forecasts load 45 days of data."""
+        # Initalize the desired instrument parameters
+        inst_dict = {'inst_module': pysatSpaceWeather.instruments.sw_f107,
+                     'tag': '45day', 'inst_id': ''}
+        _, date = clslib.initialize_test_inst_and_date(inst_dict)
+
+        # Load the downloaded data
+        self.test_inst = pysat.Instrument(**inst_dict)
+        self.test_inst.load(date=date)
+
+        # Test that 45 days of F10.7 data are available
+        assert len(self.test_inst['f107']) == 45
+        return
 
 
 class TestSWInstrumentLogging(object):

@@ -104,7 +104,7 @@ def json_downloads(date_array, data_path, local_file_prefix, local_date_fmt,
                 mock_download_dir))
 
     # Set the local variables
-    base_url = "https://kp.gfz-potsdam.de/app/json/"
+    base_url = "https://kp.gfz.de/app/json/"
     time_fmt = "%Y-%m-%dT%H:%M:%SZ"
     last_file = ''
 
@@ -217,7 +217,7 @@ def kp_ap_cp_download(platform, name, date_array, tag, inst_id, data_path,
                 mock_download_dir))
 
     # Set the page for the definitive or nowcast Kp
-    burl = ''.join(['https://datapub.gfz-potsdam.de/download/10.5880.Kp.0001',
+    burl = ''.join(['https://datapub.gfz.de/download/10.5880.Kp.0001',
                     '/Kp_', 'nowcast' if tag == 'now' else 'definitive', '/'])
     data_cols = ['Bartels_solar_rotation_num', 'day_within_Bartels_rotation',
                  'Kp', 'daily_Kp_sum', 'ap', 'daily_Ap', 'Cp', 'C9']

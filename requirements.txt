@@ -3,6 +3,6 @@ netCDF4
 numpy
 packaging
 pandas
-pysat >= 3.0.4
+pysat >= 3.2.0
 requests
 xarray

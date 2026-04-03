@@ -11,6 +11,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Switched from `m2r2` to `myst_parser`
 * Bugs
   * Fixed the labels in the documentation to avoid duplicates
+  * Updated the link locations in downloads and documentation for GFZ
+  * Updated the SPWC 45-day forecast filename
 
 [0.2.2] - 2025-10-17
 --------------------

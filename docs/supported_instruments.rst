@@ -67,6 +67,7 @@ Supports ACE Solar Wind Electron Proton Alpha Monitor data.
 
 
 .. _norp-inst:
+
 NoRP
 ----
 
@@ -91,6 +92,7 @@ and is updated to extend to the current period, but not in real-time.
 
 
 .. _sw-inst:
+
 SW
 ---
 
@@ -126,15 +128,15 @@ AL
 
 AL is an auroral electrojet index that reflects the lower envelope, the negative
 peak of the electroject currents at Earth.  Real-time predictions (last 96
-hours) are provided by
-`LASP <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_.
+hours) are provided by the
+`LASP repository <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_.
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_al
    :members:
 
 
-.. _sw-al-inst:
+.. _sw-au-inst:
 
 
 AU
@@ -142,8 +144,8 @@ AU
 
 AU is an auroral electrojet index that reflects the upper envelope, the positive
 peak of the electroject currents at Earth.  Real-time predictions (last 96
-hours) are provided by
-`LASP <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_.
+hours) are provided at the
+`LASP page <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_.
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_au
@@ -157,8 +159,8 @@ Ap
 
 Ap is a geomagnetic index that reflects the magnitude of geomagnetic
 disturbances at Earth but unlike Kp uses a linear scale.  Historic, recent
-(last 30 days), and forecasted values are available from 
-`GFZ <https://www.gfz-potsdam.de/en/kp-index/>`_ and the
+(last 30 days), and forecasted values are available from the
+`GFZ Kp <https://kp.gfz.de/en/>`_ and the
 `SWPC Forecasts page <https://www.swpc.noaa.gov/forecasts>`_.
 
 
@@ -173,8 +175,8 @@ apo
 
 apo is a linear (half)-hourly, planetary, open-ended, geomagnetic index that
 reflects the magnitude of geomagnetic disturbances at Earth. It is like Ap but
-does not have an upper limit. Values from 1995 onwards are available from 
-`GFZ <https://kp.gfz-potsdam.de/en/hp30-hp60>`_.
+does not have an upper limit. Values from 1995 onwards are available from the
+`GFZ Hpo page <https://kp.gfz.de/en/hp30-hp60>`_.
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_apo
@@ -189,8 +191,7 @@ Cp
 Cp is a derivative geomagnetic index that provides a qualitative estimate of the
 overall level of magnetic activity for the day.  The C9 index provides the same
 information on a scale from 0-9 instead of 0.0-2.5. Historic values are
-available from
-`GFZ <https://spaceweather.gfz-potsdam.de/products-data/nowcasts/nowcast-kp-index/geomagnetic-indices-ap-ap-cp-and-c9-derivative-indices>`_.
+available from the `GFZ Kp page <https://kp.gfz.de/en/>`_.
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_cp
@@ -207,7 +208,7 @@ associated with the ring current.  The National Centers for Environmental
 Information (NCEI), formerly the National Geophysical Data Center (NGDC),
 maintains the current database from which the historic Dst is downloaded.
 `LASP <https://lasp.colorado.edu/space_weather/dsttemerin/dsttemerin.html>`_
-performs the calculates and provides the predicted Dst for the last 96 hours.
+performs the calculations and provides the predicted Dst for the last 96 hours.
 You can learn more about the Dst Index at the
 `WDC Kyoto Observatory page <http://wdc.kugi.kyoto-u.ac.jp/dstdir/index.html>`_.
 
@@ -224,7 +225,8 @@ F \ :sub:`10.7`\
 F \ :sub:`10.7`\  is the 10.7 cm radio solar flux (measured in solar flux units,
 sfu) `[Cortie 1912] <http://adsabs.harvard.edu/full/1912MNRAS..73...52C>`_.
 Historic indices, real-time indices, and forecasted indices are available from
-`LASP <https://lasp.colorado.edu/lisird/data/noaa_radio_flux/>`_ and the
+the
+`LASP F107 <https://lasp.colorado.edu/lisird/data/noaa_radio_flux/>`_ and the
 `SWPC F107 page <https://www.swpc.noaa.gov/phenomena/f107-cm-radio-emissions>`_.
 
 
@@ -254,8 +256,8 @@ Hpo
 
 Hpo is a (half)-Hourly, planetary, open-ended, geomagnetic index that
 reflects the magnitude of geomagnetic disturbances at Earth. It is like Kp but
-does not have an upper limit. Values from 1995 onwards are available from 
-`GFZ <https://kp.gfz-potsdam.de/en/hp30-hp60>`_.
+does not have an upper limit. Values from 1995 onwards are available from the
+`GFZ Hp30 and Hp60 page <https://kp.gfz.de/en/hp30-hp60>`_.
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_hpo
@@ -270,7 +272,8 @@ Kp
 
 Kp is a geomagnetic index that reflects the magnitude of geomagnetic
 disturbances at Earth.  Historic, recent (last 30 days), and forecasted values
-are available from `GFZ <https://www.gfz-potsdam.de/en/kp-index/>`_, and the
+are available from the
+`GFZ Kp repository <https://www.gfz-potsdam.de/en/kp-index/>`_, and the
 `SWPC Kp page <https://www.swpc.noaa.gov/products/planetary-k-index>`_.
 
 

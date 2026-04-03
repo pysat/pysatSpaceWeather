@@ -19,7 +19,7 @@ Prerequisites
 
 pysatSpaceWeather uses common Python modules, as well as modules developed by
 and for the Space Physics community.  This module officially supports
-Python 3.9+.
+Python 3.10+.
 
  ============== =================
  Common modules Community modules

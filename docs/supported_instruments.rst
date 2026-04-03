@@ -160,7 +160,7 @@ Ap
 Ap is a geomagnetic index that reflects the magnitude of geomagnetic
 disturbances at Earth but unlike Kp uses a linear scale.  Historic, recent
 (last 30 days), and forecasted values are available from the
-`GFZ Kp <https://www.gfz-potsdam.de/en/kp-index/>`_ and the
+`GFZ Kp <https://kp.gfz.de/en/>`_ and the
 `SWPC Forecasts page <https://www.swpc.noaa.gov/forecasts>`_.
 
 
@@ -176,7 +176,7 @@ apo
 apo is a linear (half)-hourly, planetary, open-ended, geomagnetic index that
 reflects the magnitude of geomagnetic disturbances at Earth. It is like Ap but
 does not have an upper limit. Values from 1995 onwards are available from the
-`GFZ Hpo page <https://kp.gfz-potsdam.de/en/hp30-hp60>`_.
+`GFZ Hpo page <https://kp.gfz.de/en/hp30-hp60>`_.
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_apo
@@ -258,7 +258,7 @@ Hpo
 Hpo is a (half)-Hourly, planetary, open-ended, geomagnetic index that
 reflects the magnitude of geomagnetic disturbances at Earth. It is like Kp but
 does not have an upper limit. Values from 1995 onwards are available from the
-`GFZ Hp30 and Hp60 page <https://kp.gfz-potsdam.de/en/hp30-hp60>`_.
+`GFZ Hp30 and Hp60 page <https://kp.gfz.de/en/hp30-hp60>`_.
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_hpo

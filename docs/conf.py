@@ -42,7 +42,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.githubpages',
               'numpydoc',
-              'm2r2']
+              'myst_parser']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
@@ -65,7 +65,7 @@ zenodo = json.loads(open('../.zenodo.json').read())
 author = ', '.join([auth['name'] for auth in zenodo['creators']])
 description = 'Tools for space weather indices.'
 category = 'Space Physics'
-copyright = ', '.join(['2024', author])
+copyright = ', '.join(['2026', author])
 
 # The short X.Y version
 version = info.project['version'].base_version

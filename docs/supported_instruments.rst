@@ -191,8 +191,7 @@ Cp
 Cp is a derivative geomagnetic index that provides a qualitative estimate of the
 overall level of magnetic activity for the day.  The C9 index provides the same
 information on a scale from 0-9 instead of 0.0-2.5. Historic values are
-available from the
-`GFZ Kp page <https://spaceweather.gfz-potsdam.de/products-data/nowcasts/nowcast-kp-index/geomagnetic-indices-ap-ap-cp-and-c9-derivative-indices>`_.
+available from the `GFZ Kp page <https://kp.gfz.de/en/>`_.
 
 
 .. automodule:: pysatSpaceWeather.instruments.sw_cp

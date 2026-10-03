@@ -856,7 +856,7 @@ def recent_ap_f107_download(name, date_array, data_path,
     # Get the file information
     raw_txt = general.get_local_or_remote_text(
         'https://services.swpc.noaa.gov/text/', mock_download_dir,
-        '45-day-ap-forecast.txt')
+        '45-day-forecast.txt')
 
     if raw_txt is None:
         pysat.logger.info("".join(["Data not downloaded for ",

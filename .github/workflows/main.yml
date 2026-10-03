@@ -56,6 +56,9 @@ jobs:
       if: ${{ matrix.test_config == 'latest'}}
       run: pip install .[test]
 
+    - name: Install pysat RC
+      run: pip install --no-deps --pre -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysat
+
     - name: Set up pysat
       run: |
         mkdir pysatData

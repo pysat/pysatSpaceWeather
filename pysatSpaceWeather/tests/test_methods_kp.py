@@ -321,7 +321,7 @@ class TestSWKp(object):
             '3hr_ap'][self.testInst.meta.labels.max_val]
 
         # Test the fill value in the data and metadata
-        assert np.isnan(self.testInst['3hr_ap'][0])
+        assert np.isnan(self.testInst[0, '3hr_ap'])
         assert np.isnan(self.testInst.meta['3hr_ap'][fill_label])
 
         return
@@ -647,6 +647,7 @@ class TestSwKpCombine(object):
     def test_combine_kp_no_standard(self):
         """Test combine_kp when standard data is not provided."""
 
+        print("HELLO")
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'standard_inst'}
         kp_inst = kp_ap.combine_kp(**combo_in)
@@ -657,7 +658,7 @@ class TestSwKpCombine(object):
         assert kp_inst.data.columns[0] == 'Kp'
         assert (kp_inst.meta['Kp'][kp_inst.meta.labels.fill_val]
                 == self.combine['fill_val'])
-        assert len(kp_inst['Kp'][kp_inst['Kp']]
+        assert len(kp_inst['Kp'].iloc[kp_inst['Kp']]
                    == self.combine['fill_val']) > 0
 
         del kp_inst, combo_in

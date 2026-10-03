@@ -52,10 +52,6 @@ jobs:
         pip install numpy==${{ matrix.numpy_ver }}
         pip install --upgrade-strategy only-if-needed .[test]
 
-    - name: Install standard dependencies
-      if: ${{ matrix.test_config == 'latest'}}
-      run: pip install .[test]
-
     - name: Install pysat RC
       run: pip install --no-deps --pre -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysat
 

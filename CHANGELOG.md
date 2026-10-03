@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Maintenance
   * Updated GitHub Action versions
-  * Added support for Python 3.14
+  * Added support for Python 3.14 
   * Switched from `m2r2` to `myst_parser`
 * Bugs
   * Fixed the labels in the documentation to avoid duplicates

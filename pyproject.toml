@@ -7,7 +7,7 @@ name = "pysatSpaceWeather"
 version = "0.2.2"
 description = 'pysat support for Space Weather Indices'
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 authors = [
     {name = "Angeline Burrell", email = "pysat.developers@gmail.com"}
@@ -25,6 +25,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Operating System :: POSIX :: Linux",
   "Operating System :: MacOS :: MacOS X",
   "Operating System :: Microsoft :: Windows"
@@ -59,7 +60,7 @@ test = [
 doc = [
   "extras_require",
   "ipython",
-  "m2r2",
+  "myst_parser",
   "numpydoc",
   "pyproject_parser",
   "sphinx",

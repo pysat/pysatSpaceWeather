@@ -647,7 +647,6 @@ class TestSwKpCombine(object):
     def test_combine_kp_no_standard(self):
         """Test combine_kp when standard data is not provided."""
 
-        print("HELLO")
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'standard_inst'}
         kp_inst = kp_ap.combine_kp(**combo_in)
